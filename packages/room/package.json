@@ -1,0 +1,14 @@
+{
+  "name": "@tamalou/room",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@tamalou/bots": "workspace:*",
+    "@tamalou/engine": "workspace:*",
+    "@tamalou/shared": "workspace:*"
+  }
+}
