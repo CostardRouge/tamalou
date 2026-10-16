@@ -184,6 +184,7 @@ Stack retenue :
 - Les bots sont possibles dans ce mode aussi.
 
 ### 5.3 Multi en ligne : sessions temporaires
+- **[ADR-0013, ADR-0014]** Un seul protocole (WebSocket, messages validés côté serveur) et une seule logique de salle (`packages/room`) servent le LAN et l'en-ligne ; en ligne, une salle est un Durable Object en mémoire.
 - **Créer une partie** génère :
   - un **code court** de 4 à 6 caractères, sans caractères ambigus ;
   - un **lien de partage** ;

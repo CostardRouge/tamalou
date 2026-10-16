@@ -22,6 +22,7 @@
     "bots": "node packages/bots/src/cli/duel.ts",
     "dev": "pnpm --filter @tamalou/web dev",
     "build": "pnpm --filter @tamalou/web build",
+    "serve:lan": "pnpm build && node apps/server/src/main.ts",
     "worker:dev": "pnpm build && pnpm --filter @tamalou/worker exec wrangler dev",
     "worker:check": "pnpm --filter @tamalou/worker exec wrangler deploy --dry-run --outdir .wrangler/dry-run",
     "worker:deploy": "pnpm build && pnpm --filter @tamalou/worker exec wrangler deploy"

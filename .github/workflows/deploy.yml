@@ -2,7 +2,7 @@ name: Deploy
 
 # Publishes the web app to GitHub Pages on every push to main, so the game can be tried on a phone from a link, and
 # the online host (apps/worker) to Cloudflare once the repository has the CLOUDFLARE_ACCOUNT_ID variable and the
-# CLOUDFLARE_API_TOKEN secret (ADR-0014).
+# CLOUDFLARE_API_TOKEN secret (ADR-0014), and the LAN server's image to ghcr.io/costardrouge/tamalou (M7).
 # One-time setting: Settings → Pages → Source: "GitHub Actions" (until then the deploy job fails with "Not Found").
 # The build uses relative paths (vite.config.ts `base: './'`), so it works under /tamalou/ as it is.
 
@@ -81,3 +81,23 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+
+  image:
+    name: Publish the LAN server image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      # Plain docker CLI: no third-party action to keep up to date.
+      - name: Log in to GitHub's registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # amd64, for the Optiplex. Another architecture builds the image from the repository (docker compose builds).
+      - name: Build and push
+        run: |
+          docker build -t ghcr.io/costardrouge/tamalou:latest -t ghcr.io/costardrouge/tamalou:${{ github.sha }} .
+          docker push --all-tags ghcr.io/costardrouge/tamalou

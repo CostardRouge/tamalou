@@ -62,6 +62,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-16 — `bin/registry-setup.sh tamalou` must be run by the owner (from his machine) so `registry.yml`'s `send` job can report; until then it says so and stays green.
 - 2026-10-16 — Online play ships as soon as the owner sets the repository variable `CLOUDFLARE_ACCOUNT_ID` and the secret `CLOUDFLARE_API_TOKEN` (the Versus ones work) and picks a domain in the dashboard (suggestion: tamalou.steevepommier.com); until then `deploy.yml` skips the Worker (ADR-0014).
 
+- 2026-10-16 — Owner to check once `deploy.yml` has pushed the image: make the `tamalou` package public on GitHub (Packages → Package settings), or `docker login ghcr.io` on the Optiplex; otherwise compose builds from the repository. Then judge M7 on the home network: `docker compose up -d`, scan the QR code in the logs, play.
+
 ## Topic files
 
 | file | read when |
