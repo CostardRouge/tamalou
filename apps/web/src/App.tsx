@@ -7,8 +7,9 @@ import type { GameConnection } from './connection/types.ts';
 import { GameScreen } from './game/GameScreen.tsx';
 import { type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
 import { MODE_DEFAULTS } from './home/modes.ts';
-import { t } from './i18n/index.ts';
+import { onLangChange, t } from './i18n/index.ts';
 import { OnlineScreen } from './online/OnlineScreen.tsx';
+import { usePwa } from './pwa.ts';
 
 export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
@@ -51,6 +52,10 @@ export function App() {
     return code ? { code } : null;
   });
   const [online, setOnline] = useState(false);
+  // A language change draws everything again; games and rooms keep going.
+  const [, setLang] = useState('');
+  useEffect(() => onLangChange(setLang), []);
+  const { updateReady } = usePwa();
   useEffect(() => {
     let live = true;
     roomsAvailable().then((ok) => live && setOnline(ok));
@@ -83,6 +88,14 @@ export function App() {
   return (
     // Animations follow the system's "reduce motion" setting.
     <MotionConfig reducedMotion="user">
+      {updateReady && !game && !room ? (
+        <p className="banner update" role="status">
+          {t('updateReady')}{' '}
+          <button type="button" className="link" onClick={() => location.reload()}>
+            {t('updateReload')}
+          </button>
+        </p>
+      ) : null}
       {room ? (
         <OnlineScreen key={room.code} code={room.code} {...(room.name ? { name: room.name } : {})} onExit={exitRoom} />
       ) : game ? (

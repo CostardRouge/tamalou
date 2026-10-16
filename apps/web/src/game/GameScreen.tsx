@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
+import { updateSettings, useSettings } from '../feedback/settings.ts';
+import { useFeedback } from '../feedback/useFeedback.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { interaction, NONE, type Pending } from './interaction.ts';
@@ -30,6 +32,9 @@ interface Props {
 export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const view = useConnection(conn);
   const rules = conn.rules;
+  const events = conn.events();
+  const feedback = useFeedback(events, view.me);
+  const settings = useSettings();
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
   const [showRules, setShowRules] = useState(false);
@@ -84,10 +89,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     setPending(NONE);
   };
 
-  const lines = conn
-    .events()
-    .map((e) => describeEvent(e, nameOf, view.me))
-    .filter((l): l is string => l !== null);
+  const lines = events.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
 
   const seat = (p: PlayerSeatView, size: 'sm' | 'lg') => {
     const mine = p.id === view.me;
@@ -115,6 +117,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               empty={!s.filled}
               locked={s.locked}
               hint={action !== null}
+              flash={feedback.flash.has(`${p.id}:${s.slot}`)}
               selected={ui.selected(ref)}
               onSelect={action ? () => touch(ref) : undefined}
             />
@@ -150,6 +153,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         </button>
         <span className="mono round">{t('roundShort', { n: view.round })}</span>
         <span className="bar-actions">
+          <button
+            type="button"
+            className="ghost"
+            aria-label={t(settings.sound ? 'soundOn' : 'soundOff')}
+            onClick={() => updateSettings({ sound: !settings.sound })}
+          >
+            <span aria-hidden="true">{settings.sound ? '🔊' : '🔇'}</span>
+          </button>
           <button type="button" className="ghost" onClick={() => setShowRules(true)}>
             {t('rules')}
           </button>
@@ -163,7 +174,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         {lines.at(-1) ?? '\u00a0'}
       </p>
 
-      <section className="opponents" aria-label="Adversaires">
+      <section className="opponents" aria-label={t('opponents')}>
         {opponents.map((p) => (
           <div
             key={p.id}
@@ -183,7 +194,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         ))}
       </section>
 
-      <section className="center" aria-label="Table">
+      <section className="center" aria-label={t('table')}>
         <div className="pile">
           <CardView
             card={null}
@@ -300,6 +311,25 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       ) : null}
 
       {showRules ? <RulesPanel rules={rules} onClose={() => setShowRules(false)} /> : null}
+
+      <AnimatePresence>
+        {feedback.splash ? (
+          <motion.div
+            key="splash"
+            className="splash"
+            role="status"
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.15, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 18 }}
+          >
+            <strong>{t('splashTamalou')}</strong>
+            <span>
+              {feedback.splash === view.me ? t('splashByYou') : t('splashBy', { name: nameOf(feedback.splash) })}
+            </span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {view.phase === 'roundOver' || view.phase === 'gameOver' ? (
         <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onReplay={onReplay} />

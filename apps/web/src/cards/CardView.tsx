@@ -15,9 +15,11 @@ export interface CardViewProps {
   hint?: boolean;
   locked?: boolean;
   empty?: boolean;
+  /** A move just touched this card: a short ring so the eye follows it. */
+  flash?: boolean;
 }
 
-export function CardView({ card, label, size = 'md', onSelect, selected, hint, locked, empty }: CardViewProps) {
+export function CardView({ card, label, size = 'md', onSelect, selected, hint, locked, empty, flash }: CardViewProps) {
   const theme = useCardTheme();
   if (empty) return <div className={`card card-${size} card-empty`} role="img" aria-label={label} />;
   const className = [
@@ -27,6 +29,7 @@ export function CardView({ card, label, size = 'md', onSelect, selected, hint, l
     selected ? 'card-selected' : '',
     hint ? 'card-hint' : '',
     locked ? 'card-locked' : '',
+    flash ? 'card-flash' : '',
   ]
     .filter(Boolean)
     .join(' ');

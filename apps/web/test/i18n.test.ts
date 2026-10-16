@@ -28,3 +28,22 @@ describe('dictionaries', () => {
     setLang('fr');
   });
 });
+
+describe('the language switch', () => {
+  it('tells the screens and names presets in the chosen language', async () => {
+    const { onLangChange, presetText } = await import('../src/i18n/index.ts');
+    const seen: string[] = [];
+    const off = onLangChange((l) => seen.push(l));
+    setLang('en');
+    expect(presetText('quick', { name: 'Rapide', description: '…' }).name).toBe('Quick');
+    expect(presetText('custom', { name: 'Maison', description: 'À nous' })).toEqual({
+      name: 'Maison',
+      description: 'À nous',
+    });
+    setLang('fr');
+    off();
+    setLang('en');
+    setLang('fr');
+    expect(seen).toEqual(['en', 'fr']);
+  });
+});

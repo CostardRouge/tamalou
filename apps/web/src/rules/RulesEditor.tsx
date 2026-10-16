@@ -15,7 +15,7 @@ import {
   type Suit,
 } from '@tamalou/shared';
 import { type ReactNode, useRef, useState } from 'react';
-import { type Key, plural, rankName, t } from '../i18n/index.ts';
+import { type Key, plural, presetText, rankName, t } from '../i18n/index.ts';
 import { displayNumber, type Field, getAt, SECTIONS, setAt } from './fields.ts';
 import { RulesSummary } from './RulesSummary.tsx';
 
@@ -34,6 +34,11 @@ const SUIT_SETS: { id: string; suits: Suit[]; label: Key | null; symbol?: string
 ];
 const suitSetOf = (suits: Suit[]) =>
   SUIT_SETS.find((s) => JSON.stringify(s.suits) === JSON.stringify(suits))?.id ?? 'all';
+
+const presetDescription = (id: string) => {
+  const p = PRESETS.find((x) => x.id === id);
+  return p ? presetText(p.id, p).description : '';
+};
 
 export function countChanges(overrides: object): number {
   return Object.values(overrides).reduce<number>(
@@ -115,12 +120,12 @@ export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
                 checked={choice.preset === p.id}
                 onChange={() => onChange({ preset: p.id, overrides: {} })}
               />
-              {p.name}
+              {presetText(p.id, p).name}
             </label>
           ))}
         </div>
         <p className="muted small">
-          {changes > 0 ? plural('editorModified', changes) : PRESETS.find((p) => p.id === choice.preset)?.description}
+          {changes > 0 ? plural('editorModified', changes) : presetDescription(choice.preset)}
           {changes > 0 ? (
             <button type="button" className="link" onClick={() => onChange({ preset: choice.preset, overrides: {} })}>
               {t('editorReset')}

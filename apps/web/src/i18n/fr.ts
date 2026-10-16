@@ -409,6 +409,30 @@ export const fr = {
   refused_staleTop: 'Trop tard : quelqu’un a défaussé avant toi.',
   refused_other: 'Action refusée par la table.',
   watching: 'Tu regardes la partie.',
+
+  // Settings, presets, polish
+  preset_classic: 'Classique',
+  presetDesc_classic: 'Les règles de la maison : 4 cartes, éliminé à 100, +10 pour un Tamalou raté.',
+  preset_quick: 'Rapide',
+  presetDesc_quick: 'Une partie courte : éliminé à 50, et la partie s’arrête au premier éliminé.',
+  preset_beginner: 'Débutant',
+  presetDesc_beginner: 'Les cartes déjà vues restent affichées : pour apprendre sans travailler sa mémoire.',
+  opponents: 'Adversaires',
+  settings: 'Réglages',
+  settingsLang: 'Langue',
+  langFr: 'Français',
+  langEn: 'English',
+  settingsSound: 'Sons',
+  settingsHaptics: 'Vibrations',
+  soundOn: 'Couper le son',
+  soundOff: 'Remettre le son',
+  install: 'Installer le jeu',
+  installHint: 'Il s’ouvrira comme une appli, et le solo marche sans réseau.',
+  updateReady: 'Une nouvelle version est prête.',
+  updateReload: 'Recharger',
+  splashTamalou: 'Tamalou !',
+  splashBy: '{name} annonce la fin de la manche',
+  splashByYou: 'Tu annonces la fin de la manche',
 };
 
 export type Messages = { [K in keyof typeof fr]: string };

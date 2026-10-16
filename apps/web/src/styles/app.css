@@ -1224,3 +1224,87 @@ button {
   font-size: 0.72rem;
   color: var(--muted);
 }
+
+/* ------------------------------------------------------------ polish (M8) */
+
+.settings {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
+}
+
+.toggle input {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--a);
+}
+
+.install {
+  display: grid;
+  gap: 6px;
+}
+
+.banner.update {
+  top: max(12px, env(safe-area-inset-top));
+}
+
+.banner .link {
+  min-height: 0;
+}
+
+/* A card a move just touched: one ring that fades. */
+.card-flash {
+  animation: card-flash 0.9s ease-out;
+}
+
+@keyframes card-flash {
+  0% {
+    box-shadow: 0 0 0 0 var(--a);
+  }
+  30% {
+    box-shadow: 0 0 0 5px var(--a);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-flash {
+    animation: none;
+    outline: 3px solid var(--a);
+  }
+}
+
+.splash {
+  position: fixed;
+  z-index: 30;
+  inset: 38% 16px auto;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 18px 20px;
+  border-radius: var(--r-lg);
+  background: var(--b-ink);
+  color: var(--on-accent);
+  box-shadow: var(--shadow);
+  text-align: center;
+  pointer-events: none;
+}
+
+.splash strong {
+  font-family: var(--f-display);
+  font-size: clamp(2.2rem, 12vw, 3.4rem);
+  line-height: 1;
+}

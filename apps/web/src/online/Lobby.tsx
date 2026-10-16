@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { renderSVG } from 'uqr';
 import type { RoomClient } from '../connection/remote.ts';
 import { MAX_SEATS } from '../home/modes.ts';
-import { type Key, plural, t } from '../i18n/index.ts';
+import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
 
@@ -167,7 +167,7 @@ export function Lobby({ client, onLeave }: Props) {
           {t('lobbyRules')}
         </h2>
         <p>
-          <b>{preset?.name ?? lobby.rules.preset}</b>
+          <b>{preset ? presetText(preset.id, preset).name : lobby.rules.preset}</b>
           {changes > 0 ? <span className="tag">{plural('editorModified', changes)}</span> : null}
         </p>
         <button

@@ -18,5 +18,5 @@
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["src", "test", "vite.config.ts"]
+  "include": ["src", "test", "build", "vite.config.ts"]
 }

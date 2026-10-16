@@ -2,9 +2,10 @@ import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
 import { normalizeRoomCode, PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
 import { useState } from 'react';
 import { createRoom } from '../connection/remote.ts';
-import { type Key, plural, t } from '../i18n/index.ts';
+import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
+import { Settings } from './Settings.tsx';
 
 // The setup: solo against bots, or several players sharing this device (pass-and-play, with bots or not); how strong
 // the bots are; which rules (a preset, and the game master's changes made in the rules editor, measured against the
@@ -279,8 +280,8 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom }: Props) {
                       checked={c.preset === p.id}
                       onChange={() => set({ preset: p.id, overrides: {} })}
                     />
-                    <b>{p.name}</b>
-                    <small>{p.description}</small>
+                    <b>{presetText(p.id, p).name}</b>
+                    <small>{presetText(p.id, p).description}</small>
                   </label>
                 ))}
               </div>
@@ -297,6 +298,7 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom }: Props) {
           </>
         )}
       </form>
+      <Settings />
     </main>
   );
 }

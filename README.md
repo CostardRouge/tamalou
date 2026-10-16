@@ -4,7 +4,7 @@ Le jeu de cartes Tamalou, jouable sur le web, d'abord sur téléphone : quatre c
 
 Quatre modes sont prévus : solo contre des bots, pass-and-play sur un seul appareil, LAN sans internet et en ligne (une salle temporaire qu'on rejoint par un code ou un lien, sans compte). Le maître de jeu configure toutes les règles avant la partie.
 
-**État** : M7. On joue en solo contre 1 à 5 bots, à plusieurs sur un seul téléphone, en ligne (une salle, un code, un lien ou un QR code, chacun sur son téléphone) et sur le réseau local sans internet. Toutes les règles se règlent avant la partie, se consultent pendant, et se partagent par lien ou en fichier JSON. Le plan complet est dans [`docs/SPEC.md`](docs/SPEC.md) §8.
+**État** : M8, toutes les milestones du plan sont faites. On joue en solo contre 1 à 5 bots, à plusieurs sur un seul téléphone, en ligne (une salle, un code, un lien ou un QR code, chacun sur son téléphone) et sur le réseau local sans internet. Toutes les règles se règlent avant la partie, se consultent pendant, et se partagent par lien ou en fichier JSON. Le jeu s'installe comme une appli, marche hors ligne en solo, parle français ou anglais, avec sons et vibrations. Le plan complet est dans [`docs/SPEC.md`](docs/SPEC.md) §8.
 
 - https://costardrouge.github.io/tamalou/ (publié depuis `main`) : solo et pass-and-play.
 - En ligne : le Worker Cloudflare de `apps/worker`, déployé dès que le dépôt a ses identifiants Cloudflare.
