@@ -43,6 +43,10 @@ jobs:
       - name: Build the web app
         run: pnpm build
 
+      # Bundles the Cloudflare Worker without deploying (no account needed): catches what typecheck cannot.
+      - name: Bundle the Worker
+        run: pnpm worker:check
+
       # Random legal games end to end: fails on a crash, a refused legal move, a stall or a deadlock.
       - name: Simulation
         run: pnpm simulate --games 300

@@ -42,9 +42,10 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Views are checked against events: a face in a view must have been revealed to that player by an event they received — `architecture.md`.
 - The host (bot timing, the window's minimum, round flow, turn timer) is `packages/room`'s `Table` with an injected clock; the browser runs it for solo — ADR-0009, `architecture.md`.
 - The web UI offers only `legalActions(view)`; quick discard is an armed mode; log lines about "you" have `_you` keys — `web.md`.
-- Builds of `main` are published on GitHub Pages until the online server exists — ADR-0010.
+- Builds of `main` go to GitHub Pages (solo and pass-and-play only: no API there) — ADR-0010 — and, once configured, to Cloudflare with the rooms — ADR-0014.
 - The game master edits every RuleSet leaf on one screen (a test fails if a leaf has none); rules travel as a preset + diff, by `#rules=` link or a JSON file — ADR-0011, `rules.md`, `web.md`.
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
+- Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
@@ -59,7 +60,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-16 — Confirm with the owner: penalty cards the empty pile cannot give are skipped (`rules.md`, provisional default).
 
 - 2026-10-16 — `bin/registry-setup.sh tamalou` must be run by the owner (from his machine) so `registry.yml`'s `send` job can report; until then it says so and stays green.
-- 2026-10-16 — The online host's domain (a subdomain of steevepommier.com?) and the Cloudflare account variables are to be decided at M6.
+- 2026-10-16 — Online play ships as soon as the owner sets the repository variable `CLOUDFLARE_ACCOUNT_ID` and the secret `CLOUDFLARE_API_TOKEN` (the Versus ones work) and picks a domain in the dashboard (suggestion: tamalou.steevepommier.com); until then `deploy.yml` skips the Worker (ADR-0014).
 
 ## Topic files
 

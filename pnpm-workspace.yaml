@@ -1,3 +1,9 @@
 packages:
   - packages/*
   - apps/*
+
+# Install scripts stay off: wrangler runs without them (esbuild and workerd find their platform binaries through
+# optional dependencies), so nothing third-party runs at install time.
+allowBuilds:
+  esbuild: false
+  workerd: false

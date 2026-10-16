@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Online play (docs/SPEC.md §5.3, ADR-0004): one Worker serves the web app (apps/web/dist) and the rooms API under
+  // /api; each room is one Durable Object holding a packages/room Room in memory.
+  "name": "tamalou",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-20",
+  "observability": { "enabled": true },
+  // No routes on purpose: a custom domain is added in the dashboard, and deploys keep it.
+  // Files are served first; the Worker runs for /api/* and for addresses with no file (the app's index.html then).
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "ROOMS", "class_name": "RoomObject" }]
+  },
+  // SQLite-backed objects are the ones the free plan offers; the room keeps nothing in storage anyway.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RoomObject"] }],
+  // Per-IP limit on new rooms (the period is 10 or 60 seconds).
+  "ratelimits": [{ "name": "CREATE_LIMIT", "namespace_id": "2001", "simple": { "limit": 10, "period": 60 } }]
+}
