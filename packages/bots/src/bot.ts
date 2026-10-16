@@ -105,10 +105,12 @@ export class Bot {
 
   /**
    * What the bot wants to do now, if anything: a quick discard at any moment, or its own move on its turn. null when it
-   * has nothing to do (not its turn and nothing to claim).
+   * has nothing to do (not its turn and nothing to claim). `claims: false` keeps it to its own moves: a stand-in playing
+   * for an absent human does not race the others for quick discards in their name.
    */
-  decide(view: PlayerView): Action | null {
-    const legal = legalActions(view, this.rules);
+  decide(view: PlayerView, { claims = true }: { claims?: boolean } = {}): Action | null {
+    const all = legalActions(view, this.rules);
+    const legal = claims ? all : all.filter((a) => a.type !== 'quickDiscard');
     if (legal.length === 0) return null;
     if (!this.profile.smart) return this.decideRandom(view, legal);
 

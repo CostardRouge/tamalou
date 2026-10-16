@@ -96,13 +96,22 @@ export function encodeRulesChoice(choice: RulesChoice): string {
 export function decodeRulesChoice(code: string): RulesChoice | null {
   try {
     const data = JSON.parse(fromBase64Url(code)) as unknown;
-    if (!isPlain(data) || typeof data.p !== 'string' || !isPlain(data.o)) return null;
-    const preset = PRESETS.find((p) => p.id === data.p);
-    if (!preset) return null;
-    const parsed = safeParseRules(mergeRuleInputs(preset.rules, data.o as RuleSetInput));
-    if (!parsed.success) return null;
-    return choiceFromRules(preset.id, parsed.data);
+    if (!isPlain(data)) return null;
+    return checkRulesChoice({ preset: data.p, overrides: data.o });
   } catch {
     return null;
   }
+}
+
+/**
+ * A choice received from elsewhere (a link, a socket), checked: a known preset and changes that make valid rules. The
+ * overrides come back as the smallest diff, so nothing unknown travels further. Null when it is not playable.
+ */
+export function checkRulesChoice(input: unknown): RulesChoice | null {
+  if (!isPlain(input) || typeof input.preset !== 'string' || !isPlain(input.overrides)) return null;
+  const preset = PRESETS.find((p) => p.id === input.preset);
+  if (!preset) return null;
+  const parsed = safeParseRules(mergeRuleInputs(preset.rules, input.overrides as RuleSetInput));
+  if (!parsed.success) return null;
+  return choiceFromRules(preset.id, parsed.data);
 }

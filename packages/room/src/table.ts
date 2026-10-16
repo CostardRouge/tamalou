@@ -17,7 +17,9 @@ import {
 // - bots: each one decides from its own view, and its move is played after the delay its level asks for;
 // - the quick-discard window's minimum (quickDiscard.minWindowMs): a draw that comes earlier is held back until then;
 // - the host actions: score a finished round once its window has run, deal the next one when every human is ready;
-// - the turn timer (pace.turnTimerSeconds): a human who runs out of time has their turn played by a bot.
+// - the turn timer (pace.turnTimerSeconds): a human who runs out of time has their turn played by a bot;
+// - absent humans (setAway, a lost connection online): their stand-in bot plays their moves, never their claims, and
+//   the next round does not wait for them.
 
 export interface Scheduler {
   now(): number;
@@ -58,7 +60,7 @@ export class Table {
   private state: GameState;
   private readonly scheduler: Scheduler;
   private readonly bots = new Map<PlayerId, Bot>();
-  /** Bots standing by to play a timed-out human's turn; they watch the game like the others. */
+  /** Bots standing by to play a timed-out or absent human's turn; they watch the game like the others. */
   private readonly standIns = new Map<PlayerId, Bot>();
   private readonly logs = new Map<PlayerId, GameEvent[]>();
   /** The events everyone received: what a shared screen may show. */
@@ -66,6 +68,7 @@ export class Table {
   private readonly plans = new Map<PlayerId, Plan>();
   private readonly listeners = new Set<() => void>();
   private readonly continued = new Set<PlayerId>();
+  private readonly away = new Set<PlayerId>();
   private rng: number;
   private windowSince: number | null = null;
   private deferredDraw: { action: Action; handle: unknown } | null = null;
@@ -82,7 +85,7 @@ export class Table {
       this.logs.set(s.id, []);
       const botSeed = (seed * 31 + i * 7919) >>> 0;
       if (s.kind === 'bot') this.bots.set(s.id, new Bot(s.id, s.level ?? 'medium', rules, botSeed));
-      else if (rules.pace.turnTimerSeconds > 0) this.standIns.set(s.id, new Bot(s.id, STAND_IN_LEVEL, rules, botSeed));
+      else this.standIns.set(s.id, new Bot(s.id, STAND_IN_LEVEL, rules, botSeed));
     });
     const created = createGame({ seed, players: seats.map((s) => ({ id: s.id, name: s.name })), rules });
     this.state = created.state;
@@ -130,6 +133,11 @@ export class Table {
   /** Humans who asked for the next round. */
   readyForNext(): PlayerId[] {
     return [...this.continued];
+  }
+
+  /** Humans currently played by their stand-in. */
+  awayPlayers(): PlayerId[] {
+    return [...this.away];
   }
 
   /** Milliseconds left before a draw is allowed, 0 when the quick-discard window has run its minimum. */
@@ -184,6 +192,17 @@ export class Table {
   continue(seat: PlayerId): void {
     if (this.state.phase !== 'roundOver' || !this.isHuman(seat)) return;
     this.continued.add(seat);
+    this.after();
+  }
+
+  /**
+   * A human is gone (away) or back. While away, their stand-in plays their initial peek and their turns at a bot's
+   * pace, and the next round is dealt without waiting for them; back, they take over from the next move.
+   */
+  setAway(seat: PlayerId, away: boolean): void {
+    if (this.disposed || !this.isHuman(seat) || this.away.has(seat) === away) return;
+    if (away) this.away.add(seat);
+    else this.away.delete(seat);
     this.after();
   }
 
@@ -243,7 +262,19 @@ export class Table {
   }
 
   private planBots(): void {
-    for (const [id, bot] of this.bots) {
+    // A human back from being away drops the move their stand-in had planned.
+    for (const [id, plan] of this.plans) {
+      if (this.isHuman(id) && !this.away.has(id)) {
+        this.scheduler.clearTimeout(plan.handle);
+        this.plans.delete(id);
+      }
+    }
+    const actors: [PlayerId, Bot, boolean][] = [...this.bots].map(([id, bot]) => [id, bot, true]);
+    for (const id of this.away) {
+      const bot = this.standIns.get(id);
+      if (bot) actors.push([id, bot, false]);
+    }
+    for (const [id, bot, claims] of actors) {
       const view = this.view(id);
       const plan = this.plans.get(id);
       if (plan) {
@@ -252,7 +283,7 @@ export class Table {
         this.scheduler.clearTimeout(plan.handle);
         this.plans.delete(id);
       }
-      const action = bot.decide(view);
+      const action = bot.decide(view, { claims });
       if (!action) continue;
       const profile = PROFILES[bot.profile.level];
       let wait = this.delay(action.type === 'quickDiscard' ? profile.delays.quickDiscard : profile.delays.turn);
@@ -273,7 +304,7 @@ export class Table {
     let wait = 0;
     if (owed.type === 'endRound') wait = this.windowRemaining();
     if (owed.type === 'nextRound') {
-      const humans = this.seats.filter((s) => s.kind === 'human').map((s) => s.id);
+      const humans = this.humans().filter((h) => !this.away.has(h));
       if (humans.length > 0 && !humans.every((h) => this.continued.has(h))) return;
       if (humans.length === 0) wait = BOT_ROUND_PAUSE_MS;
     }
@@ -290,7 +321,9 @@ export class Table {
     if (this.turnTimer && this.turnTimer.key === key) return;
     if (this.turnTimer) this.scheduler.clearTimeout(this.turnTimer.handle);
     this.turnTimer = null;
-    if (seconds <= 0 || this.state.phase !== 'play' || !current || !this.isHuman(current)) return;
+    if (seconds <= 0 || this.state.phase !== 'play' || !current || !this.isHuman(current) || this.away.has(current)) {
+      return;
+    }
     const handle = this.scheduler.setTimeout(() => {
       this.turnTimer = null;
       this.standIn(current);

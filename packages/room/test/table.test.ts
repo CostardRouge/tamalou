@@ -1,40 +1,7 @@
 import { type Action, parseRules, type RuleSetInput } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { type Scheduler, type SeatSpec, Table } from '../src/index.ts';
-
-/** A clock moved by hand: timers fire in order when time is advanced. */
-class FakeClock implements Scheduler {
-  private t = 0;
-  private seq = 0;
-  private timers = new Map<number, { at: number; fn: () => void }>();
-  now() {
-    return this.t;
-  }
-  setTimeout(fn: () => void, ms: number) {
-    const id = ++this.seq;
-    this.timers.set(id, { at: this.t + ms, fn });
-    return id;
-  }
-  clearTimeout(h: unknown) {
-    this.timers.delete(h as number);
-  }
-  /** Runs every timer due within `ms`, in time order, including ones set while running. */
-  advance(ms: number) {
-    const end = this.t + ms;
-    for (;;) {
-      let next: [number, { at: number; fn: () => void }] | undefined;
-      for (const e of this.timers) if (e[1].at <= end && (!next || e[1].at < next[1].at)) next = e;
-      if (!next) break;
-      this.timers.delete(next[0]);
-      this.t = next[1].at;
-      next[1].fn();
-    }
-    this.t = end;
-  }
-  pending() {
-    return this.timers.size;
-  }
-}
+import { type SeatSpec, Table } from '../src/index.ts';
+import { FakeClock } from './clock.ts';
 
 const seats = (...levels: ('human' | 'easy' | 'medium' | 'hard')[]): SeatSpec[] =>
   levels.map((l, i) =>
@@ -131,6 +98,31 @@ describe('table host', () => {
       }
     }
     expect(claimed).toBe(true);
+  });
+
+  it('plays an away human with their stand-in, without claims, and deals on without them', () => {
+    const { t, clock } = table(seats('human', 'medium'), { gameEnd: { mode: 'rounds', rounds: 2 } });
+    t.setAway('h0', true);
+    expect(t.awayPlayers()).toEqual(['h0']);
+    for (let i = 0; i < 2000 && t.view('h0').phase !== 'gameOver'; i++) clock.advance(1000);
+    expect(t.view('h0').phase).toBe('gameOver');
+    expect(t.events('h0').some((e) => e.type === 'quickDiscard' && e.player === 'h0')).toBe(false);
+  });
+
+  it('hands the turn back to a human who returns', () => {
+    const { t, clock } = table(seats('human', 'medium'));
+    t.setAway('h0', true);
+    clock.advance(3000);
+    expect(t.view('h0').phase).toBe('play');
+    t.setAway('h0', false);
+    t.setAway('h0', false);
+    // Whatever the stand-in had planned is dropped: on the human's turn, nothing moves without them.
+    for (let i = 0; i < 20 && t.view('h0').current !== 'h0'; i++) clock.advance(1000);
+    const turn = t.view('h0').myTurns;
+    clock.advance(20_000);
+    expect(t.view('h0')).toMatchObject({ current: 'h0', myTurns: turn });
+    t.setAway('b1', true);
+    expect(t.awayPlayers()).toEqual([]);
   });
 
   it('tells its listeners after every change, and stops on dispose', () => {
