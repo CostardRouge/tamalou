@@ -56,3 +56,15 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 - **Context**: the engine must be a pure reducer, replayable from a seed and its actions, yet the brief has timed rules (turn timer, a quick-discard window "délai") and a race (simultaneous quick discards, first validated wins).
 - **Decision**: time stays out of the engine. The window is a state flag (open from a card landing, or its power resolving, to the next draw; open after the last turn until the host's `endRound`). Its minimum length (`quickDiscard.minWindowMs`) and the turn timer are enforced by the host — `LocalConnection` in the browser, `packages/room` on a server — by holding a draw back and by having a bot play a timed-out turn. Host-only actions (`endRound`, `nextRound`) carry `by: 'host'`. A quick-discard claim carries `expectTop`, the discard's top card it was aimed at: the authority applies claims in arrival order, and a claim whose top has changed is refused (`staleTop`) with no penalty.
 - **Rejected**: timestamps inside actions (a replay would depend on wall-clock data, and a client could forge them); a fixed-duration window counted in engine "ticks" (an action nobody plays just to move time).
+
+## ADR-0009 — One host for every table: `packages/room`'s `Table`, clock injected (2026-10-16)
+
+- **Context**: solo needs, in the browser, what a server will need later: bots playing at a human pace, the quick-discard window's minimum, scoring a round once its window has run, dealing the next one, the turn timer (ADR-0008 keeps all of it out of the engine).
+- **Decision**: a pure `Table` in `packages/room` owns the state, the bots and these rules, with an injected `Scheduler`. The browser wraps it in `LocalConnection` with the real clock; the LAN and online servers will wrap the same class with sockets, adding seats, tokens and expiry around it. A human's early draw is deferred to the window's end rather than refused.
+- **Rejected**: host logic in the React app (it would be rewritten for each server, against the rule that business logic lives in `packages/`); refusing an early draw (the player would have to guess when to tap again).
+
+## ADR-0010 — Publish `main` on GitHub Pages until the online server exists (2026-10-16)
+
+- **Context**: M3's acceptance is a full game on the owner's phone; solo needs no server.
+- **Decision**: `deploy.yml` builds `apps/web` on every push to `main` and publishes it on GitHub Pages (the repository is public, so Pages is free). The build uses relative paths, so it works under `/tamalou/`. Pages must be switched on once in the repository settings.
+- **Rejected**: Cloudflare now (its account and domain are M6 decisions, not worth taking for a static page); a preview per pull request (no host for it without extra services).

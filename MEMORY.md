@@ -40,9 +40,15 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Visual identity reused from Versus; card faces behind a theme — ADR-0007, `design.md`.
 - The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.
 - Views are checked against events: a face in a view must have been revealed to that player by an event they received — `architecture.md`.
+- The host (bot timing, the window's minimum, round flow, turn timer) is `packages/room`'s `Table` with an injected clock; the browser runs it for solo — ADR-0009, `architecture.md`.
+- The web UI offers only `legalActions(view)`; quick discard is an armed mode; log lines about "you" have `_you` keys — `web.md`.
+- Builds of `main` are published on GitHub Pages until the online server exists — ADR-0010.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
+
+- 2026-10-16 — GitHub Pages must be switched on once by the owner (Settings → Pages → Source: GitHub Actions) for `deploy.yml` to publish https://costardrouge.github.io/tamalou/.
+- 2026-10-16 — Owner to judge on his phone (M3's acceptance): the easy bot never wins against a thinking bot (`bots.md`), card sizes with five opponents, the quick-discard armed mode.
 
 - 2026-10-16 — **The repo is public**, the brief said private "pour l'instant". The first Registry block (with a `Last point:`) was refused by `registry.yml`'s `check` job, then trimmed to the public form; the refused text was harmless (stack and milestone summary) but stays readable through the API in the PR's edit history. Owner's call: make it private, or keep it public and keep blocks public-only.
 
@@ -59,3 +65,4 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 | `docs/memory/rules.md` | touching the `RuleSet`, a rule's default, presets, the engine's resolution order |
 | `docs/memory/design.md` | touching the UI's look, tokens, fonts, the card theme |
 | `docs/memory/bots.md` | touching a bot level, bot memory, the match driver, `pnpm bots` |
+| `docs/memory/web.md` | touching `apps/web`: screens, connection, interaction, dictionaries, build |

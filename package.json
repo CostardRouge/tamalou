@@ -13,13 +13,15 @@
   "scripts": {
     "lint": "biome check .",
     "format": "biome check --write .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/web",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "simulate": "node packages/engine/src/cli/simulate.ts",
-    "bots": "node packages/bots/src/cli/duel.ts"
+    "bots": "node packages/bots/src/cli/duel.ts",
+    "dev": "pnpm --filter @tamalou/web dev",
+    "build": "pnpm --filter @tamalou/web build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
