@@ -12,7 +12,7 @@ interface Props {
   conn: GameConnection;
   nameOf: (id: PlayerId) => string;
   onQuit: () => void;
-  onReplay: () => void;
+  onReplay?: (() => void) | undefined;
 }
 
 /** The panel's main button takes the focus when it appears, so a keyboard continues with Enter. */
@@ -103,9 +103,13 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
         <div className="buttons">
           {over ? (
             <>
-              <button type="button" className="btn btn-primary" onClick={onReplay}>
-                {t('actReplay')}
-              </button>
+              {onReplay ? (
+                <button type="button" className="btn btn-primary" onClick={onReplay}>
+                  {t('actReplay')}
+                </button>
+              ) : (
+                <p className="muted">{t('waitingGameMaster')}</p>
+              )}
               <button type="button" className="btn btn-secondary" onClick={onQuit}>
                 {t('actHome')}
               </button>

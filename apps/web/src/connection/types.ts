@@ -31,4 +31,8 @@ export interface GameConnection {
   claimers?(): PlayerId[];
   /** A player's own view, to work out their legal claims (never drawn on screen with its faces). */
   viewOf?(seat: PlayerId): PlayerView;
+
+  // Rooms only (online, LAN).
+  /** A human seat whose connection dropped (offline) or whose bot plays in their place (away). */
+  presence?(seat: PlayerId): 'offline' | 'away' | null;
 }

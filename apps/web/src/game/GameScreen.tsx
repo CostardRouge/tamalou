@@ -21,10 +21,13 @@ export function useConnection(conn: GameConnection): PlayerView {
 interface Props {
   conn: GameConnection;
   onQuit: () => void;
-  onReplay: () => void;
+  /** Absent when this player cannot start another game (online: only the game master can). */
+  onReplay?: () => void;
+  /** Online: shown above the table (a lost connection, a refused move). */
+  banner?: ReactNode;
 }
 
-export function GameScreen({ conn, onQuit, onReplay }: Props) {
+export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const view = useConnection(conn);
   const rules = conn.rules;
   const [pending, setPending] = useState<Pending>(NONE);
@@ -155,6 +158,7 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
           </button>
         </span>
       </header>
+      {banner}
       <p className="ticker" aria-hidden="true">
         {lines.at(-1) ?? '\u00a0'}
       </p>
@@ -172,6 +176,7 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
               </span>
               <span className="mono seat-total">{p.total}</span>
             </div>
+            <Presence state={conn.presence?.(p.id) ?? null} />
             {view.caller === p.id ? <span className="badge">Tamalou</span> : null}
             {seat(p, 'sm')}
           </div>
@@ -301,6 +306,12 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
       ) : null}
     </div>
   );
+}
+
+/** A seat whose player lost the connection, or whose bot plays in their place (online). */
+function Presence({ state }: { state: 'offline' | 'away' | null }) {
+  if (!state) return null;
+  return <span className="presence">{t(state === 'away' ? 'presence_away' : 'presence_offline')}</span>;
 }
 
 function promptFor(

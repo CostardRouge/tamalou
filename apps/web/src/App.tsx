@@ -1,12 +1,14 @@
-import { decodeRulesChoice, type RulesChoice, rulesOf } from '@tamalou/shared';
+import { decodeRulesChoice, normalizeRoomCode, type RulesChoice, rulesOf } from '@tamalou/shared';
 import { MotionConfig } from 'motion/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { LocalConnection } from './connection/local.ts';
+import { roomsAvailable } from './connection/remote.ts';
 import type { GameConnection } from './connection/types.ts';
 import { GameScreen } from './game/GameScreen.tsx';
 import { type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
 import { MODE_DEFAULTS } from './home/modes.ts';
 import { t } from './i18n/index.ts';
+import { OnlineScreen } from './online/OnlineScreen.tsx';
 
 export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
@@ -31,9 +33,39 @@ function rulesFromLink(): RulesChoice | null {
   return decodeRulesChoice(m[1]);
 }
 
+/** The room an address names (`#room=ABCDE`): kept in the address while in the room, so a reload comes back. */
+function roomFromLink(): string | null {
+  const m = /^#room=([\w-]+)$/.exec(globalThis.location?.hash ?? '');
+  return m?.[1] ? normalizeRoomCode(m[1]) : null;
+}
+
+function setRoomLink(code: string | null) {
+  history.replaceState(null, '', location.pathname + location.search + (code ? `#room=${code}` : ''));
+}
+
 export function App() {
   const [game, setGame] = useState<Game | null>(null);
   const [linked] = useState(rulesFromLink);
+  const [room, setRoom] = useState<{ code: string; name?: string } | null>(() => {
+    const code = roomFromLink();
+    return code ? { code } : null;
+  });
+  const [online, setOnline] = useState(false);
+  useEffect(() => {
+    let live = true;
+    roomsAvailable().then((ok) => live && setOnline(ok));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const enterRoom = useCallback((code: string, name?: string) => {
+    setRoomLink(code);
+    setRoom(name ? { code, name } : { code });
+  }, []);
+  const exitRoom = useCallback(() => {
+    setRoomLink(null);
+    setRoom(null);
+  }, []);
 
   // The previous table is stopped when it is replaced, not in an effect: StrictMode runs effects twice in development,
   // and a cleanup there would stop the game that is still on screen.
@@ -51,10 +83,12 @@ export function App() {
   return (
     // Animations follow the system's "reduce motion" setting.
     <MotionConfig reducedMotion="user">
-      {game ? (
+      {room ? (
+        <OnlineScreen key={room.code} code={room.code} {...(room.name ? { name: room.name } : {})} onExit={exitRoom} />
+      ) : game ? (
         <GameScreen key={game.id} conn={game.conn} onQuit={() => replace(null)} onReplay={() => play(game.choice)} />
       ) : (
-        <HomeScreen onPlay={play} linked={linked} />
+        <HomeScreen onPlay={play} linked={linked} online={online} onRoom={enterRoom} />
       )}
     </MotionConfig>
   );

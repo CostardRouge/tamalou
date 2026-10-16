@@ -6,5 +6,6 @@ export default defineConfig({
   base: './',
   plugins: [react()],
   build: { target: 'es2022' },
-  server: { host: true },
+  // `pnpm dev` talks to a room server on :8080 (`pnpm serve:lan` or `node apps/server/src/main.ts`) for online play.
+  server: { host: true, proxy: { '/api': { target: 'http://localhost:8080', ws: true } } },
 });

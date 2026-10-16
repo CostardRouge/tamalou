@@ -162,6 +162,7 @@ button {
 }
 
 .field > span,
+.field > label,
 .field > legend {
   padding: 0;
   font-weight: 600;
@@ -1042,4 +1043,184 @@ button {
   font-size: 48px;
   box-shadow: var(--shadow);
   transform: rotate(-6deg);
+}
+
+/* ------------------------------------------------------------ online */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.segmented.three label {
+  padding: 6px 4px;
+  text-align: center;
+  line-height: 1.2;
+  font-size: 0.9rem;
+}
+
+.or {
+  margin: -6px 0;
+  text-align: center;
+}
+
+.join-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.field .code-input {
+  min-width: 0;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+}
+
+.center-screen {
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.lobby {
+  display: grid;
+  gap: 18px;
+}
+
+.lobby-bar {
+  margin: -16px 0 -8px -10px;
+}
+
+.room-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.room-code {
+  margin: 0;
+  font-size: clamp(2.4rem, 13vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--a);
+}
+
+.qr {
+  width: min(52vw, 200px);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.field-title {
+  font-size: 1.05rem;
+}
+
+.lobby-seats {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lobby-seats li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-height: 52px;
+  padding: 4px 4px 4px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.lobby-seats li.offline .seat-name {
+  color: var(--muted);
+}
+
+.seat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.seat-tags .tag,
+.seat-tags .badge {
+  margin-left: 0;
+}
+
+.ready {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ready.on {
+  color: var(--good-ink);
+}
+
+.lobby-seats .ghost {
+  min-width: 44px;
+  font-size: 1.4rem;
+}
+
+.add-bot {
+  display: grid;
+  gap: 8px;
+}
+
+.lobby-go {
+  display: grid;
+  gap: 10px;
+}
+
+.lobby-go p {
+  margin: 0;
+  text-align: center;
+}
+
+/* A notice floating over the screen: it must not push the table's rows (.game is a fixed grid). */
+.banner {
+  position: fixed;
+  z-index: 20;
+  top: max(52px, calc(env(safe-area-inset-top) + 44px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.presence {
+  font-size: 0.72rem;
+  color: var(--muted);
 }
