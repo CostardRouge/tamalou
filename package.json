@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
-    "simulate": "node packages/engine/src/cli/simulate.ts"
+    "simulate": "node packages/engine/src/cli/simulate.ts",
+    "bots": "node packages/bots/src/cli/duel.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

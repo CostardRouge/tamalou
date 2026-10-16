@@ -40,6 +40,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Visual identity reused from Versus; card faces behind a theme — ADR-0007, `design.md`.
 - The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.
 - Views are checked against events: a face in a view must have been revealed to that player by an event they received — `architecture.md`.
+- Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
 
@@ -57,3 +58,4 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 | `docs/memory/architecture.md` | touching the package layout, the engine/room/transport split, the servers |
 | `docs/memory/rules.md` | touching the `RuleSet`, a rule's default, presets, the engine's resolution order |
 | `docs/memory/design.md` | touching the UI's look, tokens, fonts, the card theme |
+| `docs/memory/bots.md` | touching a bot level, bot memory, the match driver, `pnpm bots` |
