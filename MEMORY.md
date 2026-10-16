@@ -43,6 +43,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 ## Open items
 
+- 2026-10-16 — **The repo is public**, the brief said private "pour l'instant". The first Registry block (with a `Last point:`) was refused by `registry.yml`'s `check` job, then trimmed to the public form; the refused text was harmless (stack and milestone summary) but stays readable through the API in the PR's edit history. Owner's call: make it private, or keep it public and keep blocks public-only.
+
 - 2026-10-16 — Confirm with the owner: penalty cards the empty pile cannot give are skipped (`rules.md`, provisional default).
 
 - 2026-10-16 — `bin/registry-setup.sh tamalou` must be run by the owner (from his machine) so `registry.yml`'s `send` job can report; until then it says so and stays green.
