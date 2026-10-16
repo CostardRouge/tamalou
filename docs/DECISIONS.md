@@ -68,3 +68,9 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 - **Context**: M3's acceptance is a full game on the owner's phone; solo needs no server.
 - **Decision**: `deploy.yml` builds `apps/web` on every push to `main` and publishes it on GitHub Pages (the repository is public, so Pages is free). The build uses relative paths, so it works under `/tamalou/`. Pages must be switched on once in the repository settings.
 - **Rejected**: Cloudflare now (its account and domain are M6 decisions, not worth taking for a static page); a preview per pull request (no host for it without extra services).
+
+## ADR-0011 — Rules travel as a preset plus a diff: link fragment and JSON file (2026-10-16)
+
+- **Context**: the brief asks for rules exported and imported as JSON and shared by link, and the online lobby (M6) will hand a table's rules to every player.
+- **Decision**: a table's rules are a `RulesChoice` — a preset id and only the fields that differ from it. A link carries it in the fragment, `#rules=<base64url of {"p": preset, "o": overrides}>`: short, never sent to a server, read once and removed from the address. The JSON file is the full rules plus `"format": "tamalou-rules"`, so a person reading it sees every value; importing accepts any partial object. Everything coming in goes through the schema; a link that does not validate is ignored.
+- **Rejected**: the full rules in the link (several times longer, and it would freeze presets' values into links); a query string (sent to the server, logged); a compression library for the link (the diff of a typical table is a few dozen bytes).
