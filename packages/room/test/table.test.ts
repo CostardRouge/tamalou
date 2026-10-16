@@ -87,6 +87,15 @@ describe('table host', () => {
     expect(t.drawPending()).toBe(false);
   });
 
+  it('waits for no window when quick discard is off', () => {
+    const { t, clock } = table(seats('human', 'medium'), { quickDiscard: { enabled: false } });
+    clock.advance(5000);
+    t.submit({ type: 'ready', by: 'h0' });
+    expect(t.windowRemaining()).toBe(0);
+    expect(t.submit({ type: 'draw', by: 'h0', from: 'deck' })).toEqual({ ok: true });
+    expect(t.view('h0').step).toBe('place');
+  });
+
   it('scores the round once its window has run, then deals when the human asks', () => {
     const { t, clock } = table(seats('human', 'easy'), { quickDiscard: { minWindowMs: 1000 } });
     t.submit({ type: 'ready', by: 'h0' });

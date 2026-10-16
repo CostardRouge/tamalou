@@ -17,7 +17,7 @@ Each is a `RuleSet` field; the value below is the default (ADR-0006). The owner 
 
 ## Quick discard window (2026-10-16)
 
-Owner's pick (ADR-0005): the window opens when a card lands face up on the discard and closes when the **next player draws**, with a minimum of 2 s (`quickDiscard.minWindowMs`) so a fast bot or player cannot shut it instantly. In pass-and-play it is **off by default** (one screen cannot show a hidden race fairly) and can be turned on. Concurrent claims: the authority accepts the first one it processes; the others see a changed top card and are cancelled without penalty (brief §2).
+Owner's pick (ADR-0005): the window opens when a card lands face up on the discard and closes when the **next player draws**, with a minimum of 2 s (`quickDiscard.minWindowMs`) so a fast bot or player cannot shut it instantly. In pass-and-play it is **off by default** (one screen cannot show a hidden race fairly) and can be turned on. With quick discard off, the host waits for no window at all (`Table.windowRemaining()` is 0): the first pass-and-play run showed "Un instant…" before every draw and every round end for a rule nobody could use (fixed 2026-10-16). Concurrent claims: the authority accepts the first one it processes; the others see a changed top card and are cancelled without penalty (brief §2).
 
 ## RuleSet shape (2026-10-16)
 

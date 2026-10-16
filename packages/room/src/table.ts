@@ -61,6 +61,8 @@ export class Table {
   /** Bots standing by to play a timed-out human's turn; they watch the game like the others. */
   private readonly standIns = new Map<PlayerId, Bot>();
   private readonly logs = new Map<PlayerId, GameEvent[]>();
+  /** The events everyone received: what a shared screen may show. */
+  private readonly publicLog: GameEvent[] = [];
   private readonly plans = new Map<PlayerId, Plan>();
   private readonly listeners = new Set<() => void>();
   private readonly continued = new Set<PlayerId>();
@@ -99,6 +101,28 @@ export class Table {
     return this.logs.get(seat) ?? [];
   }
 
+  /** Public events only, oldest first: the log of a screen several players look at (pass-and-play). */
+  publicEvents(): readonly GameEvent[] {
+    return this.publicLog;
+  }
+
+  humans(): PlayerId[] {
+    return this.seats.filter((s) => s.kind === 'human').map((s) => s.id);
+  }
+
+  /**
+   * The human the game waits for right now, if any: the first one still memorising their initial peek, or the current
+   * player when it is a human's turn. Null while bots play, between rounds, or when only quick discards remain.
+   */
+  humanToAct(): PlayerId | null {
+    const s = this.state;
+    if (s.phase === 'initialPeek') {
+      return this.humans().find((h) => !s.peek[h]?.ready && !s.players.find((p) => p.id === h)?.eliminated) ?? null;
+    }
+    if (s.phase === 'play' && s.current && this.isHuman(s.current)) return s.current;
+    return null;
+  }
+
   isHuman(seat: PlayerId): boolean {
     return this.seats.some((s) => s.id === seat && s.kind === 'human');
   }
@@ -110,7 +134,8 @@ export class Table {
 
   /** Milliseconds left before a draw is allowed, 0 when the quick-discard window has run its minimum. */
   windowRemaining(): number {
-    if (this.windowSince === null) return 0;
+    // No quick discard, nothing to wait for: draws and the end of a round go through at once.
+    if (this.windowSince === null || !this.rules.quickDiscard.enabled) return 0;
     return Math.max(0, this.windowSince + this.rules.quickDiscard.minWindowMs - this.scheduler.now());
   }
 
@@ -185,6 +210,7 @@ export class Table {
   }
 
   private deliver(events: GameEvent[]): void {
+    this.publicLog.push(...events.filter((e) => !('to' in e)));
     for (const seat of this.seats) {
       const mine = events.filter((e) => isVisibleTo(e, seat.id));
       this.logs.get(seat.id)?.push(...mine);
