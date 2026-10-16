@@ -31,3 +31,7 @@ Each package's `package.json` `exports` points at `src/index.ts`; Vite, Vitest, 
 ## The table host (2026-10-16)
 
 `packages/room` holds `Table` (ADR-0009): the engine state, the bots and every clocked rule, with an injected `Scheduler` (tests drive a `FakeClock` in `packages/room/test/table.test.ts`). Bots plan a move with their level's delay and keep it while it stays legal (re-deciding on every event would reset the delay forever); a human draw that comes before `quickDiscard.minWindowMs` is accepted and played when the window has run (`submit` returns `deferred`); `endRound` waits for the window, `nextRound` for every human's `continue`; a timed-out human (`pace.turnTimerSeconds`) gets their turn played by a medium stand-in bot that watched the whole game. M6/M7 add seats, tokens, kick and expiry around it, not inside the adapters.
+
+## pnpm 12 (2026-10-16)
+
+The owner moved `packageManager` to pnpm 12.14.0 (his corepack fetched the latest and broke on 10.28.0) and pushed an npm `package-lock.json` by accident; the npm file is removed and gitignored (pnpm only). Two pnpm 12 traps: a lockfile written by pnpm 10 fails `--frozen-lockfile` ("Cannot update packageManagerDependencies"), fixed by one `pnpm install` that records pnpm itself in the lockfile; and pnpm 12 refuses any package published less than a day ago (`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`). **How to apply**: when it trips on a fresh transitive release, `pnpm update -r --depth Infinity <package>` re-resolves that one package to an older version; never relax the policy without asking.
