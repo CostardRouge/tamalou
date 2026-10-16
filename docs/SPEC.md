@@ -151,7 +151,7 @@ Principes non négociables :
    - `packages/shared` : types et schémas ;
    - `packages/engine` : le moteur ;
    - `packages/bots` : les bots et la CLI de simulation ;
-   - `packages/room` : la logique de salle, pure (sièges, tokens, lobby, timers, relais par un bot, expiration) **[ADR-0004]** ;
+   - `packages/room` : la logique de salle, pure (sièges, tokens, lobby, timers, relais par un bot, expiration) **[ADR-0004]**. Son `Table` est l'hôte de toute partie, dans le navigateur comme sur un serveur **[ADR-0009]** ;
    - `apps/web` : l'interface ;
    - `apps/server` : le serveur Node du mode LAN, qui sert aussi l'app web ;
    - `apps/worker` : le Worker Cloudflare et ses Durable Objects pour le mode en ligne **[ADR-0004]**.
@@ -239,7 +239,7 @@ Stack retenue :
 | **M0** | Repo, monorepo, CI, `CLAUDE.md`, `docs/SPEC.md`, mise aux normes de la spec commune, fiche du registre | La CI est verte |
 | **M1** | Moteur pur avec le `RuleSet` complet et les tests | Tous les tests passent, une simulation CLI de parties aléatoires tourne |
 | **M2** | Bots (3 niveaux) | Les simulations bot contre bot montrent que « difficile » bat nettement « facile » |
-| **M3** | UI web solo contre bots, jeu d'icônes complet (C11) | Une partie complète sur téléphone |
+| **M3** | UI web solo contre bots, jeu d'icônes complet (C11), publication sur GitHub Pages **[ADR-0010]** | Une partie complète sur téléphone |
 | **M4** | Écran de configuration du maître de jeu et presets | N'importe quelle règle se modifie et s'applique |
 | **M5** | Mode pass-and-play | Une partie à 2 ou 3 sur un seul appareil |
 | **M6** | `packages/room`, Worker + Durable Objects, multi en ligne (salles, lobby, reconnexion, expiration) | Une partie à 3 sur 3 téléphones via un lien |

@@ -40,6 +40,9 @@ jobs:
       - name: Unit tests with coverage
         run: pnpm coverage
 
+      - name: Build the web app
+        run: pnpm build
+
       # Random legal games end to end: fails on a crash, a refused legal move, a stall or a deadlock.
       - name: Simulation
         run: pnpm simulate --games 300
