@@ -44,12 +44,14 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - The web UI offers only `legalActions(view)`; quick discard is an armed mode; log lines about "you" have `_you` keys — `web.md`.
 - Builds of `main` are published on GitHub Pages until the online server exists — ADR-0010.
 - The game master edits every RuleSet leaf on one screen (a test fails if a leaf has none); rules travel as a preset + diff, by `#rules=` link or a JSON file — ADR-0011, `rules.md`, `web.md`.
+- Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
 
 - 2026-10-16 — GitHub Pages must be switched on once by the owner (Settings → Pages → Source: GitHub Actions) for `deploy.yml` to publish https://costardrouge.github.io/tamalou/.
 - 2026-10-16 — Owner to judge M4 on his phone: change a rule, play, see it applied; share a rules link.
+- 2026-10-16 — Owner to judge M5 at the table with 2 or 3 people: the cover between players, the table view while bots play.
 - 2026-10-16 — Owner to judge on his phone (M3's acceptance): the easy bot never wins against a thinking bot (`bots.md`), card sizes with five opponents, the quick-discard armed mode.
 
 - 2026-10-16 — **The repo is public**, the brief said private "pour l'instant". The first Registry block (with a `Last point:`) was refused by `registry.yml`'s `check` job, then trimmed to the public form; the refused text was harmless (stack and milestone summary) but stays readable through the API in the PR's edit history. Owner's call: make it private, or keep it public and keep blocks public-only.

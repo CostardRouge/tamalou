@@ -21,6 +21,25 @@ export const fr = {
   fewer: 'Un adversaire de moins',
   more: 'Un adversaire de plus',
 
+  // Modes and pass-and-play
+  homeMode: 'Mode de jeu',
+  homeModeSolo: 'Seul contre des bots',
+  homeModePass: 'À plusieurs, un téléphone',
+  passHint:
+    'Le téléphone passe de main en main. La défausse rapide est coupée par défaut : elle se rallume dans les règles.',
+  homePlayers: 'Joueurs',
+  playerN: 'Joueur {n}',
+  addPlayer: 'Ajouter un joueur',
+  removePlayer: 'Retirer {name}',
+  homeBotsExtra: 'Bots en plus',
+  handoffTitle: 'Passe le téléphone à {name}',
+  handoffHint: 'Les autres ne regardent pas l’écran. Touche quand {name} tient le téléphone.',
+  handoffReveal: 'C’est moi, {name}',
+  quickWho: 'Qui défausse ?',
+  promptQuickWho: 'Défausse rapide : qui réclame ?',
+  promptQuickAs: 'Défausse rapide de {name} : touche sa carte de même valeur.',
+  table: 'Table',
+
   // Table
   you: 'Toi',
   points_one: '{n} point',

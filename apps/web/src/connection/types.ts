@@ -21,4 +21,14 @@ export interface GameConnection {
   /** Called after every change; returns the unsubscribe function. */
   subscribe(listener: () => void): () => void;
   dispose(): void;
+
+  // Pass-and-play only (one device, several players): absent on a single player's connection.
+  /** The player the device must be handed to before anything private is shown, if any. */
+  handoff?(): { id: PlayerId; name: string } | null;
+  /** That player has the device: show their view. */
+  reveal?(): void;
+  /** Players who may claim a quick discard from this shared screen. */
+  claimers?(): PlayerId[];
+  /** A player's own view, to work out their legal claims (never drawn on screen with its faces). */
+  viewOf?(seat: PlayerId): PlayerView;
 }

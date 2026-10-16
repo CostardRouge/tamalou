@@ -1,25 +1,26 @@
-import { decodeRulesChoice, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
+import { decodeRulesChoice, type RulesChoice, rulesOf } from '@tamalou/shared';
 import { MotionConfig } from 'motion/react';
 import { useCallback, useState } from 'react';
 import { LocalConnection } from './connection/local.ts';
 import type { GameConnection } from './connection/types.ts';
 import { GameScreen } from './game/GameScreen.tsx';
-import { HomeScreen, type SoloChoice } from './home/HomeScreen.tsx';
+import { type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
+import { MODE_DEFAULTS } from './home/modes.ts';
 import { t } from './i18n/index.ts';
 
-export function newSoloGame(c: SoloChoice): GameConnection {
+export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
   return new LocalConnection({
-    name: c.name.trim() || t('homeNameDefault'),
+    humans: c.mode === 'solo' ? [c.name.trim() || t('homeNameDefault')] : c.players.map(playerName),
     bots: Array.from({ length: c.bots }, (_, i) => ({ name: names[i] ?? t('botName', { n: i + 1 }), level: c.level })),
-    rules: rulesFromPreset(c.preset, c.overrides),
+    rules: rulesOf({ preset: c.preset, overrides: c.overrides }, MODE_DEFAULTS[c.mode]),
   });
 }
 
 interface Game {
   id: number;
   conn: GameConnection;
-  choice: SoloChoice;
+  choice: GameChoice;
 }
 
 /** Rules carried by a shared link (`#rules=…`), read once; the fragment is then dropped from the address. */
@@ -43,7 +44,7 @@ export function App() {
     });
   }, []);
   const play = useCallback(
-    (choice: SoloChoice) => replace({ id: Date.now(), conn: newSoloGame(choice), choice }),
+    (choice: GameChoice) => replace({ id: Date.now(), conn: newGame(choice), choice }),
     [replace],
   );
 

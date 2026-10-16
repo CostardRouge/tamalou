@@ -955,3 +955,91 @@ button {
 .summary li.changed {
   font-weight: 600;
 }
+
+/* ------------------------------------------------------------ pass-and-play */
+
+.segmented.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.segmented.two label {
+  padding: 6px 8px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.players {
+  display: grid;
+  gap: 8px;
+}
+
+.player-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.player-row input {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--field);
+  background: var(--bg);
+}
+
+.player-row .ghost {
+  min-width: 44px;
+  font-size: 1.4rem;
+}
+
+.mine-empty {
+  min-height: 0;
+  padding: 0;
+  background: none;
+}
+
+.handoff {
+  min-height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 20px;
+  text-align: center;
+  background: var(--bg);
+}
+
+.handoff h1 {
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
+}
+
+.handoff p {
+  margin: 0;
+  max-width: 32ch;
+}
+
+.handoff-quit {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: 8px;
+}
+
+.handoff-card {
+  --w: 120px;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 6px solid var(--card-face);
+  background: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.1) 0 4px, transparent 4px 9px), var(--card-back);
+  color: var(--card-back-ink);
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 48px;
+  box-shadow: var(--shadow);
+  transform: rotate(-6deg);
+}

@@ -38,6 +38,20 @@ describe('rules diff', () => {
   });
 });
 
+describe('mode defaults', () => {
+  it('sit between the preset and the changes', () => {
+    const base = { quickDiscard: { enabled: false } };
+    expect(rulesOf({ preset: 'classic', overrides: {} }, base).quickDiscard.enabled).toBe(false);
+    const on = rulesOf({ preset: 'classic', overrides: { quickDiscard: { enabled: true } } }, base);
+    expect(on.quickDiscard.enabled).toBe(true);
+    expect(choiceFromRules('classic', on, base)).toEqual({
+      preset: 'classic',
+      overrides: { quickDiscard: { enabled: true } },
+    });
+    expect(choiceFromRules('classic', rulesOf({ preset: 'classic', overrides: {} }, base), base).overrides).toEqual({});
+  });
+});
+
 describe('JSON export and import', () => {
   it('round-trips the full rules', () => {
     // The tamalou section is the one an export tag named "tamalou" once overwrote.

@@ -179,7 +179,8 @@ Stack retenue :
 ### 5.2 Écran partagé / pass-and-play
 - Les joueurs sont sur un seul appareil (téléphone ou tablette).
 - Un **écran de transition** s'affiche entre chaque tour : « Passe le téléphone à Vanessa », avec un tap pour révéler la vue du joueur. Rien de privé n'est visible pendant le passage de main.
-- **[ADR-0005]** La défausse rapide y est désactivée par défaut ; le maître de jeu peut l'activer.
+- **[ADR-0005]** La défausse rapide y est désactivée par défaut ; le maître de jeu peut l'activer. **[ADR-0012]** Activée, on choisit qui réclame, puis sa carte, qui reste face cachée.
+- **[ADR-0012]** Pendant le tour d'un bot ou entre deux manches, l'écran montre la table sans aucune carte privée.
 - Les bots sont possibles dans ce mode aussi.
 
 ### 5.3 Multi en ligne : sessions temporaires

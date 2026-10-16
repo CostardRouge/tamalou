@@ -33,13 +33,17 @@ export interface RulesChoice {
   overrides: RuleSetInput;
 }
 
-export function rulesOf(choice: RulesChoice): RuleSet {
-  return rulesFromPreset(choice.preset, choice.overrides);
+/**
+ * The rules of a choice. `base` is a layer between the preset and the changes: a mode's own defaults (pass-and-play
+ * switches the quick discard off), so the game master's changes are measured against what the mode starts from.
+ */
+export function rulesOf(choice: RulesChoice, base: RuleSetInput = {}): RuleSet {
+  return rulesFromPreset(choice.preset, mergeRuleInputs(base, choice.overrides));
 }
 
-/** Rebuilds a choice from full rules: the overrides become the smallest diff from the preset. */
-export function choiceFromRules(preset: string, rules: RuleSet): RulesChoice {
-  return { preset, overrides: diffRuleInputs(rules, rulesFromPreset(preset)) };
+/** Rebuilds a choice from full rules: the overrides become the smallest diff from the preset (and the base). */
+export function choiceFromRules(preset: string, rules: RuleSet, base: RuleSetInput = {}): RulesChoice {
+  return { preset, overrides: diffRuleInputs(rules, rulesFromPreset(preset, base)) };
 }
 
 // ---------------------------------------------------------------- JSON file

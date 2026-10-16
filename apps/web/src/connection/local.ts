@@ -1,9 +1,11 @@
 import type { BotLevel } from '@tamalou/bots';
-import { type Scheduler, Table } from '@tamalou/room';
+import { Handoff, type Scheduler, Table } from '@tamalou/room';
 import type { Action, PlayerId, RuleSet } from '@tamalou/shared';
 import type { GameConnection, SendResult } from './types.ts';
 
-// The game in this browser: a room Table with the real clock. Solo now, pass-and-play in M5.
+// The game in this browser: a room Table with the real clock. One human is solo; several humans share the device
+// (pass-and-play, docs/SPEC.md §5.2): the screen then shows a player's view only once the device has been handed to
+// them (Handoff), the public table in between, and only the public log.
 
 const realClock: Scheduler = {
   now: () => performance.now(),
@@ -11,44 +13,62 @@ const realClock: Scheduler = {
   clearTimeout: (h) => globalThis.clearTimeout(h as ReturnType<typeof setTimeout>),
 };
 
-export interface SoloSetup {
-  name: string;
+export interface LocalSetup {
+  humans: string[];
   bots: { name: string; level: BotLevel }[];
   rules: RuleSet;
   seed?: number;
 }
 
+/** The solo player's seat id (kept stable for tests and the log's "Tu"). */
 export const HUMAN_ID = 'you';
 
 export class LocalConnection implements GameConnection {
-  readonly me: PlayerId = HUMAN_ID;
   readonly rules: RuleSet;
   private readonly table: Table;
+  private readonly humanIds: PlayerId[];
+  private readonly names = new Map<PlayerId, string>();
+  /** Pass-and-play only. */
+  private readonly passing: Handoff | null;
+  /** The screen's listeners: told about the table's changes and about the device changing hands. */
+  private readonly listeners = new Set<() => void>();
 
-  constructor(setup: SoloSetup, scheduler: Scheduler = realClock) {
+  constructor(setup: LocalSetup, scheduler: Scheduler = realClock) {
     this.rules = setup.rules;
+    const solo = setup.humans.length === 1;
+    this.humanIds = setup.humans.map((_, i) => (solo ? HUMAN_ID : `p${i + 1}`));
+    this.passing = solo ? null : new Handoff();
+    const seats = [
+      ...setup.humans.map((name, i) => ({ id: this.humanIds[i] as string, name, kind: 'human' as const })),
+      ...setup.bots.map((b, i) => ({ id: `bot${i + 1}`, name: b.name, kind: 'bot' as const, level: b.level })),
+    ];
+    for (const s of seats) this.names.set(s.id, s.name);
     this.table = new Table({
       seed: setup.seed ?? Math.floor(Math.random() * 2 ** 32),
       rules: setup.rules,
       scheduler,
-      seats: [
-        { id: HUMAN_ID, name: setup.name, kind: 'human' },
-        ...setup.bots.map((b, i) => ({ id: `bot${i + 1}`, name: b.name, kind: 'bot' as const, level: b.level })),
-      ],
+      seats,
     });
+  }
+
+  get me(): PlayerId {
+    if (!this.passing) return this.humanIds[0] as PlayerId;
+    this.passing.update(this.table.humanToAct());
+    return this.passing.viewer;
   }
 
   view() {
     return this.table.view(this.me);
   }
   events() {
-    return this.table.events(this.me);
+    // A shared screen shows what everyone may see; a single player's screen shows their own log.
+    return this.passing ? this.table.publicEvents() : this.table.events(this.me);
   }
   send(action: Action): SendResult {
     return this.table.submit(action);
   }
   continueRound() {
-    this.table.continue(this.me);
+    for (const h of this.humanIds) this.table.continue(h);
   }
   readyForNext() {
     return this.table.readyForNext();
@@ -57,9 +77,38 @@ export class LocalConnection implements GameConnection {
     return this.table.drawPending();
   }
   subscribe(listener: () => void) {
-    return this.table.subscribe(listener);
+    this.listeners.add(listener);
+    const off = this.table.subscribe(listener);
+    return () => {
+      this.listeners.delete(listener);
+      off();
+    };
   }
   dispose() {
     this.table.dispose();
+  }
+
+  get handoff() {
+    if (!this.passing) return undefined;
+    return () => {
+      this.passing?.update(this.table.humanToAct());
+      const id = this.passing?.pending ?? null;
+      return id === null ? null : { id, name: this.names.get(id) ?? id };
+    };
+  }
+  get reveal() {
+    if (!this.passing) return undefined;
+    return () => {
+      this.passing?.reveal();
+      for (const l of this.listeners) l();
+    };
+  }
+  get claimers() {
+    if (!this.passing) return undefined;
+    return () => [...this.humanIds];
+  }
+  get viewOf() {
+    if (!this.passing) return undefined;
+    return (seat: PlayerId) => this.table.view(seat);
   }
 }

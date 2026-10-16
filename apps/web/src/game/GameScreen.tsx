@@ -30,12 +30,30 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  /** Pass-and-play quick discard: choosing who claims, then that player's card. */
+  const [claim, setClaim] = useState<'who' | PlayerId | null>(null);
   const ui = interaction(view, rules, pending);
+  const handoff = conn.handoff?.() ?? null;
 
-  // A selection that no longer applies (the turn moved on, the top card changed) is dropped.
-  const stepKey = `${view.phase}:${view.step}:${view.current}:${view.discardTop?.id}`;
+  // A selection that no longer applies (the turn moved on, the top card changed, the device changed hands) is dropped.
+  const stepKey = `${view.me}:${view.phase}:${view.step}:${view.current}:${view.discardTop?.id}`;
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset on step change only
-  useEffect(() => setPending(NONE), [stepKey]);
+  useEffect(() => {
+    setPending(NONE);
+    setClaim(null);
+  }, [stepKey]);
+
+  // On a shared screen, a quick discard is claimed for a named player, from that player's own legal moves; their
+  // cards stay face down on screen (their view is only used to know what they may claim).
+  const claimers = conn.claimers?.() ?? null;
+  const claimUi =
+    claim && claim !== 'who' && conn.viewOf ? interaction(conn.viewOf(claim), rules, { kind: 'quick' }) : null;
+  const canClaim = (seat: PlayerId) =>
+    !!conn.viewOf &&
+    interaction(conn.viewOf(seat), rules, NONE).legal.some(
+      (a) => a.type === 'quickDiscard' && a.target.player === seat,
+    );
+  const whoCanClaim = claimers && view.quickDiscardOpen ? claimers.filter(canClaim) : [];
 
   const names = useMemo(() => new Map(view.players.map((p) => [p.id, p.name])), [view.players]);
   const nameOf = (id: PlayerId) => names.get(id) ?? id;
@@ -43,6 +61,12 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
   const opponents = view.players.filter((p) => p.id !== view.me);
 
   const touch = (ref: SlotRef) => {
+    if (claim && claim !== 'who' && claimUi) {
+      const c = claimUi.slot(ref);
+      if (c?.send) conn.send(c.send);
+      setClaim(null);
+      return;
+    }
     const a = ui.slot(ref);
     if (!a) return;
     if (a.next) setPending(a.next);
@@ -72,7 +96,8 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
       >
         {p.slots.map((s) => {
           const ref = { player: p.id, slot: s.slot };
-          const action = ui.slot(ref);
+          const claimAction = claimUi && p.id === claim ? claimUi.slot(ref) : null;
+          const action = claim ? (claimAction?.send ? claimAction : null) : ui.slot(ref);
           const label = !s.filled
             ? t('slotEmpty')
             : `${mine ? t('slotMine', { n: s.slot + 1 }) : t('slotOf', { n: s.slot + 1, name: p.name })}, ${
@@ -97,7 +122,22 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
   };
 
   const myTurn = view.current === view.me;
-  const prompt = promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
+  const prompt =
+    claim === 'who'
+      ? t('promptQuickWho')
+      : claim
+        ? t('promptQuickAs', { name: nameOf(claim) })
+        : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
+
+  if (handoff) {
+    return (
+      <HandoffCover
+        name={handoff.name}
+        onReveal={() => conn.reveal?.()}
+        onQuit={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}
+      />
+    );
+  }
 
   return (
     <div className="game">
@@ -197,20 +237,47 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
         </AnimatePresence>
       </section>
 
-      <section className={`mine${myTurn ? ' seat-turn' : ''}`} aria-label={t('you')}>
-        <div className="seat-head">
-          <span className="seat-name">{me?.name}</span>
-          {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
-          <span className="mono seat-total">{plural('points', me?.total ?? 0)}</span>
-        </div>
-        {me ? seat(me, 'lg') : null}
-      </section>
+      {me ? (
+        <section className={`mine${myTurn ? ' seat-turn' : ''}`} aria-label={t('you')}>
+          <div className="seat-head">
+            <span className="seat-name">{me.name}</span>
+            {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
+            <span className="mono seat-total">{plural('points', me.total)}</span>
+          </div>
+          {seat(me, 'lg')}
+        </section>
+      ) : (
+        // A shared screen between two players: the whole table, every hand face down, in the opponents' row above.
+        <section className="mine mine-empty" aria-label={t('table')} />
+      )}
 
       <footer className="controls">
         <p className="prompt" aria-live="polite">
           {prompt}
         </p>
-        <div className="buttons">{buttons(ui, pending, view, rules.hand.initialPeek.count, send, setPending)}</div>
+        <div className="buttons">
+          {claim === 'who' ? (
+            whoCanClaim.map((id) => (
+              <button key={id} type="button" className="btn btn-secondary" onClick={() => setClaim(id)}>
+                {nameOf(id)}
+              </button>
+            ))
+          ) : claim ? null : (
+            <>
+              {buttons(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers)}
+              {pending.kind === 'none' && whoCanClaim.length > 0 ? (
+                <button type="button" className="btn btn-secondary" onClick={() => setClaim('who')}>
+                  ⚡ {t('actQuick')}
+                </button>
+              ) : null}
+            </>
+          )}
+          {claim ? (
+            <button type="button" className="btn btn-secondary" onClick={() => setClaim(null)}>
+              {t('actCancel')}
+            </button>
+          ) : null}
+        </div>
       </footer>
 
       {showLog ? (
@@ -246,8 +313,9 @@ function promptFor(
   if (pending.kind === 'quick') return t('promptQuick');
   if (pending.kind === 'quickGive') return t('promptQuickGive');
   if (pending.kind === 'blindOwn') return t('promptBlindSwapOther');
+  const seated = view.players.some((p) => p.id === view.me);
   if (view.phase === 'initialPeek') {
-    if (view.ready.includes(view.me)) return t('promptWaitOthers');
+    if (!seated || view.ready.includes(view.me)) return t('promptWaitOthers');
     if (view.myPeekSlots === null) return plural('promptChoosePeek', peekCount);
     return plural('promptPeekInitial', view.myPeekSlots.length);
   }
@@ -286,6 +354,8 @@ function buttons(
   peekCount: number,
   send: (a: Parameters<GameConnection['send']>[0] | undefined) => void,
   setPending: (p: Pending) => void,
+  /** A shared screen offers the quick discard per player instead (pass-and-play). */
+  shared = false,
 ) {
   const out: ReactNode[] = [];
   const btn = (key: string, label: string, onClick: () => void, kind: 'primary' | 'secondary' | 'call' = 'secondary') =>
@@ -325,6 +395,28 @@ function buttons(
   if (pass) btn('pass', t('actPass'), () => send(pass));
   const call = ui.find('callTamalou');
   if (call) btn('call', t('actCall'), () => send(call), 'call');
-  if (ui.canQuick) btn('quick', `⚡ ${t('actQuick')}`, () => setPending({ kind: 'quick' }));
+  if (ui.canQuick && !shared) btn('quick', `⚡ ${t('actQuick')}`, () => setPending({ kind: 'quick' }));
   return out;
+}
+
+/**
+ * Between two players on one device (docs/SPEC.md §5.2): nothing of the game is drawn, only who to pass the device to,
+ * so the player handing it over cannot see the next one's cards and the next one cannot see the last one's.
+ */
+function HandoffCover({ name, onReveal, onQuit }: { name: string; onReveal: () => void; onQuit: () => void }) {
+  return (
+    <main className="handoff">
+      <button type="button" className="ghost handoff-quit" onClick={onQuit}>
+        ← {t('actHome')}
+      </button>
+      <div className="handoff-card" aria-hidden="true">
+        <span>T</span>
+      </div>
+      <h1>{t('handoffTitle', { name })}</h1>
+      <p className="muted">{t('handoffHint', { name })}</p>
+      <button type="button" className="btn btn-primary btn-big" onClick={onReveal} ref={(el) => el?.focus()}>
+        {t('handoffReveal', { name })}
+      </button>
+    </main>
+  );
 }

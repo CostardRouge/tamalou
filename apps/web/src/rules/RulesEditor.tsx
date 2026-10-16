@@ -9,6 +9,7 @@ import {
   RANKS,
   type Rank,
   type RuleSet,
+  type RuleSetInput,
   type RulesChoice,
   rulesOf,
   type Suit,
@@ -43,18 +44,20 @@ export function countChanges(overrides: object): number {
 
 interface Props {
   choice: RulesChoice;
+  /** The mode's own defaults, under the game master's changes (rulesOf). */
+  base?: RuleSetInput;
   onChange: (c: RulesChoice) => void;
   onDone: () => void;
 }
 
-export function RulesEditor({ choice, onChange, onDone }: Props) {
-  const rules = rulesOf(choice);
+export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
+  const rules = rulesOf(choice, base);
   const [status, setStatus] = useState('');
   const file = useRef<HTMLInputElement>(null);
 
   const update = (path: readonly string[], value: unknown) => {
     const next = setAt(rules, path, value);
-    if (next) onChange(choiceFromRules(choice.preset, next));
+    if (next) onChange(choiceFromRules(choice.preset, next, base));
   };
 
   const exportFile = () => {
@@ -73,7 +76,7 @@ export function RulesEditor({ choice, onChange, onDone }: Props) {
       setStatus(t('editorImportError', { error: res.error }));
       return;
     }
-    onChange(choiceFromRules(choice.preset, res.rules));
+    onChange(choiceFromRules(choice.preset, res.rules, base));
     setStatus(t('editorImported'));
   };
 
