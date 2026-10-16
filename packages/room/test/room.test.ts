@@ -238,6 +238,19 @@ describe('room game', () => {
     expect(bob.last('refused')).toMatchObject({ error: 'notInLobby' });
   });
 
+  it('holds back a draw sent during the quick-discard window, whatever the order of its fields', () => {
+    const { gm, bob, clock } = started();
+    gm.send({ t: 'action', action: { type: 'ready' } });
+    bob.send({ t: 'action', action: { type: 'ready' } });
+    // The bot memorises its cards; play starts, and with it the first window.
+    for (let i = 0; i < 50 && gm.game().view.phase !== 'play'; i++) clock.advance(100);
+    const current = gm.game().view.current;
+    const player = current === 's1' ? gm : bob;
+    player.send({ t: 'action', action: { from: 'deck', type: 'draw' } as never });
+    expect(player.all('refused')).toEqual([]);
+    expect(player.game().drawPending).toBe(true);
+  });
+
   it('lets a latecomer watch with the public view and the public log', () => {
     const { client, gm } = started();
     gm.send({ t: 'action', action: { type: 'ready' } });

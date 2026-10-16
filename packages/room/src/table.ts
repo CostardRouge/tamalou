@@ -347,4 +347,11 @@ export class Table {
   }
 }
 
-const same = (a: Action, b: Action) => JSON.stringify(a) === JSON.stringify(b);
+/** JSON with sorted keys: an action built by a client and one listed by legalActions may order their fields apart. */
+const canonical = (v: unknown): string =>
+  JSON.stringify(v, (_k, x: unknown) =>
+    x && typeof x === 'object' && !Array.isArray(x)
+      ? Object.fromEntries(Object.entries(x).sort(([p], [q]) => (p < q ? -1 : 1)))
+      : x,
+  );
+const same = (a: Action, b: Action) => canonical(a) === canonical(b);
