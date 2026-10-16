@@ -1,17 +1,11 @@
 import type { BotLevel } from '@tamalou/bots';
-import { Handoff, type Scheduler, Table } from '@tamalou/room';
+import { Handoff, type Scheduler, systemClock, Table } from '@tamalou/room';
 import type { Action, PlayerId, RuleSet } from '@tamalou/shared';
 import type { GameConnection, SendResult } from './types.ts';
 
 // The game in this browser: a room Table with the real clock. One human is solo; several humans share the device
 // (pass-and-play, docs/SPEC.md §5.2): the screen then shows a player's view only once the device has been handed to
 // them (Handoff), the public table in between, and only the public log.
-
-const realClock: Scheduler = {
-  now: () => performance.now(),
-  setTimeout: (fn, ms) => globalThis.setTimeout(fn, ms),
-  clearTimeout: (h) => globalThis.clearTimeout(h as ReturnType<typeof setTimeout>),
-};
 
 export interface LocalSetup {
   humans: string[];
@@ -33,7 +27,7 @@ export class LocalConnection implements GameConnection {
   /** The screen's listeners: told about the table's changes and about the device changing hands. */
   private readonly listeners = new Set<() => void>();
 
-  constructor(setup: LocalSetup, scheduler: Scheduler = realClock) {
+  constructor(setup: LocalSetup, scheduler: Scheduler = systemClock) {
     this.rules = setup.rules;
     const solo = setup.humans.length === 1;
     this.humanIds = setup.humans.map((_, i) => (solo ? HUMAN_ID : `p${i + 1}`));

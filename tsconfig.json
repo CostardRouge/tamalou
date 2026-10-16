@@ -19,5 +19,5 @@
     // Node strips types without compiling: no enums, namespaces or parameter properties.
     "erasableSyntaxOnly": true
   },
-  "include": ["packages/*/src", "packages/*/test", "vitest.config.ts"]
+  "include": ["packages/*/src", "packages/*/test", "apps/server/src", "apps/server/test", "vitest.config.ts"]
 }
