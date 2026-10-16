@@ -38,8 +38,12 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Quick discard window: open from a card landing on the discard until the next player draws (2 s minimum); off by default in pass-and-play — ADR-0005, `rules.md`.
 - Defaults for the brief's unspecified rule points — ADR-0006, `rules.md`.
 - Visual identity reused from Versus; card faces behind a theme — ADR-0007, `design.md`.
+- The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.
+- Views are checked against events: a face in a view must have been revealed to that player by an event they received — `architecture.md`.
 
 ## Open items
+
+- 2026-10-16 — Confirm with the owner: penalty cards the empty pile cannot give are skipped (`rules.md`, provisional default).
 
 - 2026-10-16 — `bin/registry-setup.sh tamalou` must be run by the owner (from his machine) so `registry.yml`'s `send` job can report; until then it says so and stays green.
 - 2026-10-16 — The online host's domain (a subdomain of steevepommier.com?) and the Cloudflare account variables are to be decided at M6.

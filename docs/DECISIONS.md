@@ -40,7 +40,9 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
   - a power resolves before any quick discard on the card that triggered it;
   - a penalty card opens a new face-down slot, unseen by its owner;
   - the Tamalou caller may still quick-discard; their locked cards stay out of others' powers;
-  - tied players at game end share the win.
+  - tied players at game end share the win;
+  - `minTurnsBeforeCall` is 0 (the brief names the parameter, not a value);
+  - penalty cards an empty pile cannot give (after reshuffling the discard in) are skipped — provisional, to confirm.
 - **Rejected**: inventing tie-break rounds or a hand-size cap the brief never mentions.
 
 ## ADR-0007 — Visual identity from Versus; card faces behind a theme (2026-10-16)
@@ -48,3 +50,9 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 - **Context**: the owner likes Versus's charter and asked for it here; he designs his own decks in another project.
 - **Decision**: Versus's tokens (cobalt `--a`, coral `--b`, light and dark), fonts (Bricolage Grotesque, Figtree, JetBrains Mono) and contrast checks are copied into `apps/web`. Card faces and backs are drawn by a card theme component; nothing else knows how a card looks.
 - **Rejected**: a shared design package between the two repos (the portfolio keeps repos independent, `COMMON-PROJECT-SPEC.md` §9).
+
+## ADR-0008 — The engine has no clock; claims name their target top card (2026-10-16)
+
+- **Context**: the engine must be a pure reducer, replayable from a seed and its actions, yet the brief has timed rules (turn timer, a quick-discard window "délai") and a race (simultaneous quick discards, first validated wins).
+- **Decision**: time stays out of the engine. The window is a state flag (open from a card landing, or its power resolving, to the next draw; open after the last turn until the host's `endRound`). Its minimum length (`quickDiscard.minWindowMs`) and the turn timer are enforced by the host — `LocalConnection` in the browser, `packages/room` on a server — by holding a draw back and by having a bot play a timed-out turn. Host-only actions (`endRound`, `nextRound`) carry `by: 'host'`. A quick-discard claim carries `expectTop`, the discard's top card it was aimed at: the authority applies claims in arrival order, and a claim whose top has changed is refused (`staleTop`) with no penalty.
+- **Rejected**: timestamps inside actions (a replay would depend on wall-clock data, and a client could forge them); a fixed-duration window counted in engine "ticks" (an action nobody plays just to move time).

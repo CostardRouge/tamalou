@@ -101,7 +101,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 - **[ADR-0006]** Égalité en fin de partie : les joueurs à égalité partagent la victoire.
 
 ### Cas limites à gérer
-- **Pioche vide** : on mélange la défausse, sauf la carte du dessus, pour reformer la pioche.
+- **Pioche vide** : on mélange la défausse, sauf la carte du dessus, pour reformer la pioche. **[ADR-0006]** Si elle reste vide, les cartes de pénalité manquantes sont sautées (provisoire, à confirmer).
 - **Main vide** : un joueur qui n'a plus aucune carte a 0 point. Option : il déclenche automatiquement la fin de manche.
 - **Égalités** en fin de manche et en fin de partie. Le comportement est défini et configurable.
 - **Joueur déconnecté ou inactif** : un timer de tour (optionnel) est suivi d'un auto-play par un bot.
@@ -112,6 +112,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 
 - Les règles sont un **objet `RuleSet` typé et versionné**, validé avec un schéma Zod, avec des valeurs par défaut.
 - Le moteur ne contient **jamais** de règle codée en dur : il lit le `RuleSet`.
+- **[ADR-0008]** Le moteur n'a pas d'horloge : la durée minimale de la fenêtre de défausse rapide et le timer de tour sont appliqués par l'hôte (le navigateur ou le serveur), pas par le moteur.
 - Des **presets** : « Classique » (les règles ci-dessus), « Rapide », etc. Un preset est un `RuleSet` partiel fusionné avec les défauts.
 - Paramètres attendus, au minimum :
   - **Paquet :** nombre de paquets, jokers oui/non, valeur du joker.
@@ -121,7 +122,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
   - **Activation des pouvoirs :** seulement depuis la pioche, ou aussi depuis la défausse.
   - **Défausse rapide :** activée ou non, pénalité d'erreur (nombre de cartes), autorisation de défausser la carte d'un adversaire.
   - **Prise dans la défausse :** échange obligatoire ou non.
-  - **Tamalou :** moment de l'annonce, verrouillage des cartes, pénalité en cas d'échec (+N ou ×2), bonus en cas de victoire, tour minimum avant de pouvoir annoncer.
+  - **Tamalou :** moment de l'annonce, verrouillage des cartes, pénalité en cas d'échec (+N ou ×2), bonus en cas de victoire, tour minimum avant de pouvoir annoncer (**[ADR-0006]** 0 par défaut).
   - **Fin de partie :** seuil d'élimination, ou nombre de manches, et mode de victoire.
   - **Rythme :** timer de tour (off / N secondes), délai de la fenêtre de défausse rapide.
 - **Interface du maître de jeu :** un écran de lobby pour :

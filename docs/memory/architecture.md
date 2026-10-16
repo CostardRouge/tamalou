@@ -19,3 +19,11 @@ Planned layout, filled milestone by milestone (`docs/SPEC.md` §8):
 ## Packages ship sources (2026-10-16)
 
 Each package's `package.json` `exports` points at `src/index.ts`; Vite, Vitest, wrangler (esbuild) and Node ≥ 22.18 (type stripping) all read TypeScript directly, so there is no build step and no `dist/` between packages. One root `tsconfig.json` typechecks everything. **Trap to remember**: Node's type stripping refuses files *under* `node_modules`; pnpm's workspace links resolve to the real path outside it, which is why this works — do not switch to `node-linker=hoisted` copies. Node's stripping also refuses TS-only syntax (enums, parameter properties, namespaces): keep packages to erasable syntax (`erasableSyntaxOnly` is the intent).
+
+## Engine API and invariants (2026-10-16)
+
+`@tamalou/engine`: `createGame({seed, players, rules})`, `apply(state, action, rules)` → `{ok, state, events} | {ok:false, error}`, `viewFor(state, me, rules)`, `legalActions(view, rules)`, `hostAction(state)`, `replay(record)`, `playRandomGame(opts)`. **Decisions**: the state is plain JSON (Durable Object storage, deep equality in tests); `apply` works on a `structuredClone` and never mutates its input; the seeded mulberry32 state lives in `state.rng`; an event with `to` is private to that player, every other is public (`isVisibleTo`) — a transport sends each player the public events and their own. `legalActions` takes a VIEW, not the state, so bots and UIs choose from exactly what a human sees.
+
+**The leak test is independent of `viewFor`** (`packages/engine/test/properties.test.ts`): it records every card id each player was shown by the events they would receive, and fails if a view ever shows a face outside that set. Mutation-checked on 2026-10-16 (showing opponents' cards fails it at step 0). **How to apply**: a new event that shows a card must be listed in the test's `shown()`, or the test will (rightly) fail; a new view field carrying a face goes in `faces()`.
+
+**Perf trap**: `expect()` per card per step made the property test ten times slower and time out at 5 s; the loop uses plain checks and throws. The engine clones the whole state, `cards` table included, on each action (~0.5 ms with six players); fine for play, the first thing to trim if bot simulations get slow.

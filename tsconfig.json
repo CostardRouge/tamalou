@@ -15,7 +15,9 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    // Node strips types without compiling: no enums, namespaces or parameter properties.
+    "erasableSyntaxOnly": true
   },
   "include": ["packages/*/src", "packages/*/test", "vitest.config.ts"]
 }
