@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react'
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
+import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { RoundOver } from './RoundOver.tsx';
@@ -28,6 +29,7 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
   const rules = conn.rules;
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const ui = interaction(view, rules, pending);
 
   // A selection that no longer applies (the turn moved on, the top card changed) is dropped.
@@ -103,12 +105,15 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
         <button type="button" className="ghost" onClick={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}>
           ← {t('actHome')}
         </button>
-        <span className="mono round">
-          {t('appName')} · {view.round}
+        <span className="mono round">{t('roundShort', { n: view.round })}</span>
+        <span className="bar-actions">
+          <button type="button" className="ghost" onClick={() => setShowRules(true)}>
+            {t('rules')}
+          </button>
+          <button type="button" className="ghost" aria-expanded={showLog} onClick={() => setShowLog((s) => !s)}>
+            {t('journal')}
+          </button>
         </span>
-        <button type="button" className="ghost" aria-expanded={showLog} onClick={() => setShowLog((s) => !s)}>
-          {t('journal')}
-        </button>
       </header>
       <p className="ticker" aria-hidden="true">
         {lines.at(-1) ?? '\u00a0'}
@@ -221,6 +226,8 @@ export function GameScreen({ conn, onQuit, onReplay }: Props) {
           </ol>
         </aside>
       ) : null}
+
+      {showRules ? <RulesPanel rules={rules} onClose={() => setShowRules(false)} /> : null}
 
       {view.phase === 'roundOver' || view.phase === 'gameOver' ? (
         <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onReplay={onReplay} />

@@ -1,4 +1,4 @@
-import { rulesFromPreset } from '@tamalou/shared';
+import { decodeRulesChoice, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
 import { MotionConfig } from 'motion/react';
 import { useCallback, useState } from 'react';
 import { LocalConnection } from './connection/local.ts';
@@ -12,7 +12,7 @@ export function newSoloGame(c: SoloChoice): GameConnection {
   return new LocalConnection({
     name: c.name.trim() || t('homeNameDefault'),
     bots: Array.from({ length: c.bots }, (_, i) => ({ name: names[i] ?? t('botName', { n: i + 1 }), level: c.level })),
-    rules: rulesFromPreset(c.preset),
+    rules: rulesFromPreset(c.preset, c.overrides),
   });
 }
 
@@ -22,8 +22,17 @@ interface Game {
   choice: SoloChoice;
 }
 
+/** Rules carried by a shared link (`#rules=…`), read once; the fragment is then dropped from the address. */
+function rulesFromLink(): RulesChoice | null {
+  const m = /^#rules=([\w-]+)$/.exec(globalThis.location?.hash ?? '');
+  if (!m?.[1]) return null;
+  history.replaceState(null, '', location.pathname + location.search);
+  return decodeRulesChoice(m[1]);
+}
+
 export function App() {
   const [game, setGame] = useState<Game | null>(null);
+  const [linked] = useState(rulesFromLink);
 
   // The previous table is stopped when it is replaced, not in an effect: StrictMode runs effects twice in development,
   // and a cleanup there would stop the game that is still on screen.
@@ -44,7 +53,7 @@ export function App() {
       {game ? (
         <GameScreen key={game.id} conn={game.conn} onQuit={() => replace(null)} onReplay={() => play(game.choice)} />
       ) : (
-        <HomeScreen onPlay={play} />
+        <HomeScreen onPlay={play} linked={linked} />
       )}
     </MotionConfig>
   );

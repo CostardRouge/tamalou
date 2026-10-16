@@ -130,7 +130,8 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
   - modifier chaque paramètre, avec une description claire en français ;
   - voir un résumé lisible des règles actives.
   Tous les joueurs peuvent consulter les règles pendant la partie.
-- Le `RuleSet` peut être **exporté et importé en JSON**, ou partagé par lien.
+- Le `RuleSet` peut être **exporté et importé en JSON**, ou partagé par lien. **[ADR-0011]** Le lien porte le preset et seulement les réglages modifiés, dans le fragment (`#rules=…`).
+- **[M4]** Chaque réglage a sa ligne à l'écran du maître de jeu, avec une aide en français ; un test échoue si une règle n'en a pas. Le résumé signale ce qui diffère du Classique.
 
 ---
 

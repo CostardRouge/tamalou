@@ -1,32 +1,48 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
-import { PRESETS } from '@tamalou/shared';
+import { PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
 import { useState } from 'react';
-import { type Key, t } from '../i18n/index.ts';
+import { type Key, plural, t } from '../i18n/index.ts';
+import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 
-// The solo setup: a name, how many bots and how strong, which rules. The last choices are remembered on this device
-// (a convenience only: a private window simply starts from the defaults).
+// The solo setup: a name, how many bots and how strong, which rules (a preset, and the game master's changes made in
+// the rules editor). The last choices are remembered on this device (a convenience only: a private window simply
+// starts from the defaults). Rules received by link replace the remembered ones.
 
 export interface SoloChoice {
   name: string;
   bots: number;
   level: BotLevel;
   preset: string;
+  overrides: RuleSetInput;
 }
 
 const KEY = 'tamalou-solo';
-const DEFAULT: SoloChoice = { name: '', bots: 2, level: 'medium', preset: 'classic' };
+const DEFAULT: SoloChoice = { name: '', bots: 2, level: 'medium', preset: 'classic', overrides: {} };
+
+/** Stored overrides are kept only if they still make valid rules with their preset (a schema may have moved). */
+function validOverrides(preset: string, overrides: unknown): RuleSetInput {
+  if (!overrides || typeof overrides !== 'object' || Array.isArray(overrides)) return {};
+  try {
+    rulesFromPreset(preset, overrides as RuleSetInput);
+    return overrides as RuleSetInput;
+  } catch {
+    return {};
+  }
+}
 
 export function loadChoice(): SoloChoice {
   try {
     const raw = globalThis.localStorage?.getItem(KEY);
     if (!raw) return DEFAULT;
     const c = JSON.parse(raw) as Partial<SoloChoice>;
-    return {
+    const choice: SoloChoice = {
       name: typeof c.name === 'string' ? c.name.slice(0, 20) : '',
       bots: typeof c.bots === 'number' && c.bots >= 1 && c.bots <= 5 ? c.bots : DEFAULT.bots,
       level: BOT_LEVELS.includes(c.level as BotLevel) ? (c.level as BotLevel) : DEFAULT.level,
       preset: PRESETS.some((p) => p.id === c.preset) ? (c.preset as string) : DEFAULT.preset,
+      overrides: {},
     };
+    return { ...choice, overrides: validOverrides(choice.preset, c.overrides) };
   } catch {
     return DEFAULT;
   }
@@ -42,13 +58,37 @@ function saveChoice(c: SoloChoice) {
 
 const LEVEL_KEY: Record<BotLevel, Key> = { easy: 'levelEasy', medium: 'levelMedium', hard: 'levelHard' };
 
-export function HomeScreen({ onPlay }: { onPlay: (c: SoloChoice) => void }) {
-  const [c, setC] = useState<SoloChoice>(loadChoice);
+interface Props {
+  onPlay: (c: SoloChoice) => void;
+  /** Rules opened from a shared link. */
+  linked?: RulesChoice | null;
+}
+
+export function HomeScreen({ onPlay, linked }: Props) {
+  const [c, setC] = useState<SoloChoice>(() => {
+    const stored = loadChoice();
+    return linked ? { ...stored, preset: linked.preset, overrides: linked.overrides } : stored;
+  });
+  const [editing, setEditing] = useState(false);
   const set = (patch: Partial<SoloChoice>) => setC((prev) => ({ ...prev, ...patch }));
   const play = () => {
     saveChoice(c);
     onPlay(c);
   };
+  const changes = countChanges(c.overrides);
+
+  if (editing) {
+    return (
+      <RulesEditor
+        choice={{ preset: c.preset, overrides: c.overrides }}
+        onChange={(r) => set({ preset: r.preset, overrides: r.overrides })}
+        onDone={() => {
+          saveChoice(c);
+          setEditing(false);
+        }}
+      />
+    );
+  }
 
   return (
     <main className="home">
@@ -130,6 +170,11 @@ export function HomeScreen({ onPlay }: { onPlay: (c: SoloChoice) => void }) {
               </label>
             ))}
           </div>
+          {linked ? <p className="notice">{t('editorFromLink')}</p> : null}
+          <button type="button" className="btn btn-secondary" onClick={() => setEditing(true)}>
+            {t('editorCustomize')}
+            {changes > 0 ? <span className="tag">{plural('editorModified', changes)}</span> : null}
+          </button>
         </fieldset>
 
         <button type="submit" className="btn btn-primary btn-big">
