@@ -75,6 +75,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.7.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository — ADR-0019.
 
+- 2026-10-17 — No release has been published yet: `release.yml` cannot create the backfilled tags (0.1.0–0.8.0) with its token; the owner creates them once, or gives the job a token with the workflows permission — `architecture.md`.
+
 ## Topic files
 
 | file | read when |

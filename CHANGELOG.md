@@ -8,12 +8,15 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-17 — Impasse
+
 ### Changed
 
 - The game's address is now `play/`, the same word in both languages; `jouer/` links, shared rooms and the app
   installed on a phone follow on their own.
 
 ## [0.8.0] - 2026-10-17 — Honneur
+<!-- commit: 2b824ccb76a4c375cabd918e56ad68c10af2bc93 -->
 
 ### Added
 
