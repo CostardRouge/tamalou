@@ -1,5 +1,7 @@
 import type { PlayerId, PlayerView } from '@tamalou/shared';
 import { motion } from 'motion/react';
+import { useEffect } from 'react';
+import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { cardName, t } from '../i18n/index.ts';
@@ -20,8 +22,12 @@ const focusOnMount = (el: HTMLButtonElement | null) => el?.focus();
 
 export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
   const result = view.lastResult;
-  if (!result) return null;
   const over = view.phase === 'gameOver';
+  const rounds = result?.round ?? 0;
+  useEffect(() => {
+    if (over) trackEvent('game-over', { rounds });
+  }, [over, rounds]);
+  if (!result) return null;
   const waiting = conn.readyForNext().includes(view.me);
   const who = (id: PlayerId) => (id === view.me ? t('you') : nameOf(id));
   const winners = view.winners ?? [];

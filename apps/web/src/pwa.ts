@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { trackEvent } from './audience.ts';
 
 // The installable, offline game (M8): registers the service worker built by build/pwa.ts (production builds only),
 // says when a new version is waiting, and keeps the browser's install prompt for the home screen's button.
@@ -21,6 +22,7 @@ export function startPwa(): void {
     notify();
   });
   globalThis.addEventListener?.('appinstalled', () => {
+    trackEvent('app-installed');
     installPrompt = null;
     notify();
   });

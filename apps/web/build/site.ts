@@ -10,8 +10,24 @@ export const SOURCE_URL = 'https://github.com/CostardRouge/tamalou';
 export const LICENSE_URL = `${SOURCE_URL}/blob/main/LICENSE`;
 export const AUTHOR = { name: 'Steeve Pommier', url: 'https://steevepommier.com/' };
 
+/** Where to write about the site, the legal notice, a takedown. */
+export const CONTACT = 'pommier.steeve+tamalou@gmail.com';
+
+/** Audience measurement (ADR-0017): the author's self-hosted Umami, the one Versus and steevepommier.com report to. */
+export const ANALYTICS = {
+  /** The tracker, named /insight on the instance (TRACKER_SCRIPT_NAME): /script.js is on the filter lists. */
+  src: 'https://insight.steevepommier.com/insight',
+  /**
+   * Tamalou's key in the Umami dashboard. Empty until the owner adds the site there; the build then reads it from
+   * VITE_UMAMI_WEBSITE_ID (deploy.yml passes the repository variable UMAMI_WEBSITE_ID). Empty: no measurement.
+   */
+  websiteId: '',
+  /** Hosts allowed to report besides the canonical one: the GitHub Pages copy. A LAN server never reports. */
+  domains: ['tamalou.steevepommier.com', 'costardrouge.github.io'],
+};
+
 export type Lang = 'fr' | 'en';
-export type PageKind = 'home' | 'play';
+export type PageKind = 'home' | 'play' | 'legal';
 
 export interface Page {
   /** The HTML file, relative to apps/web (Vite's root). */
@@ -28,6 +44,8 @@ export const PAGES: Page[] = [
   { file: 'index.html', path: '', lang: 'fr', kind: 'home', twin: 'en/' },
   { file: 'en/index.html', path: 'en/', lang: 'en', kind: 'home', twin: '' },
   { file: 'jouer/index.html', path: 'jouer/', lang: 'fr', kind: 'play' },
+  { file: 'mentions-legales/index.html', path: 'mentions-legales/', lang: 'fr', kind: 'legal', twin: 'en/legal/' },
+  { file: 'en/legal/index.html', path: 'en/legal/', lang: 'en', kind: 'legal', twin: 'mentions-legales/' },
 ];
 
 /** The game's address from the root. */

@@ -7,6 +7,7 @@ import './styles/app.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
+import { startAnalytics, trackPage } from './audience.ts';
 import { unlockAudioOnFirstTap } from './feedback/sound.ts';
 import { currentLang } from './i18n/index.ts';
 import { startPwa } from './pwa.ts';
@@ -14,6 +15,8 @@ import { startPwa } from './pwa.ts';
 document.documentElement.lang = currentLang();
 unlockAudioOnFirstTap();
 startPwa();
+startAnalytics();
+trackPage();
 
 const root = document.getElementById('root');
 if (root) {

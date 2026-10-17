@@ -2,11 +2,25 @@ import { relative } from 'node:path';
 import type { Plugin } from 'vite';
 import { homeBody } from '../src/landing/markup.ts';
 import { LANDING } from '../src/landing/text.ts';
-import { AUTHOR, PAGES, type Page, PLAY_PATH, pageOf, SOURCE_URL, siteUrl, toRoot } from './site.ts';
+import { legalBody } from '../src/legal/markup.ts';
+import { LEGAL } from '../src/legal/text.ts';
+import { type AnalyticsConfig, analyticsConfig, analyticsTag } from './analytics.ts';
+import {
+  AUTHOR,
+  CONTACT,
+  LICENSE_URL,
+  PAGES,
+  type Page,
+  PLAY_PATH,
+  pageOf,
+  SOURCE_URL,
+  siteUrl,
+  toRoot,
+} from './site.ts';
 
 /**
- * Fills each page's shell (ADR-0016): the head (title, description, canonical address, languages, icons, manifest)
- * and, for the static pages, the body, written from build/site.ts and the dictionaries. Runs after Vite's own work on
+ * Fills each page's shell (ADR-0016): the head (title, description, canonical address, languages, icons, manifest,
+ * audience measurement's settings, ADR-0017) and, for the static pages, the body, written from build/site.ts and the dictionaries. Runs after Vite's own work on
  * the HTML, so what it writes is left exactly as written: relative links that work at a domain's root and under
  * GitHub Pages' /tamalou/ alike.
  */
@@ -29,9 +43,15 @@ const PLAY_HEAD = {
 const redirect = (play: string) =>
   `<script>(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()</script>`;
 
-export function pageHead(page: Page, site: string): string {
+const headText = (page: Page) => {
+  if (page.kind === 'home') return LANDING[page.lang];
+  if (page.kind === 'legal') return { ...LEGAL[page.lang], title: `${LEGAL[page.lang].title} — Tamalou` };
+  return PLAY_HEAD;
+};
+
+export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | null = null): string {
   const root = toRoot(page);
-  const t = page.kind === 'home' ? LANDING[page.lang] : PLAY_HEAD;
+  const t = headText(page);
   const lines = [`<title>${t.title}</title>`, `<meta name="description" content="${esc(t.description)}" />`];
   if (page.kind === 'play') {
     // The home pages carry the words; the game screen is not a page to find.
@@ -68,36 +88,45 @@ export function pageHead(page: Page, site: string): string {
     `<link rel="manifest" href="${root}manifest.webmanifest" />`,
   );
   if (page.kind === 'home') lines.push(redirect(link(page, PLAY_PATH)));
+  if (analytics) lines.push(analyticsTag(analytics, page.path));
   return lines.join('\n    ');
 }
 
 export function pageBody(page: Page): string {
-  if (page.kind !== 'home') return '';
-  const other = PAGES.find((p) => p.kind === page.kind && p.lang !== page.lang);
-  return homeBody(page.lang, {
-    home: link(page, page.path),
+  if (page.kind === 'play') return '';
+  const home = PAGES.find((p) => p.kind === 'home' && p.lang === page.lang);
+  const legal = PAGES.find((p) => p.kind === 'legal' && p.lang === page.lang);
+  const links = {
+    home: link(page, home?.path ?? ''),
     play: link(page, PLAY_PATH),
-    other: link(page, other?.path ?? ''),
+    other: link(page, page.twin ?? ''),
     source: SOURCE_URL,
     author: AUTHOR,
-  });
+    footer: [`<a href="${link(page, legal?.path ?? '')}">${LANDING[page.lang].footLegal}</a>`],
+  };
+  if (page.kind === 'legal') return legalBody(page.lang, { ...links, email: CONTACT, license: LICENSE_URL });
+  return homeBody(page.lang, links);
 }
 
 export function pages(): Plugin {
   let root = '';
   let site = '';
+  let analytics: AnalyticsConfig | null = null;
   return {
     name: 'tamalou-pages',
     configResolved(config) {
       root = config.root;
       site = siteUrl(config.env);
+      analytics = analyticsConfig(config.env, { production: config.isProduction, url: site });
     },
     transformIndexHtml: {
       order: 'post',
       handler(html, ctx) {
         const page = pageOf(relative(root, ctx.filename));
         if (!page) throw new Error(`No page in build/site.ts for ${ctx.filename}`);
-        return html.replace('<!-- page:head -->', pageHead(page, site)).replace('<!-- page:body -->', pageBody(page));
+        return html
+          .replace('<!-- page:head -->', pageHead(page, site, analytics))
+          .replace('<!-- page:body -->', pageBody(page));
       },
     },
   };

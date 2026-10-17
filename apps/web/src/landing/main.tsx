@@ -8,6 +8,7 @@ import { MotionConfig } from 'motion/react';
 import { StrictMode } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
+import { startAnalytics, trackPage } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import { setLang } from '../i18n/index.ts';
 import { cardOf, LiveTable } from './live.tsx';
@@ -15,6 +16,9 @@ import { LANDING } from './text.ts';
 
 // The home page's script (ADR-0016). The words are already in the page (markup.ts); this brings what moves: the live
 // table, the cards beside the values and the powers (drawn by the card theme), and the preset buttons.
+
+startAnalytics();
+trackPage();
 
 const lang = document.documentElement.lang === 'en' ? 'en' : 'fr';
 // The cards' letters follow the page (V D R or J Q K), without changing the language the game remembers.

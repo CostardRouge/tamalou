@@ -7,8 +7,11 @@
   box-sizing: border-box;
 }
 
-[hidden] {
-  display: none !important;
+/* Hidden means hidden, even for the boxes that set their own display (the measurement switch on the legal notice). */
+[hidden],
+.count[hidden],
+.btn[hidden] {
+  display: none;
 }
 
 body.site {
@@ -710,4 +713,92 @@ body.site {
   .lt-phone {
     zoom: 0.76;
   }
+}
+
+/* ------------------------------------------------------------ the legal notice (src/legal/) */
+
+.legal {
+  max-width: 780px;
+  padding-block: 32px 72px;
+}
+
+.legal .h2 {
+  font-size: clamp(32px, 5vw, 48px);
+}
+
+.legal .sub {
+  margin-bottom: 24px;
+}
+
+.toc ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 40px;
+  padding: 0;
+  list-style: none;
+}
+
+.site .toc a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.legal section {
+  padding-block: 28px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 16px;
+}
+
+.legal h2 {
+  font-family: var(--f-display);
+  font-size: 26px;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+
+.legal h3 {
+  font-family: var(--f-display);
+  font-size: 19px;
+  margin: 28px 0 8px;
+}
+
+.legal p {
+  margin: 0 0 12px;
+}
+
+.legal code {
+  font-family: var(--f-mono);
+  font-size: 0.9em;
+}
+
+.count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 16px 0 8px;
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.count p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.updated {
+  margin-top: 32px;
+  font-size: 14px;
+  color: var(--muted);
 }

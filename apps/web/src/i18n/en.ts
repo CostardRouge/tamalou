@@ -414,6 +414,8 @@ export const en: Messages = {
   soundOff: 'Unmute',
   install: 'Install the game',
   installHint: 'It opens like an app, and solo works without a network.',
+  legalLink: 'Legal notice and privacy',
+  legalHref: '../en/legal/',
   updateReady: 'A new version is ready.',
   updateReload: 'Reload',
   splashTamalou: 'Tamalou!',

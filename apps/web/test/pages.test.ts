@@ -1,12 +1,13 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { rulesFromPreset } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
 import { inputs, link, pageBody, pageHead } from '../build/pages.ts';
 import { serviceWorkerSource } from '../build/pwa.ts';
-import { PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '../build/site.ts';
+import { CONTACT, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '../build/site.ts';
 import { DURATIONS } from '../src/landing/live.tsx';
 import { LANDING } from '../src/landing/text.ts';
+import { LEGAL } from '../src/legal/text.ts';
 
 // The site's pages (ADR-0016): every page has its shell, the home pages carry their words in the static HTML, links
 // stay relative (the same build serves a domain's root and GitHub Pages' /tamalou/), and what the home page says about
@@ -22,7 +23,7 @@ describe('pages', () => {
     for (const page of PAGES) {
       const shell = readFileSync(resolve(root, page.file), 'utf8');
       expect(shell, page.file).toContain('<!-- page:head -->');
-      if (page.kind === 'home') expect(shell, page.file).toContain('<!-- page:body -->');
+      if (page.kind !== 'play') expect(shell, page.file).toContain('<!-- page:body -->');
       expect(shell, page.file).toContain(`lang="${page.lang}"`);
       expect(pageOf(page.file)).toBe(page);
     }
@@ -103,5 +104,46 @@ describe('pages', () => {
     const src = serviceWorkerSource(['index.html', 'jouer/index.html'], 'v1');
     expect(src).toContain("rel + 'index.html'");
     expect(src).toContain('"jouer/index.html"');
+  });
+
+  it('writes the legal notice in both languages, linked from every static page', () => {
+    for (const page of PAGES.filter((p) => p.kind === 'legal')) {
+      const t = LEGAL[page.lang];
+      const body = pageBody(page);
+      for (const title of [
+        t.pubTitle,
+        t.hostTitle,
+        t.privTitle,
+        t.roomsTitle,
+        t.countTitle,
+        t.rightsTitle,
+        t.liabTitle,
+      ])
+        expect(body).toContain(title);
+      expect(body).toContain(`mailto:${CONTACT}`);
+      expect(body).not.toMatch(/\{(email|source|license)\}/);
+      for (const state of ['on', 'off', 'signal', 'none']) expect(body).toContain(`data-when="${state}"`);
+      expect(pageHead(page, SITE_URL)).toContain(`<link rel="canonical" href="${SITE_URL}${page.path}" />`);
+    }
+    for (const page of PAGES.filter((p) => p.kind !== 'play')) {
+      const legal = PAGES.find((p) => p.kind === 'legal' && p.lang === page.lang);
+      expect(pageBody(page)).toContain(`href="${link(page, legal?.path ?? '')}">${LANDING[page.lang].footLegal}</a>`);
+    }
+  });
+
+  it('measures only what the legal notice lists', () => {
+    // Every event the code sends. A new one is described in src/legal/text.ts (count2) before it joins this list.
+    const sent = new Set<string>();
+    const walk = (dir: string) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const f = resolve(dir, e.name);
+        if (e.isDirectory()) walk(f);
+        else for (const m of readFileSync(f, 'utf8').matchAll(/trackEvent\('([\w-]+)'/g)) sent.add(m[1] ?? '');
+      }
+    };
+    walk(resolve(root, 'src'));
+    expect([...sent].sort()).toEqual(['app-installed', 'game-over', 'game-started', 'room-created', 'rules-shared']);
+    expect(LEGAL.fr.count2).toContain('une installation');
+    expect(LEGAL.en.count3).toContain('a room’s code');
   });
 });

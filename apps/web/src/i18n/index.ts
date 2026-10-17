@@ -1,6 +1,7 @@
 import type { Card } from '@tamalou/shared';
 import { en } from './en.ts';
 import { fr, type Messages } from './fr.ts';
+import { LANG_KEY, rememberLang } from './remember.ts';
 
 // Every user-facing text goes through t(). French is the game's language and the default; English is one tap away on
 // the home screen (remembered on this device), or forced with ?lang=en.
@@ -10,7 +11,6 @@ export type Lang = 'fr' | 'en';
 export const LANGS: Lang[] = ['fr', 'en'];
 
 const DICTS: Record<Lang, Messages> = { fr, en };
-const LANG_KEY = 'tamalou-lang';
 
 function pickLang(): Lang {
   try {
@@ -30,11 +30,7 @@ const listeners = new Set<(l: Lang) => void>();
 /** Changes the language, remembers it on this device (unless told not to) and tells the screens to draw again. */
 export function setLang(l: Lang, remember = true): void {
   lang = l;
-  try {
-    if (remember) globalThis.localStorage?.setItem(LANG_KEY, l);
-  } catch {
-    // Not remembered: the next visit starts in French.
-  }
+  if (remember) rememberLang(l);
   if (globalThis.document) document.documentElement.lang = l;
   for (const fn of listeners) fn(l);
 }

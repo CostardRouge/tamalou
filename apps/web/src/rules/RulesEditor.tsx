@@ -15,6 +15,7 @@ import {
   type Suit,
 } from '@tamalou/shared';
 import { type ReactNode, useRef, useState } from 'react';
+import { trackEvent } from '../audience.ts';
 import { type Key, plural, presetText, rankName, t } from '../i18n/index.ts';
 import { displayNumber, type Field, getAt, SECTIONS, setAt } from './fields.ts';
 import { RulesSummary } from './RulesSummary.tsx';
@@ -88,10 +89,13 @@ export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
   const share = async () => {
     const url = `${location.origin}${location.pathname}#rules=${encodeRulesChoice(choice)}`;
     try {
-      if (navigator.share) await navigator.share({ title: t('appName'), url });
-      else {
+      if (navigator.share) {
+        await navigator.share({ title: t('appName'), url });
+        trackEvent('rules-shared', { how: 'share' });
+      } else {
         await navigator.clipboard.writeText(url);
         setStatus(t('editorCopied'));
+        trackEvent('rules-shared', { how: 'copy' });
       }
     } catch {
       // Share sheet dismissed, or clipboard refused: nothing happened, nothing to say.

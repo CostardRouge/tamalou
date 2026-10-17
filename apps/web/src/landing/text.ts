@@ -157,6 +157,7 @@ const fr = {
   footBy: 'Tamalou, un jeu de <a href="{url}">{name}</a>',
   footAria: 'Pied de page',
   footSource: 'Code source',
+  footLegal: 'Mentions légales',
 };
 
 export type LandingText = typeof fr;
@@ -306,6 +307,7 @@ const en: LandingText = {
   footBy: 'Tamalou, a game by <a href="{url}">{name}</a>',
   footAria: 'Footer',
   footSource: 'Source code',
+  footLegal: 'Legal notice',
 };
 
 export const LANDING: Record<'fr' | 'en', LandingText> = { fr, en };

@@ -428,6 +428,8 @@ export const fr = {
   soundOff: 'Remettre le son',
   install: 'Installer le jeu',
   installHint: 'Il s’ouvrira comme une appli, et le solo marche sans réseau.',
+  legalLink: 'Mentions légales et confidentialité',
+  legalHref: '../mentions-legales/',
   updateReady: 'Une nouvelle version est prête.',
   updateReload: 'Recharger',
   splashTamalou: 'Tamalou !',

@@ -267,6 +267,16 @@ button {
   color: var(--muted);
 }
 
+/* The legal notice, at the foot of the home screen (ADR-0017). */
+.legal-link {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.legal-link a {
+  color: var(--muted);
+}
+
 /* ------------------------------------------------------------ table */
 
 .game {
