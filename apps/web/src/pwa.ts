@@ -29,7 +29,8 @@ export function startPwa(): void {
   // too (clients.claim), and must not announce an update.
   const hadController = navigator.serviceWorker.controller !== null;
   navigator.serviceWorker
-    .register('./sw.js')
+    // The game lives in jouer/; the service worker sits at the site's root and keeps every page (ADR-0016).
+    .register('../sw.js', { scope: '../' })
     .then((reg) => {
       reg.addEventListener('updatefound', () => {
         const next = reg.installing;

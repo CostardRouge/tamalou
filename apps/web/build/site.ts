@@ -1,0 +1,56 @@
+/**
+ * Every fact about the site that its pages repeat (ADR-0016): where it lives, its pages and their languages. Read by
+ * the build (build/pages.ts) and by the tests; no secret here, everything ends up in the pages.
+ */
+
+/** The canonical address; a build for another host sets VITE_SITE_URL. GitHub Pages serves a copy under /tamalou/. */
+export const SITE_URL = 'https://tamalou.steevepommier.com/';
+
+export const SOURCE_URL = 'https://github.com/CostardRouge/tamalou';
+export const LICENSE_URL = `${SOURCE_URL}/blob/main/LICENSE`;
+export const AUTHOR = { name: 'Steeve Pommier', url: 'https://steevepommier.com/' };
+
+export type Lang = 'fr' | 'en';
+export type PageKind = 'home' | 'play';
+
+export interface Page {
+  /** The HTML file, relative to apps/web (Vite's root). */
+  file: string;
+  /** Its address on the site, relative to the root: '' for the home page, 'jouer/' for the game. */
+  path: string;
+  lang: Lang;
+  kind: PageKind;
+  /** The same page in the other language, when there is one (hreflang). */
+  twin?: string;
+}
+
+export const PAGES: Page[] = [
+  { file: 'index.html', path: '', lang: 'fr', kind: 'home', twin: 'en/' },
+  { file: 'en/index.html', path: 'en/', lang: 'en', kind: 'home', twin: '' },
+  { file: 'jouer/index.html', path: 'jouer/', lang: 'fr', kind: 'play' },
+];
+
+/** The game's address from the root. */
+export const PLAY_PATH = 'jouer/';
+
+/** The page a file is, from its path relative to apps/web (any separator). */
+export function pageOf(file: string): Page | undefined {
+  const f = file.replaceAll('\\', '/').replace(/^\/+/, '');
+  return PAGES.find((p) => p.file === f);
+}
+
+/** From a page to the site's root: '' at the root, '../' one folder down. */
+export const toRoot = (page: Page): string => '../'.repeat(page.path.split('/').filter(Boolean).length);
+
+/** The canonical address of the build (VITE_SITE_URL, else SITE_URL), always ending in '/'. */
+export function siteUrl(env: Record<string, string | undefined>): string {
+  const raw = env.VITE_SITE_URL?.trim() || SITE_URL;
+  try {
+    const url = new URL(raw);
+    if (url.protocol === 'https:' || url.protocol === 'http:')
+      return url.href.endsWith('/') ? url.href : `${url.href}/`;
+  } catch {
+    /* an unusable address keeps the default */
+  }
+  return SITE_URL;
+}

@@ -47,6 +47,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
 - Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device; a build-generated service worker makes solo and pass-and-play work offline — ADR-0015, `web.md`.
+- The root is a static home page (FR `/`, EN `/en/`) written at build time, the game lives under `jouer/`; the page's cards come from the card theme — ADR-0016, `site.md`.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
@@ -67,6 +68,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 - 2026-10-16 — Owner to judge M8 on his phone: sounds and vibrations (Android vibrates, iPhone does not), "Installer le jeu", a solo game in airplane mode, the English switch.
 
+- 2026-10-17 — Owner to pick the home page among the three variants on the design canvas (A live table, shipped; B first round; C poster) — `site.md`.
+
 ## Topic files
 
 | file | read when |
@@ -75,4 +78,5 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 | `docs/memory/rules.md` | touching the `RuleSet`, a rule's default, presets, the engine's resolution order |
 | `docs/memory/design.md` | touching the UI's look, tokens, fonts, the card theme |
 | `docs/memory/bots.md` | touching a bot level, bot memory, the match driver, `pnpm bots` |
+| `docs/memory/site.md` | touching the home page, the site's pages and addresses, SEO, the service worker's scope |
 | `docs/memory/web.md` | touching `apps/web`: screens, connection, interaction, dictionaries, build |

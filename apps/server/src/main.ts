@@ -25,12 +25,14 @@ function localAddresses(): string[] {
 const running = await startServer(port, hostname, { staticDir: webDir });
 const address = running.server.address();
 const actualPort = typeof address === 'object' && address ? address.port : port;
-// In Docker the container's own address is useless to a phone: PUBLIC_URL names the host's.
-const urls = process.env.PUBLIC_URL
+// In Docker the container's own address is useless to a phone: PUBLIC_URL names the host's. Phones go straight to
+// the game, under jouer/ (the site's root is the home page, ADR-0016).
+const bases = process.env.PUBLIC_URL
   ? [process.env.PUBLIC_URL]
   : hostname === '0.0.0.0'
     ? localAddresses().map((ip) => `http://${ip}:${actualPort}/`)
     : [`${running.url}/`];
+const urls = bases.map((base) => new URL('jouer/', base.endsWith('/') ? base : `${base}/`).href);
 
 console.log('\nTamalou, sur le réseau local\n');
 for (const url of urls) console.log(`  ${url}`);

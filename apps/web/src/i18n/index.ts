@@ -27,11 +27,11 @@ function pickLang(): Lang {
 let lang: Lang = pickLang();
 const listeners = new Set<(l: Lang) => void>();
 
-/** Changes the language, remembers it on this device and tells the screens to draw again. */
-export function setLang(l: Lang): void {
+/** Changes the language, remembers it on this device (unless told not to) and tells the screens to draw again. */
+export function setLang(l: Lang, remember = true): void {
   lang = l;
   try {
-    globalThis.localStorage?.setItem(LANG_KEY, l);
+    if (remember) globalThis.localStorage?.setItem(LANG_KEY, l);
   } catch {
     // Not remembered: the next visit starts in French.
   }
