@@ -94,7 +94,7 @@ export function App() {
     },
     [replace],
   );
-  // One view per screen, never a room's code (ADR-0017): the game's home, a local game, a room.
+  // One view per screen, never a room's code (ADR-0018): the game's home, a local game, a room.
   const screen = room ? 'salle' : game ? 'partie' : '';
   useEffect(() => trackView(`/jouer/${screen}`), [screen]);
 

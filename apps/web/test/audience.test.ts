@@ -4,7 +4,7 @@ import { analyticsConfig, analyticsTag } from '../build/analytics.ts';
 import { ANALYTICS } from '../build/site.ts';
 
 /**
- * Audience measurement (ADR-0017), tests ported with the module: the settings the build writes
+ * Audience measurement (ADR-0018), tests ported with the module: the settings the build writes
  * (build/analytics.ts) and the browser module that loads the tracker and sends views and events (src/audience.ts).
  * Each test gets a fresh module, since it keeps the page's state (tracker loaded or not, last view).
  */

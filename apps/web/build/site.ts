@@ -1,5 +1,5 @@
 /**
- * Every fact about the site that its pages repeat (ADR-0016): where it lives, its pages and their languages. Read by
+ * Every fact about the site that its pages repeat (ADR-0017): where it lives, its pages and their languages. Read by
  * the build (build/pages.ts) and by the tests; no secret here, everything ends up in the pages.
  */
 
@@ -13,7 +13,7 @@ export const AUTHOR = { name: 'Steeve Pommier', url: 'https://steevepommier.com/
 /** Where to write about the site, the legal notice, a takedown. */
 export const CONTACT = 'pommier.steeve+tamalou@gmail.com';
 
-/** Audience measurement (ADR-0017): the author's self-hosted Umami, the one Versus and steevepommier.com report to. */
+/** Audience measurement (ADR-0018): the author's self-hosted Umami, the one Versus and steevepommier.com report to. */
 export const ANALYTICS = {
   /** The tracker, named /insight on the instance (TRACKER_SCRIPT_NAME): /script.js is on the filter lists. */
   src: 'https://insight.steevepommier.com/insight',

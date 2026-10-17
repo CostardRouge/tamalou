@@ -6,7 +6,7 @@ import '../landing/landing.css';
 import { measurement, setOptOut, startAnalytics, trackPage } from '../audience.ts';
 import { rememberLang } from '../i18n/remember.ts';
 
-// The legal notice's script (ADR-0017): the measurement switch, the page's own view, and the language memory of the
+// The legal notice's script (ADR-0018): the measurement switch, the page's own view, and the language memory of the
 // header's language link, as on the home page.
 
 startAnalytics();

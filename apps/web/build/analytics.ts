@@ -2,7 +2,7 @@ import { CONFIG_ID } from '../src/audience.ts';
 import { ANALYTICS } from './site.ts';
 
 /**
- * Build-time half of audience measurement (ADR-0017), as in Versus: which Umami instance, website id and hosts this
+ * Build-time half of audience measurement (ADR-0018), as in Versus: which Umami instance, website id and hosts this
  * build reports to, written into each page's head as settings, not as the tracker's <script>. The page's own script
  * (src/audience.ts) loads the tracker only for a visitor who hasn't said no, so someone who switched it off, or whose
  * browser sends Do Not Track or Global Privacy Control, never contacts the analytics server.

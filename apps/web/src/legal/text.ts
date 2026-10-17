@@ -1,5 +1,5 @@
 /**
- * The legal notice's texts (ADR-0017), French first and English typed against it. Inserted as HTML at build time
+ * The legal notice's texts (ADR-0018), French first and English typed against it. Inserted as HTML at build time
  * (src/legal/markup.ts): the markup here is on purpose. Placeholders: {email}, {source}, {license}.
  *
  * It states facts the code must keep true: what the game keeps on the device, what a room holds and for how long

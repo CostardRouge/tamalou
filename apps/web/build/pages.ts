@@ -19,8 +19,8 @@ import {
 } from './site.ts';
 
 /**
- * Fills each page's shell (ADR-0016): the head (title, description, canonical address, languages, icons, manifest,
- * audience measurement's settings, ADR-0017) and, for the static pages, the body, written from build/site.ts and the dictionaries. Runs after Vite's own work on
+ * Fills each page's shell (ADR-0017): the head (title, description, canonical address, languages, icons, manifest,
+ * audience measurement's settings, ADR-0018) and, for the static pages, the body, written from build/site.ts and the dictionaries. Runs after Vite's own work on
  * the HTML, so what it writes is left exactly as written: relative links that work at a domain's root and under
  * GitHub Pages' /tamalou/ alike.
  */

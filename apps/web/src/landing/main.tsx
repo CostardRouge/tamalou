@@ -13,7 +13,7 @@ import { Quiz } from './quiz.tsx';
 import { LANDING } from './text.ts';
 import { Tutorial } from './tutorial.tsx';
 
-// The home page's script (ADR-0016). The words are already in the page (markup.ts); this brings what moves: the first
+// The home page's script (ADR-0017). The words are already in the page (markup.ts); this brings what moves: the first
 // round against Malo and the hand quiz, their cards drawn by the card theme.
 
 startAnalytics();

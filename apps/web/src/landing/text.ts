@@ -1,5 +1,5 @@
 /**
- * The home page's texts (ADR-0016), French first and English typed against it, so a missing key fails the typecheck.
+ * The home page's texts (ADR-0017), French first and English typed against it, so a missing key fails the typecheck.
  * Read at build time (src/landing/markup.ts writes the page) and in the browser (the first round and the quiz): plain
  * data, no import. Inline markup (<em>) is inserted as is in the page; texts the scripts draw stay plain, with
  * ` ` for no-break spaces (never an HTML entity). Placeholders: {card}, {value}, {n}, {me}, {bot}…

@@ -33,7 +33,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Audience measurement (ADR-0017) once the owner has added the site in Umami and set the repository variable
+      # Audience measurement (ADR-0018) once the owner has added the site in Umami and set the repository variable
       # UMAMI_WEBSITE_ID; empty, the pages measure nothing.
       - run: pnpm build
         env:

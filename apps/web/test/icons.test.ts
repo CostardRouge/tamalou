@@ -34,7 +34,7 @@ describe('icon set', () => {
       }
     }
     const manifest = JSON.parse(readFileSync(pub('manifest.webmanifest'), 'utf8'));
-    // An installed game opens on the game, not on the home page (ADR-0016).
+    // An installed game opens on the game, not on the home page (ADR-0017).
     expect(manifest.start_url).toBe('./jouer/');
     for (const icon of manifest.icons) {
       expect(icon.src.startsWith('/')).toBe(false);

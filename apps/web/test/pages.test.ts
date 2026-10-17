@@ -7,7 +7,7 @@ import { CONTACT, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '..
 import { LANDING } from '../src/landing/text.ts';
 import { LEGAL } from '../src/legal/text.ts';
 
-// The site's pages (ADR-0016): every page has its shell, the home pages carry their words in the static HTML, links
+// The site's pages (ADR-0017): every page has its shell, the home pages carry their words in the static HTML, links
 // stay relative (the same build serves a domain's root and GitHub Pages' /tamalou/). The first round and the quiz have
 // their own tests (landing.test.ts).
 

@@ -1,5 +1,5 @@
 /**
- * Audience measurement in the browser (ADR-0017, docs/memory/site.md), ported from Versus: Umami, self-hosted by the
+ * Audience measurement in the browser (ADR-0018, docs/memory/site.md), ported from Versus: Umami, self-hosted by the
  * author, no cookie. The build writes the tracker's settings into each page's head (build/analytics.ts); this module
  * loads the tracker only for a visitor who hasn't said no (the switch on the legal page, Do Not Track, Global Privacy
  * Control), then sends every view and event itself, automatic tracking off, so the address it records names a page and

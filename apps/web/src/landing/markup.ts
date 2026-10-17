@@ -1,7 +1,7 @@
 import { LANDING } from './text.ts';
 
 /**
- * The home page's markup, written at build time into index.html and en/index.html (build/pages.ts, ADR-0016): every
+ * The home page's markup, written at build time into index.html and en/index.html (build/pages.ts, ADR-0017): every
  * word is in the static HTML for search engines and for a visitor without JavaScript. The script (main.tsx) then
  * brings in what moves, into the boxes left here: the first round (#tutorial, whose static text is its first step) and
  * the hand quiz (#quiz), their cards drawn by the card theme like everywhere else (ADR-0007). Pure strings, no DOM,

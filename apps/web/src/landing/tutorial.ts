@@ -1,7 +1,7 @@
 import type { Rank, Suit } from '@tamalou/shared';
 
 /**
- * The home page's first round (ADR-0016, direction B chosen by the owner): a visitor plays one guided round against a
+ * The home page's first round (ADR-0017, direction B chosen by the owner): a visitor plays one guided round against a
  * slow bot, right on the page. A small reducer, not the engine: the deck is fixed so the round always teaches the same
  * moves (peek, draw, swap, discard, a power, a quick discard, the call) and a sensible player wins it. The React side
  * (tutorial.tsx) draws the state and plays the `after` steps on a timer. Values follow the default rules; a test checks

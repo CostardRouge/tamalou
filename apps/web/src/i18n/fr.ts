@@ -83,6 +83,17 @@ export const fr = {
   promptQuickGive: 'Choisis la carte que tu lui donnes.',
   promptRoundEnding: 'Fin de la manche…',
   promptWaiting: 'Au tour de {name}.',
+  turnBanner: 'À toi !',
+  // A move staged when the game master asks to confirm every move (assist.confirmMoves).
+  confirm_swap: 'Remplacer ta carte {n} par la carte piochée ?',
+  confirm_peekOwn: 'Regarder ta carte {n} ?',
+  confirm_peekOther: 'Regarder la carte {n} de {name} ?',
+  confirm_blind: 'Échanger ta carte {n} avec la carte {m} de {name}, sans les regarder ?',
+  confirm_queen: 'Échanger la carte regardée avec la carte {n} de {name} ?',
+  confirm_queenMine: 'Échanger la carte regardée avec ta carte {n} ?',
+  confirm_quick: 'Poser ta carte {n} sur la défausse ?',
+  confirm_quickGive: 'Poser la carte {m} de {name} sur la défausse et lui donner ta carte {n} ?',
+  confirm_call: 'Annoncer Tamalou ? Les autres jouent un dernier tour.',
 
   // Buttons
   actReady: 'C’est mémorisé',
@@ -97,11 +108,75 @@ export const fr = {
   actPass: 'Continuer',
   actQuick: 'Défausse rapide',
   actCancel: 'Annuler',
+  actConfirm: 'Confirmer',
   actNextRound: 'Manche suivante',
   actReplay: 'Rejouer',
   actHome: 'Menu',
+  // Captions under the action bar's icon buttons: one short word.
+  barTake: 'Défausse',
+  barCall: 'Tamalou',
+  barQuick: 'Rapide',
+  barSkip: 'Passer',
+  barKeep: 'Garder',
+  barPass: 'Continuer',
+  barCancel: 'Annuler',
 
   // Powers
+  // The in-game rules, one card per rule to leaf through.
+  rc_hand: 'Ta main',
+  rc_handText: 'À la fin de la manche, le moins de points gagne.',
+  rc_turn: 'Ton tour',
+  rc_turnText:
+    'Pioche une carte, ou prends celle de la défausse. Garde-la à la place d’une des tiennes, l’ancienne part à la défausse ; ou jette-la.',
+  rc_values: 'Ce que valent les cartes',
+  rc_power: 'Pouvoir · {ranks}',
+  rc_noPowers: 'Pas de pouvoirs',
+  rc_quick: 'La défausse rapide',
+  rc_quickText:
+    'Dès qu’une carte arrive face visible sur la défausse, pose vite une carte de même valeur, même hors de ton tour.',
+  rc_tamalou: 'Tamalou !',
+  rc_tamalouText:
+    'Si tu penses avoir le moins de points, annonce Tamalou : les autres jouent un dernier tour, puis on compte.',
+  rc_end: 'Fin de la partie',
+  rc_pace: 'Rythme et aide',
+  rc_seen: 'vues au début',
+  rc_you: 'toi',
+  rc_other: 'un autre',
+  rc_same: 'même valeur',
+  rc_penalty: 'raté : pénalité',
+  rc_lastTurn: 'dernier tour',
+  rc_out: 'éliminé à {n}',
+  rc_rounds: '{n} manches',
+  rc_prev: 'Avant',
+  rc_next: 'Suivant',
+  rc_again: 'Revoir',
+  rc_count: '{n} / {total}',
+  rc_goTo: 'Règle {n} : {title}',
+
+  // What another player says while playing (game/flights.ts).
+  bubbleDraw: 'Je pioche.',
+  bubbleTake: 'Je prends la défausse.',
+  bubbleKeep: 'Je la garde.',
+  bubbleThrow: 'Je jette : {card}.',
+  bubblePeekOwn: 'Je regarde une de mes cartes.',
+  bubblePeekYou: 'Je regarde ta carte !',
+  bubblePeekOther: 'Je regarde une carte.',
+  bubbleSwapYou: 'J’échange avec toi !',
+  bubbleSwap: 'J’échange deux cartes.',
+  bubbleQuick: 'Défausse rapide : {card} !',
+  bubbleMissed: 'Raté…',
+
+  // Dropping a card where it could mean two things: the table asks (game/drag.ts).
+  dropAsk: 'Que veux-tu faire ?',
+  dropDraw: 'Piocher',
+  dropTake: 'Prendre la défausse',
+  dropDrawSwap: 'Piocher et la mettre à la place de ta carte {n}',
+  dropTakeSwap: 'Prendre la défausse et la mettre à la place de ta carte {n}',
+  dropSwap: 'Échanger avec ta carte {n}',
+  dropDiscard: 'La jeter sur la défausse',
+  dropQuick: 'Défausse rapide de ta carte {n}',
+  dropBlind: 'Échanger avec la carte {n} de {name}',
+
   power_none: 'Aucun',
   power_peekOwn: 'Regarder une de ses cartes',
   power_peekOther: 'Regarder une carte adverse',
@@ -229,6 +304,9 @@ export const fr = {
   rule_turnTimer_help: 'Après ce délai, un bot joue à la place du joueur. 0 : pas de timer.',
   rule_beginner: 'Mode débutant',
   rule_beginner_help: 'Les cartes déjà vues restent affichées.',
+  rule_confirmMoves: 'Confirmer chaque coup',
+  rule_confirmMoves_help:
+    'Avant d’échanger, de regarder ou de défausser une carte, et avant Tamalou, le jeu demande de confirmer.',
 
   // Rules: options
   opt_peekFixed: 'Imposées',
@@ -292,6 +370,7 @@ export const fr = {
   sum_timer: '{s} s par tour, puis un bot joue.',
   sum_noTimer: 'Pas de timer de tour.',
   sum_beginner: 'Mode débutant : les cartes vues restent affichées.',
+  sum_confirmMoves: 'Chaque coup se confirme avant de partir.',
 
   // Rules: editor
   editorTitle: 'Règles de la partie',

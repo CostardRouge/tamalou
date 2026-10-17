@@ -5,7 +5,7 @@ import { HANDS, question } from '../src/landing/quiz.tsx';
 import { cardWords, LANDING } from '../src/landing/text.ts';
 import { freshTut, pointsOf, step, type TAction, type Tut, tappableMine, total } from '../src/landing/tutorial.ts';
 
-// The home page's first round and hand quiz (ADR-0016): their values are the game's default ones, a sensible player
+// The home page's first round and hand quiz (ADR-0017): their values are the game's default ones, a sensible player
 // wins the round and meets every move on the way, and nothing a visitor taps out of turn moves the round.
 
 const rules = parseRules({});

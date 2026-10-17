@@ -19,7 +19,7 @@ import {
   total,
 } from './tutorial.ts';
 
-// The home page's first round (ADR-0016, direction B): the coach on one side, the table on the other, the cards drawn
+// The home page's first round (ADR-0017, direction B): the coach on one side, the table on the other, the cards drawn
 // by CardView and the card theme (ADR-0007). tutorial.ts holds the rules of this little round; this file draws it and
 // plays its timed steps. Cards you can touch are real buttons with their label, like in the game.
 

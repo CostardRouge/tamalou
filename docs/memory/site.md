@@ -1,6 +1,6 @@
 # The site around the game: home page, pages, addresses
 
-Read before touching `apps/web/index.html`, `en/`, `jouer/`, `mentions-legales/`, `build/site.ts`, `build/pages.ts`, `build/analytics.ts`, `src/landing/`, `src/legal/`, `src/audience.ts`, or anything about addresses, SEO, measurement or the service worker's scope. The decisions are ADR-0016 (pages) and ADR-0017 (legal notice, measurement).
+Read before touching `apps/web/index.html`, `en/`, `jouer/`, `mentions-legales/`, `build/site.ts`, `build/pages.ts`, `build/analytics.ts`, `src/landing/`, `src/legal/`, `src/audience.ts`, or anything about addresses, SEO, measurement or the service worker's scope. The decisions are ADR-0017 (pages) and ADR-0018 (legal notice, measurement).
 
 ## Shape (2026-10-17)
 

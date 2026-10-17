@@ -2,7 +2,7 @@ import { footer, type HomeLinks, header } from '../landing/markup.ts';
 import { LEGAL } from './text.ts';
 
 /**
- * The legal notice's markup, written at build time into mentions-legales/ and en/legal/ (build/pages.ts, ADR-0017),
+ * The legal notice's markup, written at build time into mentions-legales/ and en/legal/ (build/pages.ts, ADR-0018),
  * with the home page's header and footer. The measurement switch (#count) is hidden until the script (main.ts) knows
  * what this browser does; each line in it shows for one state (`data-when`).
  */
