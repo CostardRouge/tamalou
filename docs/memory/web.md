@@ -60,3 +60,7 @@ The owner picked design A of the "actions sur une seule ligne" exploration: the 
 ## Spotlight and confirmation (2026-10-17)
 
 ADR-0016. `.game` carries `turn-mine` / `turn-other` and `choosing`; the fade of untouchable cards sits on `.card`, never on `.card-inner`: opacity or filter on a `preserve-3d` element flattens it and the face-down back (rotated 180°, `backface-visibility: hidden`) vanished. A staged move (`staged` in `GameScreen.tsx`, question from `game/confirm.ts`) is dropped with the pending selection on every step change, so a quick discard staged too late cannot be sent against another top card. The new `turnBanner` key exists because `yourTurn` was already taken.
+
+## Rules as cards (2026-10-17)
+
+The owner picked design B for the in-game rules: `rules/RulesCards.tsx`, one card per rule (hand, turn, values, one per power group, quick discard, Tamalou, end, pace), each built from the table's RuleSet through `summarize()` (so a changed value shows as it is tonight and carries "modifié") with a small animated picture drawn by the card theme. The editor's preview keeps the list (`RulesSummary`). Swiped with Motion `drag="x"` and a soft spring, or stepped by the dots and Avant/Suivant. **Trap**: a slide that scrolls vertically is a scroll container whose default `touch-action` let the browser take a sideways gesture and send `pointercancel`, so the swipe never moved; `.rc-slide` and `.rc-track` say `touch-action: pan-y`.

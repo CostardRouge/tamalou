@@ -122,6 +122,37 @@ export const fr = {
   barCancel: 'Annuler',
 
   // Powers
+  // The in-game rules, one card per rule to leaf through.
+  rc_hand: 'Ta main',
+  rc_handText: 'À la fin de la manche, le moins de points gagne.',
+  rc_turn: 'Ton tour',
+  rc_turnText:
+    'Pioche une carte, ou prends celle de la défausse. Garde-la à la place d’une des tiennes, l’ancienne part à la défausse ; ou jette-la.',
+  rc_values: 'Ce que valent les cartes',
+  rc_power: 'Pouvoir · {ranks}',
+  rc_noPowers: 'Pas de pouvoirs',
+  rc_quick: 'La défausse rapide',
+  rc_quickText:
+    'Dès qu’une carte arrive face visible sur la défausse, pose vite une carte de même valeur, même hors de ton tour.',
+  rc_tamalou: 'Tamalou !',
+  rc_tamalouText:
+    'Si tu penses avoir le moins de points, annonce Tamalou : les autres jouent un dernier tour, puis on compte.',
+  rc_end: 'Fin de la partie',
+  rc_pace: 'Rythme et aide',
+  rc_seen: 'vues au début',
+  rc_you: 'toi',
+  rc_other: 'un autre',
+  rc_same: 'même valeur',
+  rc_penalty: 'raté : pénalité',
+  rc_lastTurn: 'dernier tour',
+  rc_out: 'éliminé à {n}',
+  rc_rounds: '{n} manches',
+  rc_prev: 'Avant',
+  rc_next: 'Suivant',
+  rc_again: 'Revoir',
+  rc_count: '{n} / {total}',
+  rc_goTo: 'Règle {n} : {title}',
+
   power_none: 'Aucun',
   power_peekOwn: 'Regarder une de ses cartes',
   power_peekOther: 'Regarder une carte adverse',

@@ -1572,3 +1572,406 @@ html:has(.game) body {
   font-size: clamp(2.2rem, 12vw, 3.4rem);
   line-height: 1;
 }
+
+/* ------------------------------------------------------------ rules as cards to leaf through (RulesCards.tsx) */
+
+.rc-panel {
+  height: min(720px, 92dvh);
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  padding-inline: 0;
+}
+
+.rc-panel .panel-head {
+  padding-inline: 16px;
+}
+
+.rc {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 10px;
+  min-height: 0;
+}
+
+.rc-viewport {
+  overflow: hidden;
+  min-height: 0;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.rc-viewport:focus-visible {
+  outline: 3px solid var(--a);
+  outline-offset: -3px;
+}
+
+.rc-track {
+  display: flex;
+  height: 100%;
+}
+
+.rc-track,
+.rc-slide {
+  /* Each card scrolls up and down on its own; sideways belongs to the swipe (a scroll container's default
+     touch-action would let the browser take the gesture and cancel the drag). */
+  touch-action: pan-y;
+}
+
+.rc-slide {
+  flex: 0 0 100%;
+  box-sizing: border-box;
+  padding: 0 16px;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.rc-slide h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-display);
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.rc-slide ul {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 6px;
+}
+
+.rc-slide li.changed {
+  font-weight: 700;
+}
+
+.rc-art {
+  position: relative;
+  height: 170px;
+  border-radius: var(--r-lg);
+  background: var(--felt);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  --w: 40px;
+}
+
+.rc-art .card {
+  --w: inherit;
+}
+
+.rc-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rc-col {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.rc-pic {
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% 100%;
+}
+
+.rc-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--a);
+  color: var(--on-accent);
+}
+
+.rc-badge-b {
+  background: var(--b-ink);
+}
+
+.rc-badge svg,
+.rc-clock {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rc-clock {
+  width: 64px;
+  height: 64px;
+  stroke-width: 1.6;
+  color: var(--a);
+}
+
+.rc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--a);
+  color: var(--on-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rc-tag-b {
+  background: var(--b-ink);
+}
+
+.rc-tag-g {
+  background: var(--good-ink);
+}
+
+.rc-arrow {
+  height: 30px;
+  stroke: var(--muted);
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 4 5;
+}
+
+.rc-hand,
+.rc-mini {
+  gap: 5px;
+}
+
+.rc-mini {
+  --w: 26px;
+}
+
+.rc-fan {
+  display: flex;
+  align-items: flex-end;
+}
+
+.rc-values {
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  gap: 6px 8px;
+  --w: 30px;
+}
+
+.rc-value {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.rc-special b {
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--b-ink);
+  color: var(--on-accent);
+}
+
+.rc-meter {
+  position: relative;
+  width: 78%;
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+}
+
+.rc-meter-fill {
+  position: absolute;
+  inset: 0 22% 0 0;
+  border-radius: inherit;
+  background: var(--a);
+  animation: rc-grow 2.4s ease-in-out infinite alternate;
+}
+
+.rc-meter-mark {
+  position: absolute;
+  right: 0;
+  top: -6px;
+  bottom: -6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--b-ink);
+}
+
+.rc-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--a);
+}
+
+.rc-dots {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rc-dotbtn {
+  width: 28px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+}
+
+.rc-dotbtn span {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--field);
+  transition:
+    width 0.3s,
+    background 0.2s;
+}
+
+.rc-dotbtn.on span {
+  width: 22px;
+  background: var(--a);
+}
+
+.rc-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+}
+
+.rc-nav .btn {
+  min-width: 112px;
+}
+
+.rc-nav .btn:disabled {
+  opacity: 0.4;
+}
+
+.rc-count {
+  min-width: 52px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.rc-peek {
+  animation: rc-peek 2.8s ease-in-out infinite;
+}
+
+.rc-float {
+  animation: rc-float 2.6s ease-in-out infinite;
+}
+
+.rc-throw {
+  animation: rc-throw 2.6s cubic-bezier(0.3, 0.7, 0.3, 1) infinite;
+}
+
+.rc-drop {
+  animation: rc-drop 2.6s ease-in-out infinite;
+}
+
+.rc-swapL {
+  animation: rc-swapL 3.2s ease-in-out infinite;
+}
+
+.rc-swapR {
+  animation: rc-swapR 3.2s ease-in-out infinite;
+}
+
+@keyframes rc-peek {
+  0%,
+  20%,
+  80%,
+  100% {
+    transform: none;
+  }
+  35%,
+  65% {
+    transform: translateY(-8px) rotateX(40deg) scale(1.1);
+  }
+}
+
+@keyframes rc-float {
+  50% {
+    transform: translateY(-6px) rotate(-2deg);
+  }
+}
+
+@keyframes rc-throw {
+  0%,
+  25% {
+    transform: none;
+  }
+  55%,
+  100% {
+    transform: translate(-64px, -4px) rotate(-12deg);
+  }
+}
+
+@keyframes rc-drop {
+  0%,
+  30% {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  50%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes rc-swapL {
+  0%,
+  22% {
+    transform: none;
+  }
+  52%,
+  100% {
+    transform: translateX(-60px) rotate(-8deg);
+  }
+}
+
+@keyframes rc-swapR {
+  0%,
+  22% {
+    transform: none;
+  }
+  52%,
+  100% {
+    transform: translateX(60px) rotate(8deg);
+  }
+}
+
+@keyframes rc-grow {
+  from {
+    width: 10%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-peek,
+  .rc-float,
+  .rc-throw,
+  .rc-drop,
+  .rc-swapL,
+  .rc-swapR,
+  .rc-meter-fill {
+    animation: none;
+  }
+}
