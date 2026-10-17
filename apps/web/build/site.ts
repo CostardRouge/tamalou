@@ -17,11 +17,8 @@ export const CONTACT = 'pommier.steeve+tamalou@gmail.com';
 export const ANALYTICS = {
   /** The tracker, named /insight on the instance (TRACKER_SCRIPT_NAME): /script.js is on the filter lists. */
   src: 'https://insight.steevepommier.com/insight',
-  /**
-   * Tamalou's key in the Umami dashboard. Empty until the owner adds the site there; the build then reads it from
-   * VITE_UMAMI_WEBSITE_ID (deploy.yml passes the repository variable UMAMI_WEBSITE_ID). Empty: no measurement.
-   */
-  websiteId: '',
+  /** Tamalou's key in the Umami dashboard; VITE_UMAMI_WEBSITE_ID overrides it, empty turns measurement off. */
+  websiteId: '73c51517-64a5-4a99-aa90-86a51dfa2dd5',
   /** Hosts allowed to report besides the canonical one: the GitHub Pages copy. A LAN server never reports. */
   domains: ['tamalou.steevepommier.com', 'costardrouge.github.io'],
 };

@@ -71,7 +71,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 - 2026-10-16 — Owner to judge M8 on his phone: sounds and vibrations (Android vibrates, iPhone does not), "Installer le jeu", a solo game in airplane mode, the English switch.
 
-- 2026-10-17 — Measurement is off until the owner adds Tamalou in Umami (insight.steevepommier.com, "Add website", domain tamalou.steevepommier.com) and sets the repository variable `UMAMI_WEBSITE_ID` to its id; also to confirm the contact address `pommier.steeve+tamalou@gmail.com` on the legal notice — ADR-0018.
+- 2026-10-17 — Once deployed, check the first views and events in Umami (Tamalou's site on insight.steevepommier.com): both hosts, clean paths, no room code — ADR-0018.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 
 ## Topic files

@@ -25,8 +25,7 @@ const list = (value: string): string[] =>
 
 /**
  * This build's measurement, or null for none. Production builds only (`pnpm dev` and tests never count), unless
- * `VITE_UMAMI_DEV=true`; no website id (the default until the owner creates the site in Umami, then the repository
- * variable UMAMI_WEBSITE_ID) means no measurement at all. The canonical host always reports.
+ * `VITE_UMAMI_DEV=true`; an empty `VITE_UMAMI_WEBSITE_ID` turns it off. The canonical host always reports.
  */
 export function analyticsConfig(
   env: Record<string, string | undefined>,

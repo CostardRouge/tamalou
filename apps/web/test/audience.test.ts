@@ -52,8 +52,9 @@ describe('build settings', () => {
 
   it('is switched off by an empty website id, and overridden by the environment', () => {
     expect(analyticsConfig({ VITE_UMAMI_WEBSITE_ID: '' }, { production: true, url: URL_ })).toBeNull();
-    // Without an id in the code, a build without the repository variable measures nothing.
-    if (!ANALYTICS.websiteId) expect(analyticsConfig({}, { production: true, url: URL_ })).toBeNull();
+    // A production build reports to Tamalou's own site in Umami.
+    expect(analyticsConfig({}, { production: true, url: URL_ })?.website).toBe(ANALYTICS.websiteId);
+    expect(ANALYTICS.websiteId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     const custom = analyticsConfig(
       {
         VITE_UMAMI_SRC: 'https://insight.example.com/insight',
