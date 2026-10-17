@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import pkg from '../../../package.json' with { type: 'json' };
 import { App } from '../src/App.tsx';
 
 afterEach(cleanup);
@@ -17,5 +18,10 @@ describe('the app', () => {
     expect(screen.getAllByRole('img', { name: /^Ta carte \d, (?!Carte face cachée)/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'C’est mémorisé' }));
     expect(screen.queryByRole('button', { name: 'C’est mémorisé' })).toBeNull();
+  });
+
+  it('shows the release it was built from on the home screen', () => {
+    render(<App />);
+    expect(screen.getByText(`v${pkg.version}`)).toBeTruthy();
   });
 });

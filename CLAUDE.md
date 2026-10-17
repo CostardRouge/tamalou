@@ -131,6 +131,43 @@ A change a returning reader does not need — tooling, a typo, a refactor —
 carries no block. A question, an exploration or an explanation changes no
 state and writes no block.
 
+## Rule 4 — Versions and releases (MANDATORY)
+
+The project carries **one version**, `version` in the root `package.json`, in
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html): `MAJOR.MINOR.PATCH`.
+`CHANGELOG.md` says what each release brings to the people who use the
+project, newest first, in the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+shape. **It is written in English, like the code, even here where the
+project speaks French first.** Each release has a **codename**: here a French card word,
+in alphabetical order (0.1.0 As, 0.2.0 Brelan… 0.8.0 Honneur; the next starts
+with I).
+
+- **Every pull request that changes what users get** adds its lines under
+  `## [Unreleased]` (`### Added`, `### Changed`, `### Fixed`, `### Removed`,
+  `### Security`), written for a user, not a developer. Tooling, a refactor or
+  a test adds nothing there. It does not touch the version.
+- **A release is its own pull request**, made when the owner asks for one: it
+  moves the `Unreleased` lines under `## [x.y.z] - YYYY-MM-DD — Codename` and
+  sets `package.json` to the same version, nothing else. PATCH for fixes only;
+  MINOR for anything new; MAJOR when something users relied on stops working
+  (stored data that does not carry over, a link, a protocol, a removed
+  feature). Before 1.0.0, MINOR covers both. A new MINOR or MAJOR takes a new
+  codename, never reused; a PATCH keeps its minor's. When a milestone ends or
+  `Unreleased` holds something worth announcing, say so in the final message:
+  the owner decides when to release.
+- **Never tag nor publish a release by hand.** On `main`,
+  `.github/workflows/release.yml` gives every section that has none its tag
+  `vX.Y.Z` and its GitHub Release; on every pull request its `check` job
+  refuses a `CHANGELOG.md` that disagrees with `package.json` or breaks the
+  shape. Run `node .github/release.mjs check` before pushing a release.
+- **A backfilled release** — a version given after the fact to a past state —
+  is a section placed at its rank in the file, with
+  `<!-- commit: <full sha> -->` right under its heading; the workflow tags that
+  commit. It never rewrites a section that already has its release.
+- **A repo that serves a page shows its version** where a user can find it (a
+  footer, an about line, a settings screen), read from `package.json` at build
+  time, so a phone in hand says which build it runs.
+
 ## Verification — trust the disk, not the context
 
 - A tool answering "success" is not proof. Before saying a change is done, prove it through the repo: `git status --porcelain`, `git diff`, `grep` for the expected value, `git show HEAD:<file>` compared to the file on disk.
@@ -144,7 +181,7 @@ state and writes no block.
 - **No hard-coded rule.** Every rule the engine applies is read from the `RuleSet` (`packages/shared`, Zod schema, versioned). A new rule or an ambiguous one becomes a `RuleSet` field with the default the spec describes; never invent a rule silently — ask the owner, and record the default in `docs/DECISIONS.md`.
 - **Hidden information.** Anything that leaves the engine towards a player — a UI, a bot, a socket — goes through `viewFor(state, playerId)`. A bot never reads the full state. The server never sends anything but a view. The property tests check that a view contains nothing its player may not know: keep them passing, extend them with every new piece of state.
 - **Business logic lives in `packages/`**, never in `apps/`: the apps adapt it (React, sockets, Durable Objects).
-- **User-facing text is French**, through the i18n dictionaries (once `apps/web` exists); code, identifiers, commits, memory and ADRs are English.
+- **User-facing text is French first and English**, through the i18n dictionaries (`apps/web/src/i18n/fr.ts`, `en.ts`) with the pages' heads in `apps/web/build/site.ts`; French is the default. Code, identifiers, commits, memory, ADRs and `CHANGELOG.md` are English.
 - **Visual identity comes from Versus** (`costardrouge/versus`, `src/tokens.css`): its tokens, light and dark themes and fonts. The card face is isolated behind a card theme so the owner can plug in his own decks later — never draw a card outside it.
 
 ## Related files
@@ -152,3 +189,4 @@ state and writes no block.
 - `AGENTS.md`: a symlink to this file, for tools that do not read `CLAUDE.md`.
 - `MEMORY.md` + `docs/memory/`: project long-term memory (rule 2).
 - `docs/SPEC.md`: the brief, kept current. `docs/DECISIONS.md`: the ADRs.
+- `CHANGELOG.md`: what each release brings (rule 4); `.github/release.mjs` + `.github/workflows/release.yml` tag and publish it.

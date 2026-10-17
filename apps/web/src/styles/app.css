@@ -140,6 +140,14 @@ button {
   color: var(--muted);
 }
 
+/* The release on screen, so a phone in hand says which build it runs (CHANGELOG.md). */
+.version {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .setup {
   display: grid;
   gap: 18px;

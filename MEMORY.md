@@ -52,6 +52,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - A legal notice (`/mentions-legales/`, `/en/legal/`) and Versus's anonymous Umami measurement, ported as is; the notice lists every event, a test holds the code to it — ADR-0018, `site.md`.
 - Readability: a spotlight on whose turn it is, always; confirming each move is the game master's choice (`assist.confirmMoves`, off by default) — ADR-0016, `web.md`.
 - The table's look, chosen by the owner on the 2026-10-17 canvas: one-line action bar (A), rules as cards to leaf through (B), cards flying on soft springs for every move with the others' moves told in bubbles, drag and drop with soft physics (D) and quick discard by dragging onto the discard (C) — `web.md`.
+- Versions: one SemVer version in the root `package.json`, `CHANGELOG.md` as source, tags and GitHub Releases made by `release.yml` on `main`, a release is its own PR on the owner's word; 0.8.0 with M1–M7 backfilled as 0.1.0–0.7.0 — ADR-0019, `CLAUDE.md` rule 4.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
