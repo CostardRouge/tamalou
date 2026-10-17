@@ -31,6 +31,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 ## Decisions at a glance (details in `docs/DECISIONS.md` and the topic files)
 
+- The repository stays **public** (owner, 2026-10-17), although the brief said private "pour l'instant": Registry blocks stay public-only (`Project:`, ticked boxes, `Log:`), and nothing private goes into a pull request or a commit.
 - Commits follow the common spec's C3 (English imperative title, no `feat:` prefix), not Conventional Commits — ADR-0001.
 - pnpm monorepo, packages ship TS sources, one typecheck, Biome + Vitest — ADR-0002, `architecture.md`.
 - Front: React 19 + Vite + Motion — ADR-0003.
@@ -56,7 +57,6 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-16 — Owner to judge M5 at the table with 2 or 3 people: the cover between players, the table view while bots play.
 - 2026-10-16 — Owner to judge on his phone (M3's acceptance): the easy bot never wins against a thinking bot (`bots.md`), card sizes with five opponents, the quick-discard armed mode.
 
-- 2026-10-16 — **The repo is public**, the brief said private "pour l'instant". The first Registry block (with a `Last point:`) was refused by `registry.yml`'s `check` job, then trimmed to the public form; the refused text was harmless (stack and milestone summary) but stays readable through the API in the PR's edit history. Owner's call: make it private, or keep it public and keep blocks public-only.
 
 - 2026-10-16 — Confirm with the owner: penalty cards the empty pile cannot give are skipped (`rules.md`, provisional default).
 
