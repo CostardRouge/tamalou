@@ -1,0 +1,91 @@
+/* Design tokens, taken from Versus (costardrouge/versus, src/tokens.css) at the owner's request (ADR-0007): light values
+   on :root, dark values under prefers-color-scheme and again under [data-theme="dark"]. Same contrast promises, checked
+   by apps/web/test/tokens.test.ts: text tokens reach 4.5:1 on --bg, --surface and --surface-2; --field, the accents and
+   the focus ring reach 3:1.
+
+   Tamalou adds the card tokens (--card-*): a card is a physical object, so its face stays light in both themes, its
+   inks are checked at 4.5:1 on that face, and its back is the cobalt accent. The card theme (src/cards/) reads only
+   these; a deck of the owner's own can bring its own. */
+:root {
+  --bg: #eceef2;
+  --surface: #fafbfd;
+  --surface-2: #e1e4eb;
+  --ink: #13151b;
+  --muted: #5a6072;
+  --line: #d2d6df;
+  --field: #7a8090;
+  --a: #2743f5;
+  --b: #e4492a;
+  --b-ink: #b5361a;
+  --on-accent: #ffffff;
+  --good: #16855a;
+  --good-ink: #11704b;
+  --bad: #c23e28;
+  --shadow: 0 1px 0 rgba(19, 21, 27, 0.04), 0 12px 30px -14px rgba(19, 21, 27, 0.22);
+  --f-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "Figtree Variable", "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r-lg: 20px;
+  --r-md: 14px;
+  /* Fully round ends, whatever the height (a pill, a bar, a dot). */
+  --r-pill: 999px;
+  --card-face: #fffdf8;
+  --card-ink: #13151b;
+  --card-red: #c0281b;
+  --card-edge: #c9ced8;
+  --card-back: #2743f5;
+  --card-back-ink: #dfe5ff;
+  --felt: #dfe3ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1015;
+    --surface: #161920;
+    --surface-2: #1f232c;
+    --ink: #eceef3;
+    --muted: #9298a8;
+    --line: #2a2f3a;
+    --field: #6a7183;
+    --a: #7089ff;
+    --b: #ff7a58;
+    --b-ink: #ff7a58;
+    --on-accent: #0e1015;
+    --good: #4cc98e;
+    --good-ink: #4cc98e;
+    --bad: #ff6b52;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 14px 34px -14px rgba(0, 0, 0, 0.7);
+    --card-face: #f4f1ea;
+    --card-ink: #13151b;
+    --card-red: #b5261a;
+    --card-edge: #3a404c;
+    --card-back: #2743f5;
+    --card-back-ink: #dfe5ff;
+    --felt: #12151b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1015;
+  --surface: #161920;
+  --surface-2: #1f232c;
+  --ink: #eceef3;
+  --muted: #9298a8;
+  --line: #2a2f3a;
+  --field: #6a7183;
+  --a: #7089ff;
+  --b: #ff7a58;
+  --b-ink: #ff7a58;
+  --on-accent: #0e1015;
+  --good: #4cc98e;
+  --good-ink: #4cc98e;
+  --bad: #ff6b52;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 14px 34px -14px rgba(0, 0, 0, 0.7);
+  --card-face: #f4f1ea;
+  --card-ink: #13151b;
+  --card-red: #b5261a;
+  --card-edge: #3a404c;
+  --card-back: #2743f5;
+  --card-back-ink: #dfe5ff;
+  --felt: #12151b;
+  color-scheme: dark;
+}

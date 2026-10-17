@@ -1,0 +1,23 @@
+{
+  // One typecheck for the whole monorepo: the packages ship TypeScript sources (their package.json
+  // "exports" point at src/), so there is no build step between them and no project references.
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    // Node strips types without compiling: no enums, namespaces or parameter properties.
+    "erasableSyntaxOnly": true
+  },
+  "include": ["packages/*/src", "packages/*/test", "apps/server/src", "apps/server/test", "vitest.config.ts"]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@tamalou/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "simulate": "node src/cli/simulate.ts"
+  },
+  "dependencies": {
+    "@tamalou/shared": "workspace:*"
+  }
+}

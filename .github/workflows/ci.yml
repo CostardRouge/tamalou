@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, typecheck, test
+    # Named rather than ubuntu-latest, which moves to Ubuntu 26 from 2026-10-19.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # pnpm comes from the version pinned in package.json's packageManager field.
+      - run: corepack enable
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint and format check
+        run: pnpm exec biome ci .
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests with coverage
+        run: pnpm coverage
+
+      - name: Build the web app
+        run: pnpm build
+
+      # Bundles the Cloudflare Worker without deploying (no account needed): catches what typecheck cannot.
+      - name: Bundle the Worker
+        run: pnpm worker:check
+
+      # Random legal games end to end: fails on a crash, a refused legal move, a stall or a deadlock.
+      - name: Simulation
+        run: pnpm simulate --games 300
+
+  docker:
+    name: LAN server image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # The image the home server runs (M7): it must build, start and answer its health check.
+      - name: Build
+        run: docker build -t tamalou .
+
+      - name: Start and check health
+        run: |
+          docker run -d --name tamalou -p 8080:8080 tamalou
+          for i in $(seq 1 20); do curl -fs http://localhost:8080/api/health && exit 0; sleep 1; done
+          docker logs tamalou
+          exit 1

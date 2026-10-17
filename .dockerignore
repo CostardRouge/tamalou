@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/coverage
+**/.wrangler
+.git
+.github
+.claude
+.idea
+.vscode
+*.log
+.env
+.env.*

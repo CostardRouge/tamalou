@@ -1,0 +1,38 @@
+{
+  "name": "tamalou",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tamalou, the French card game, playable on the web: solo against bots, pass-and-play, LAN and online.",
+  "license": "MIT",
+  "author": "Steeve Pommier",
+  "type": "module",
+  "packageManager": "pnpm@12.14.0+sha512.c18ba6d87993d3d164cb5e8948f32b2c06ee854487e06cd8d86781342fb3e5bb4634367034711e86802baa9c37bea906ce1929ad08d70884c97d801df13389a6",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/web && tsc --noEmit -p apps/worker",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "simulate": "node packages/engine/src/cli/simulate.ts",
+    "bots": "node packages/bots/src/cli/duel.ts",
+    "dev": "pnpm --filter @tamalou/web dev",
+    "build": "pnpm --filter @tamalou/web build",
+    "serve:lan": "pnpm build && node apps/server/src/main.ts",
+    "worker:dev": "pnpm build && pnpm --filter @tamalou/worker exec wrangler dev",
+    "worker:check": "pnpm --filter @tamalou/worker exec wrangler deploy --dry-run --outdir .wrangler/dry-run",
+    "worker:deploy": "pnpm build && pnpm --filter @tamalou/worker exec wrangler deploy"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^24.19.1",
+    "@vitest/coverage-v8": "^5.0.5",
+    "fast-check": "^4.10.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,15 @@
+# Tamalou on the local network (docs/SPEC.md §5.4), for a home server (Portainer: Stacks → Add stack → Repository,
+# this file). Phones on the same Wi-Fi open http://<the server's address>:8080/ — the logs print it with a QR code.
+services:
+  tamalou:
+    # The image built from main; without access to it (or offline), compose builds this repository instead.
+    image: ghcr.io/costardrouge/tamalou:latest
+    build: .
+    container_name: tamalou
+    restart: unless-stopped
+    # The host's network: the server sees and prints the machine's real local addresses, and phones reach it
+    # directly. On Docker Desktop (no host network), use `ports: ["8080:8080"]` and set PUBLIC_URL instead.
+    network_mode: host
+    environment:
+      PORT: "8080"
+      # PUBLIC_URL: "http://192.168.1.20:8080/"
