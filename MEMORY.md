@@ -47,7 +47,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
 - Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device; a build-generated service worker makes solo and pass-and-play work offline — ADR-0015, `web.md`.
-- The root is a static home page (FR `/`, EN `/en/`) written at build time, the game lives under `jouer/`; the page's cards come from the card theme — ADR-0016, `site.md`.
+- The root is a static home page (FR `/`, EN `/en/`) written at build time, the game lives under `jouer/`; on it, the visitor plays a guided first round against a bot, then a hand-value quiz (the owner's pick among three directions); cards from the card theme — ADR-0016, `site.md`.
 - A legal notice (`/mentions-legales/`, `/en/legal/`) and Versus's anonymous Umami measurement, ported as is; the notice lists every event, a test holds the code to it — ADR-0017, `site.md`.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
@@ -70,7 +70,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-16 — Owner to judge M8 on his phone: sounds and vibrations (Android vibrates, iPhone does not), "Installer le jeu", a solo game in airplane mode, the English switch.
 
 - 2026-10-17 — Measurement is off until the owner adds Tamalou in Umami (insight.steevepommier.com, "Add website", domain tamalou.steevepommier.com) and sets the repository variable `UMAMI_WEBSITE_ID` to its id; also to confirm the contact address `pommier.steeve+tamalou@gmail.com` on the legal notice — ADR-0017.
-- 2026-10-17 — Owner to pick the home page among the three variants on the design canvas (A live table, shipped; B first round; C poster) — `site.md`.
+- 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 
 ## Topic files
 

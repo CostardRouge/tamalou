@@ -3,14 +3,12 @@ import { LANDING } from './text.ts';
 /**
  * The home page's markup, written at build time into index.html and en/index.html (build/pages.ts, ADR-0016): every
  * word is in the static HTML for search engines and for a visitor without JavaScript. The script (main.tsx) then
- * brings in what moves: the live table and the cards, drawn by the card theme like everywhere else (ADR-0007), into
- * the `data-card` slots and the #live box left here. Pure strings, no DOM, no React: the Vite config imports it.
+ * brings in what moves, into the boxes left here: the first round (#tutorial, whose static text is its first step) and
+ * the hand quiz (#quiz), their cards drawn by the card theme like everywhere else (ADR-0007). Pure strings, no DOM,
+ * no React: the Vite config imports it.
  */
 
 type Lang = 'fr' | 'en';
-
-const CHECK =
-  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
 
 const ICONS: Record<string, string> = {
   bot: '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 14h.01M15 14h.01"/>',
@@ -21,9 +19,6 @@ const ICONS: Record<string, string> = {
 
 const icon = (name: string) =>
   `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] ?? ''}</svg>`;
-
-/** A place for a card the script draws; empty without JavaScript, where the text beside it says everything. */
-const slot = (card: string) => `<span class="card-slot" data-card="${card}" aria-hidden="true"></span>`;
 
 export interface HomeLinks {
   /** The game. */
@@ -42,7 +37,17 @@ export function header(lang: Lang, links: { home: string; play: string; other: s
   return `<header class="nav wrap">
 <a class="brand" href="${links.home}"><span class="brand-mark" aria-hidden="true">T</span>Tamalou</a>
 <nav class="nav-links" aria-label="${t.navAria}">
-${sections ? `<a class="hide-s" href="#regles">${t.navRules}</a>\n<a class="hide-s" href="#modes">${t.navModes}</a>\n` : ''}<a href="${links.other}" hreflang="${lang === 'fr' ? 'en' : 'fr'}" lang="${lang === 'fr' ? 'en' : 'fr'}" data-lang="${lang === 'fr' ? 'en' : 'fr'}" aria-label="${t.otherLang}">${t.otherLangShort}</a>
+${
+  sections
+    ? [
+        ['manche', t.navRound],
+        ['valeurs', t.navValues],
+        ['modes', t.navModes],
+      ]
+        .map(([id, label]) => `<a class="hide-s" href="#${id}">${label}</a>\n`)
+        .join('')
+    : ''
+}<a href="${links.other}" hreflang="${lang === 'fr' ? 'en' : 'fr'}" lang="${lang === 'fr' ? 'en' : 'fr'}" data-lang="${lang === 'fr' ? 'en' : 'fr'}" aria-label="${t.otherLang}">${t.otherLangShort}</a>
 <a class="btn btn-a btn-sm" href="${links.play}">${t.navPlay}</a>
 </nav>
 </header>`;
@@ -60,76 +65,49 @@ export function footer(lang: Lang, links: HomeLinks): string {
 
 export function homeBody(lang: Lang, links: HomeLinks & { home: string }): string {
   const t = LANDING[lang];
-  const tile = (head: string, title: string, text: string) =>
-    `<div class="tile">${head}<h3>${title}</h3><p>${text}</p></div>`;
+  const tile = (m: { icon: string; t: string; p: string }) =>
+    `<div class="tile"><span class="ico">${icon(m.icon)}</span><h3>${m.t}</h3><p>${m.p}</p></div>`;
   return `${header(lang, links)}
 <main>
-<section class="hero wrap">
-<div class="hero-text">
+<section class="head wrap">
 <p class="eyebrow">${t.eyebrow}</p>
 <h1 class="h1">${t.heroTitle}</h1>
 <p class="lead">${t.heroLead}</p>
-<div class="ctas">
-<a class="btn btn-a" href="${links.play}">${t.play}</a>
-<a class="btn btn-ghost" href="#regles">${t.rulesLink}</a>
+</section>
+
+<section class="game wrap" id="manche" aria-label="${t.roundAria}" data-play="${links.play}">
+<div class="coach">
+<span class="coach-tag">${t.tagTurn.replace('{n}', '1')}</span>
+<h2>${t.peekTitle}</h2>
+<p>${t.peekText}</p>
 </div>
-<ul class="facts">${t.facts.map((f) => `<li>${CHECK}${f}</li>`).join('')}</ul>
+</section>
+
+<section class="sec wrap" id="valeurs">
+<div class="quiz">
+<div>
+<p class="kicker">${t.quizKicker}</p>
+<h2 class="h2">${t.quizTitle}</h2>
+<p class="sub">${t.quizSub}</p>
 </div>
-<div class="stage" id="live"></div>
-</section>
-<div class="wrap" id="live-steps"></div>
-
-<section class="sec wrap" id="regles">
-<h2 class="h2">${t.rulesTitle}</h2>
-<p class="sub">${t.rulesSub}</p>
-<div class="grid4">${t.rules.map((r, i) => tile(`<span class="num">0${i + 1}</span>`, r.t, r.p)).join('')}</div>
-</section>
-
-<section class="sec wrap">
-<h2 class="h2">${t.valuesTitle}</h2>
-<p class="sub">${t.valuesSub}</p>
-<ul class="values">
-${t.values.map((v) => `<li class="val">${slot(v.card)}<span class="val-name">${v.name}</span><b>${v.value}</b></li>`).join('\n')}
-<li class="val star">${slot(t.redKing.card)}<span class="val-name">${t.redKing.name}</span><b>${t.redKing.value}</b><span class="tag">${t.redKing.tag}</span></li>
-</ul>
-</section>
-
-<section class="sec wrap">
-<h2 class="h2">${t.powersTitle}</h2>
-<p class="sub">${t.powersSub}</p>
-<div class="grid4">${t.powers.map((p) => tile(`<div class="fan">${p.cards.map(slot).join('')}</div>`, p.t, p.p)).join('')}</div>
+<div class="quiz-box" id="quiz"></div>
+</div>
 </section>
 
 <section class="sec wrap" id="modes">
 <h2 class="h2">${t.modesTitle}</h2>
 <p class="sub">${t.modesSub}</p>
-<div class="grid4">${t.modes.map((m) => tile(`<span class="ico">${icon(m.icon)}</span>`, m.t, m.p)).join('')}</div>
+<div class="grid4">${t.modes.map(tile).join('')}</div>
 </section>
 
-<section class="sec wrap">
-<div class="rulebox">
+<section class="wrap">
+<div class="band">
 <div>
-<h2 class="h2">${t.tableTitle}</h2>
-<p class="sub">${t.tableSub}</p>
-<div class="presets" role="group" aria-label="${t.presetsAria}">
-${t.presets.map((p, i) => `<button class="pchip" type="button" data-preset="${p.id}" aria-pressed="${i === 0}">${p.name}</button>`).join('\n')}
+<h2 class="h2">${t.bandTitle}</h2>
+<p>${t.bandText}</p>
 </div>
+<a class="btn btn-light" href="${links.play}">${t.bandPlay}</a>
 </div>
-${t.presets
-  .map(
-    (p, i) => `<div class="rulecard" data-preset-card="${p.id}"${i === 0 ? '' : ' hidden'}>
-<p>${p.desc}</p>
-<ul class="rl">${t.presetRows.map((row, k) => `<li><span>${row}</span><span>${p.cells[k] ?? ''}</span></li>`).join('')}</ul>
-</div>`,
-  )
-  .join('\n')}
-</div>
-</section>
-
-<section class="final wrap">
-<h2 class="h2">${t.finalTitle}</h2>
-<p class="sub">${t.finalSub}</p>
-<a class="btn btn-a" href="${links.play}">${t.play}</a>
 </section>
 </main>
 ${footer(lang, links)}`;

@@ -1,111 +1,117 @@
 /**
  * The home page's texts (ADR-0016), French first and English typed against it, so a missing key fails the typecheck.
- * Read at build time (src/landing/markup.ts writes the page) and in the browser (the live table's captions): plain data,
- * no import. Inline markup (<em>, <b>) is written here on purpose and inserted as is.
+ * Read at build time (src/landing/markup.ts writes the page) and in the browser (the first round and the quiz): plain
+ * data, no import. Inline markup (<em>) is inserted as is in the page; texts the scripts draw stay plain, with
+ * ` ` for no-break spaces (never an HTML entity). Placeholders: {card}, {value}, {n}, {me}, {bot}…
  */
 
 const fr = {
   title: 'Tamalou — le jeu de cartes de mémoire et de bluff, à jouer en ligne',
   description:
-    'Tamalou, le jeu de cartes où le plus petit total gagne : quatre cartes face cachée, de la mémoire et du bluff. Seul contre des bots, à plusieurs sur un téléphone, en Wi-Fi ou en ligne. Gratuit, sans compte.',
+    'Joue ta première manche de Tamalou en une minute, ici même : quatre cartes face cachée, de la mémoire et du bluff, le plus petit total gagne. Seul contre des bots, à plusieurs sur un téléphone, en Wi-Fi ou en ligne. Gratuit, sans compte.',
   navAria: 'Sections',
-  navRules: 'Règles',
+  navRound: 'La manche',
+  navValues: 'Les valeurs',
   navModes: 'Modes',
   navPlay: 'Jouer',
   otherLang: 'English',
   otherLangShort: 'EN',
 
-  eyebrow: 'Le jeu de cartes de mémoire et de bluff',
-  heroTitle: 'Quatre cartes. Ta mémoire. Et un mot&#160;: <em>Tamalou&#160;!</em>',
+  eyebrow: 'Apprends en jouant · une minute',
+  heroTitle: 'Ta première manche de Tamalou, <em>ici même.</em>',
   heroLead:
-    'Le jeu qu’on sort en fin de repas, dans ton téléphone. Seul contre des bots, à plusieurs autour d’un même écran, sur le Wi-Fi de la maison ou en ligne avec un simple code.',
-  play: 'Jouer maintenant',
-  rulesLink: 'Les règles en une minute',
-  facts: ['Gratuit', 'Sans compte', 'Marche hors ligne', 'Toutes les règles réglables'],
+    'Pas de règles à lire : Malo, un bot pas très malin, t’attend. Suis le guide, et annonce « Tamalou ! » quand tu crois avoir le plus petit total.',
 
-  liveAria: 'Une manche de Tamalou jouée en accéléré, contre Léa et Malo',
-  liveNames: ['Léa', 'Malo', 'Toi'],
-  livePiles: ['Pioche', 'Défausse'],
-  liveQuick: 'Léa : défausse rapide !',
-  livePower: 'Pouvoir du 7',
-  liveSplash: 'Tamalou\u00a0!',
-  livePoints: '{n} pts',
-  livePause: 'Pause',
-  liveResume: 'Reprendre',
-  liveRestart: 'Revoir depuis le début',
-  liveStepsAria: 'Les étapes de la manche',
-  liveSteps: [
-    'Regarde deux cartes',
-    'Pioche',
-    'Échange ou défausse',
-    'Défausse rapide',
-    'Pouvoirs',
-    '« Tamalou ! »',
-    'Le plus petit total gagne',
-  ],
-  liveCaptions: [
-    'On mélange, on distribue…',
-    'Chacun reçoit quatre cartes, face cachée. Le but : finir la manche avec le plus petit total.',
-    'Tu regardes tes deux cartes du bas : un 2, et un Roi rouge qui vaut zéro. Retiens-les bien.',
-    'Elles se retournent. À toi de t’en souvenir.',
-    'À ton tour, tu pioches : un 3. Mieux que ce qui dort en haut à gauche ?',
-    'Tu l’échanges. Ta vieille carte part sur la défausse, face visible : c’était un 9.',
-    'Un 9 sur la défausse ? Léa en avait un : défausse rapide, même hors de son tour. Une carte de moins pour elle.',
-    'Nouveau tour, tu pioches un 7.',
-    'Tu le défausses aussitôt : son pouvoir te laisse regarder une de tes cartes. Un as, parfait.',
-    'Tu connais toute ta main : 3, 1, 2 et 0.',
-    'Six points en tout : tu annonces « Tamalou ! ». Les autres jouent un dernier tour.',
-    'On retourne tout. 6 pour toi, 20 pour Léa, 33 pour Malo : la manche est à toi.',
-  ],
+  roundAria: 'Une manche d’essai contre un bot',
+  bot: 'Malo',
+  you: 'Toi',
+  piles: ['Pioche', 'Défausse'],
+  splash: 'Tamalou !',
+  where: ['en haut à gauche', 'en haut à droite', 'en bas à gauche', 'en bas à droite'],
+  yourSlot: 'Ta carte {where}',
+  botSlot: 'La carte de Malo {where}',
+  points: '{who} : {n}',
 
-  rulesTitle: 'Les règles en une minute',
-  rulesSub:
-    'Le but&#160;: finir la manche avec le plus petit total de points. Tout le sel est dans ce que tu crois savoir de tes propres cartes.',
-  rules: [
-    { t: 'Quatre cartes, face cachée', p: 'Tu en regardes deux au début. Les autres, tu les découvriras… ou pas.' },
-    {
-      t: 'Pioche, échange ou défausse',
-      p: 'Prends la pioche ou la défausse. Garde la carte en l’échangeant avec une des tiennes, ou jette-la.',
-    },
-    {
-      t: 'Défausse rapide',
-      p: 'Même rang que la carte du dessus&#160;? Jette la tienne, même hors de ton tour. Si tu te trompes&#160;: une carte de pénalité.',
-    },
-    {
-      t: '«&#160;Tamalou&#160;!&#160;»',
-      p: 'Tu crois avoir le plus petit total&#160;? Annonce-le. Les autres jouent un dernier tour. Pas le plus bas&#160;? +10.',
-    },
-  ],
+  tagTurn: 'Ton tour · {n}',
+  tagBot: 'Au tour de Malo',
+  tagLast: 'Dernier tour',
+  tagEnd: 'Fin de la manche',
+  peekTitle: 'Retiens tes deux cartes du bas',
+  peekText: 'Touche-les pour les regarder. Elles vont se retourner : la mémoire, c’est tout le jeu.',
+  waitTitle: 'Retiens bien…',
+  waitText: 'Ce que tu vois ne restera pas affiché longtemps.',
+  calledTitle: 'Tamalou !',
+  calledText: 'Malo joue un dernier tour, puis on retourne tout.',
+  turnTitle: 'À toi de jouer',
+  turnFirst: 'Pioche une carte inconnue, ou prends la carte visible de la défausse : {card}, qui vaut {value}.',
+  turnNext: 'Pioche, prends la défausse ({card}), ou annonce « Tamalou ! » si tu crois avoir le plus petit total.',
+  lowTitle: 'La pioche est presque vide',
+  lowText: 'Dans cette manche d’essai, c’est le moment : annonce « Tamalou ! ».',
+  takeTitle: 'Tu prends {card}',
+  takeText: 'Une carte prise dans la défausse doit être gardée : touche la carte qu’elle remplace.',
+  drawTitle: 'Tu pioches {card}',
+  drawPeekOwn:
+    'Défausse-la tout de suite : son pouvoir te laisse regarder une de tes cartes. Ou garde-la en touchant une carte.',
+  drawPeekOther: 'Défausse-la pour regarder une carte de Malo, ou garde-la en touchant une de tes cartes.',
+  drawLow: 'C’est une petite carte : garde-la. Touche une de tes cartes du haut, celles que tu ne connais pas.',
+  drawOther: 'Garde-la en touchant la carte qu’elle remplace, ou défausse-la.',
+  powerOwnTitle: 'Pouvoir : regarde une de tes cartes',
+  powerOwnText: 'Touche celle que tu ne connais pas encore.',
+  powerOtherTitle: 'Pouvoir : regarde une carte de Malo',
+  powerOtherText: 'Touche une de ses cartes. Savoir ce qu’il cache aide à choisir le moment de dire Tamalou.',
+  quickTitle: 'Défausse rapide !',
+  quickText: 'Malo vient de jeter {card}. Tu en as une de même rang, et tu sais où : touche-la, vite.',
+  botTitle: 'Malo joue…',
+  botText: 'Il pioche, puis garde ou jette.',
+  winTitle: 'Gagné, {me} contre {bot} !',
+  winText: 'Tu as le plus petit total : la manche est à toi. Une vraie partie enchaîne les manches jusqu’à 100 points.',
+  loseTitle: 'Raté : {me} contre {bot}',
+  loseText: 'Annoncer Tamalou sans le plus petit total coûte +10. Une revanche ?',
+  winLine: 'Prêt pour une vraie table ?',
+  loseLine: 'La revanche t’attend.',
 
-  valuesTitle: 'Ce que valent les cartes',
-  valuesSub: 'Chaque carte compte sa valeur. Les têtes coûtent cher, et une seule ne vaut rien du tout.',
-  values: [
-    { card: 'A-S', name: 'As', value: '1' },
-    { card: '2-H', name: 'Deux', value: '2' },
-    { card: '5-C', name: 'Cinq', value: '5' },
-    { card: '9-D', name: 'Neuf', value: '9' },
-    { card: 'J-S', name: 'Valet', value: '10' },
-    { card: 'Q-H', name: 'Dame', value: '10' },
-    { card: 'K-C', name: 'Roi noir', value: '10' },
-  ],
-  redKing: { card: 'K-H', name: 'Roi rouge', value: '0', tag: 'La carte que tout le monde veut' },
-  pointsWord: 'points',
+  noteSwapOut: 'Ta carte part sur la défausse : c’était {card}.',
+  noteQuickHit: 'Une carte de moins ! Et Malo n’a rien vu venir.',
+  noteQuickMiss: 'Ce n’était pas la bonne. En vrai, c’est une carte de pénalité ; on te la pardonne.',
+  noteBotSwap: 'Malo échange une carte et défausse {card}.',
+  noteBotDiscard: 'Malo défausse {card}.',
 
-  powersTitle: 'Des cartes qui ont un pouvoir',
-  powersSub: 'Pioche-les, puis défausse-les aussitôt&#160;: leur pouvoir s’active. Tu peux toujours t’en passer.',
-  powers: [
-    { cards: ['7-C', '8-H'], t: 'Regarde une de tes cartes', p: 'Pour enfin savoir ce qui dort en haut à gauche.' },
-    {
-      cards: ['9-D', '10-S'],
-      t: 'Regarde une carte d’un adversaire',
-      p: 'Il bluffe peut-être moins que tu ne crois.',
-    },
-    { cards: ['J-C'], t: 'Échange à l’aveugle', p: 'Une de tes cartes contre une des siennes, sans regarder.' },
-    { cards: ['Q-D'], t: 'Regarde, puis décide', p: 'Regarde n’importe quelle carte, et échange-la si elle te plaît.' },
-  ],
+  actDraw: 'Piocher',
+  actTake: 'Prendre la défausse',
+  actCall: 'Tamalou !',
+  actDiscard: 'Défausser',
+  actPass: 'Laisser passer',
+  actReplay: 'Rejouer cette manche',
+  play: 'Jouer une vraie partie',
 
-  modesTitle: 'Quatre façons de jouer',
-  modesSub: 'La même partie partout, avec ou sans internet. Bots et humains peuvent se mélanger à la même table.',
+  movesTitle: 'Les gestes du Tamalou\u00a0:',
+  moves: ['Regarder', 'Piocher', 'Échanger', 'Défausser', 'Un pouvoir', 'Défausse rapide', 'Tamalou !'],
+
+  // How a card is named in a sentence.
+  cardAce: 'un as',
+  cardNumber: 'un {n}',
+  cardJack: 'un Valet',
+  cardQueen: 'une Dame',
+  cardKing: 'un Roi {color}',
+  red: 'rouge',
+  black: 'noir',
+
+  quizKicker: 'Petit test',
+  quizTitle: 'Combien vaut cette main ?',
+  quizSub:
+    'Les têtes valent 10, l’as 1, le reste sa valeur. Et le Roi rouge ? Zéro. Le plus petit total gagne la manche.',
+  quizAria: 'Ta réponse',
+  quizAsk: 'Fais le compte, puis choisis.',
+  quizRightKing: 'Exact ! Et tu n’as pas oublié que le Roi rouge vaut zéro.',
+  quizRight: 'Exact ! Tu es prêt pour la table.',
+  quizWrongKing: 'Raté : {n}. Le Roi rouge vaut zéro, pas 10.',
+  quizWrong: 'Raté : {n}. Les têtes valent 10, l’as vaut 1.',
+  quizNext: 'Main suivante',
+  quizScore: '{good} sur {tries}',
+
+  modesTitle: 'Ensuite, joue pour de vrai',
+  modesSub:
+    'Des manches qui s’enchaînent jusqu’à 100 points, contre des bots ou des humains, ou les deux à la même table.',
   modes: [
     {
       icon: 'bot',
@@ -120,39 +126,15 @@ const fr = {
     {
       icon: 'home',
       t: 'Sur le réseau de la maison',
-      p: 'Chacun sur son téléphone, sans internet&#160;: un petit serveur et un QR code.',
+      p: 'Chacun sur son téléphone, sans internet : un petit serveur et un QR code.',
     },
     { icon: 'globe', t: 'En ligne', p: 'Une salle éphémère, un code ou un lien à partager. Pas de compte.' },
   ],
 
-  tableTitle: 'Tes règles, ta table',
-  tableSub:
-    'Chez toi, le Valet ne fait peut-être pas la même chose. Avant la partie, chaque règle se règle&#160;: valeurs, pouvoirs, pénalités, fin de partie. Et se partage d’un lien.',
-  presetsAria: 'Préréglages',
-  presetRows: ['Éliminé à', 'Tamalou raté', 'Fin de partie', 'Cartes déjà vues'],
-  presets: [
-    {
-      id: 'classic',
-      name: 'Classique',
-      desc: 'Les règles de la maison : 4 cartes, éliminé à 100, +10 pour un Tamalou raté.',
-      cells: ['100', '+10', 'Dernier en lice', 'Cachées'],
-    },
-    {
-      id: 'quick',
-      name: 'Rapide',
-      desc: 'Une partie courte : éliminé à 50, et la partie s’arrête au premier éliminé.',
-      cells: ['50', '+10', 'Premier éliminé', 'Cachées'],
-    },
-    {
-      id: 'beginner',
-      name: 'Débutant',
-      desc: 'Les cartes déjà vues restent affichées : pour apprendre sans travailler sa mémoire.',
-      cells: ['100', '+10', 'Dernier en lice', 'Affichées'],
-    },
-  ],
-
-  finalTitle: 'Prêt à oublier où est ton Roi&#160;?',
-  finalSub: 'Dans le navigateur, sur téléphone, tablette ou ordinateur. Installable comme une app.',
+  bandTitle: 'Tes règles, ta table',
+  bandText:
+    'Le Valet ne fait pas la même chose chez toi ? Chaque règle se règle avant la partie, et se partage d’un lien. Gratuit, sans compte, marche hors ligne.',
+  bandPlay: 'Jouer maintenant',
 
   footBy: 'Tamalou, un jeu de <a href="{url}">{name}</a>',
   footAria: 'Pied de page',
@@ -165,101 +147,107 @@ export type LandingText = typeof fr;
 const en: LandingText = {
   title: 'Tamalou — the memory and bluffing card game, to play online',
   description:
-    'Tamalou, the French card game where the lowest total wins: four face-down cards, memory and bluff. Solo against bots, around one phone, on your Wi-Fi or online. Free, no account.',
+    'Play your first round of Tamalou in one minute, right here: four face-down cards, memory and bluff, the lowest total wins. Solo against bots, around one phone, on your Wi-Fi or online. Free, no account.',
   navAria: 'Sections',
-  navRules: 'Rules',
+  navRound: 'The round',
+  navValues: 'Card values',
   navModes: 'Modes',
   navPlay: 'Play',
   otherLang: 'Français',
   otherLangShort: 'FR',
 
-  eyebrow: 'The memory and bluffing card game',
-  heroTitle: 'Four cards. Your memory. And one word: <em>Tamalou!</em>',
+  eyebrow: 'Learn by playing · one minute',
+  heroTitle: 'Your first round of Tamalou, <em>right here.</em>',
   heroLead:
-    'The game French families bring out after dinner, now on your phone. Solo against bots, together around one screen, on your home Wi-Fi or online with a simple code.',
-  play: 'Play now',
-  rulesLink: 'The rules in one minute',
-  facts: ['Free', 'No account', 'Works offline', 'Every rule adjustable'],
+    'No rules to read: Malo, a not-so-clever bot, is waiting. Follow the guide, and call “Tamalou!” when you think your total is the lowest.',
 
-  liveAria: 'A round of Tamalou played fast, against Léa and Malo',
-  liveNames: ['Léa', 'Malo', 'You'],
-  livePiles: ['Deck', 'Discard'],
-  liveQuick: 'Léa: quick discard!',
-  livePower: 'Power of the 7',
-  liveSplash: 'Tamalou!',
-  livePoints: '{n} pts',
-  livePause: 'Pause',
-  liveResume: 'Resume',
-  liveRestart: 'Watch from the start',
-  liveStepsAria: 'The steps of the round',
-  liveSteps: [
-    'Peek at two cards',
-    'Draw',
-    'Swap or discard',
-    'Quick discard',
-    'Powers',
-    '“Tamalou!”',
-    'Lowest total wins',
-  ],
-  liveCaptions: [
-    'Shuffle, deal…',
-    'Everyone gets four cards, face down. The goal: end the round with the lowest total.',
-    'You peek at your two bottom cards: a 2, and a red King worth zero. Remember them.',
-    'They turn back over. Now it is up to your memory.',
-    'Your turn: you draw a 3. Better than whatever sleeps top left?',
-    'You swap it in. Your old card goes face up on the discard pile: it was a 9.',
-    'A 9 on the discard? Léa had one: quick discard, even out of turn. One card fewer for her.',
-    'Next turn, you draw a 7.',
-    'You discard it at once: its power lets you look at one of your cards. An ace, perfect.',
-    'You know your whole hand: 3, 1, 2 and 0.',
-    'Six points in all: you call “Tamalou!”. Everyone else plays one last turn.',
-    'All cards face up. 6 for you, 20 for Léa, 33 for Malo: the round is yours.',
-  ],
+  roundAria: 'A practice round against a bot',
+  bot: 'Malo',
+  you: 'You',
+  piles: ['Deck', 'Discard'],
+  splash: 'Tamalou!',
+  where: ['top left', 'top right', 'bottom left', 'bottom right'],
+  yourSlot: 'Your card {where}',
+  botSlot: 'Malo’s card {where}',
+  points: '{who}: {n}',
 
-  rulesTitle: 'The rules in one minute',
-  rulesSub:
-    'The goal: end the round with the lowest total. The fun lies in what you think you know about your own cards.',
-  rules: [
-    { t: 'Four cards, face down', p: 'You peek at two at the start. The others, you will find out… or not.' },
-    {
-      t: 'Draw, swap or discard',
-      p: 'Take from the deck or the discard. Keep the card by swapping it with one of yours, or throw it away.',
-    },
-    {
-      t: 'Quick discard',
-      p: 'Same rank as the top card? Throw yours, even out of turn. Get it wrong: a penalty card.',
-    },
-    {
-      t: '“Tamalou!”',
-      p: 'Think you have the lowest total? Call it. Everyone else plays one last turn. Not the lowest? +10.',
-    },
-  ],
+  tagTurn: 'Your turn · {n}',
+  tagBot: 'Malo’s turn',
+  tagLast: 'Last turn',
+  tagEnd: 'End of the round',
+  peekTitle: 'Remember your two bottom cards',
+  peekText: 'Tap them to look. They will turn back over: memory is the whole game.',
+  waitTitle: 'Remember…',
+  waitText: 'What you see will not stay on screen for long.',
+  calledTitle: 'Tamalou!',
+  calledText: 'Malo plays one last turn, then every card is turned over.',
+  turnTitle: 'Your move',
+  turnFirst: 'Draw an unknown card, or take the visible one on the discard pile: {card}, worth {value}.',
+  turnNext: 'Draw, take the discard ({card}), or call “Tamalou!” if you think your total is the lowest.',
+  lowTitle: 'The deck is nearly empty',
+  lowText: 'In this practice round, now is the time: call “Tamalou!”.',
+  takeTitle: 'You take {card}',
+  takeText: 'A card taken from the discard must be kept: tap the card it replaces.',
+  drawTitle: 'You draw {card}',
+  drawPeekOwn: 'Discard it right away: its power lets you look at one of your cards. Or keep it by tapping a card.',
+  drawPeekOther: 'Discard it to look at one of Malo’s cards, or keep it by tapping one of yours.',
+  drawLow: 'A low card: keep it. Tap one of your top cards, the ones you do not know.',
+  drawOther: 'Keep it by tapping the card it replaces, or discard it.',
+  powerOwnTitle: 'Power: look at one of your cards',
+  powerOwnText: 'Tap one you do not know yet.',
+  powerOtherTitle: 'Power: look at one of Malo’s cards',
+  powerOtherText: 'Tap one of his cards. Knowing what he hides helps you pick the moment to say Tamalou.',
+  quickTitle: 'Quick discard!',
+  quickText: 'Malo just threw {card}. You have one of the same rank and you know where: tap it, quick.',
+  botTitle: 'Malo is playing…',
+  botText: 'He draws, then keeps or throws.',
+  winTitle: 'You win, {me} to {bot}!',
+  winText: 'Yours is the lowest total: the round is yours. A real game chains rounds up to 100 points.',
+  loseTitle: 'Missed: {me} to {bot}',
+  loseText: 'Calling Tamalou without the lowest total costs +10. Rematch?',
+  winLine: 'Ready for a real table?',
+  loseLine: 'Your rematch is waiting.',
 
-  valuesTitle: 'What the cards are worth',
-  valuesSub: 'Every card counts its value. Face cards cost a lot, and one is worth nothing at all.',
-  values: [
-    { card: 'A-S', name: 'Ace', value: '1' },
-    { card: '2-H', name: 'Two', value: '2' },
-    { card: '5-C', name: 'Five', value: '5' },
-    { card: '9-D', name: 'Nine', value: '9' },
-    { card: 'J-S', name: 'Jack', value: '10' },
-    { card: 'Q-H', name: 'Queen', value: '10' },
-    { card: 'K-C', name: 'Black King', value: '10' },
-  ],
-  redKing: { card: 'K-H', name: 'Red King', value: '0', tag: 'The card everyone wants' },
-  pointsWord: 'points',
+  noteSwapOut: 'Your card goes to the discard pile: it was {card}.',
+  noteQuickHit: 'One card fewer! Malo never saw it coming.',
+  noteQuickMiss: 'Not that one. In a real game, that is a penalty card; this time it is forgiven.',
+  noteBotSwap: 'Malo swaps a card and discards {card}.',
+  noteBotDiscard: 'Malo discards {card}.',
 
-  powersTitle: 'Cards with a power',
-  powersSub: 'Draw one, then discard it at once: its power wakes up. You can always skip it.',
-  powers: [
-    { cards: ['7-C', '8-H'], t: 'Look at one of your cards', p: 'To finally know what sleeps top left.' },
-    { cards: ['9-D', '10-S'], t: 'Look at an opponent’s card', p: 'Maybe they bluff less than you think.' },
-    { cards: ['J-C'], t: 'Blind swap', p: 'One of your cards for one of theirs, without looking.' },
-    { cards: ['Q-D'], t: 'Look, then decide', p: 'Look at any card, and swap it if you like it.' },
-  ],
+  actDraw: 'Draw',
+  actTake: 'Take the discard',
+  actCall: 'Tamalou!',
+  actDiscard: 'Discard',
+  actPass: 'Let it go',
+  actReplay: 'Play this round again',
+  play: 'Play a real game',
 
-  modesTitle: 'Four ways to play',
-  modesSub: 'The same game everywhere, with or without internet. Bots and humans can share the same table.',
+  movesTitle: 'The moves of Tamalou:',
+  moves: ['Peek', 'Draw', 'Swap', 'Discard', 'A power', 'Quick discard', 'Tamalou!'],
+
+  cardAce: 'an ace',
+  cardNumber: 'a {n}',
+  cardJack: 'a Jack',
+  cardQueen: 'a Queen',
+  cardKing: 'a {color} King',
+  red: 'red',
+  black: 'black',
+
+  quizKicker: 'Quick test',
+  quizTitle: 'What is this hand worth?',
+  quizSub:
+    'Face cards are worth 10, the ace 1, the rest their number. And the red King? Zero. The lowest total wins the round.',
+  quizAria: 'Your answer',
+  quizAsk: 'Add it up, then pick.',
+  quizRightKing: 'Right! And you remembered the red King is worth zero.',
+  quizRight: 'Right! You are ready for the table.',
+  quizWrongKing: 'Missed: {n}. The red King is worth zero, not 10.',
+  quizWrong: 'Missed: {n}. Face cards are worth 10, the ace 1.',
+  quizNext: 'Next hand',
+  quizScore: '{good} out of {tries}',
+
+  modesTitle: 'Then play for real',
+  modesSub: 'Rounds that follow one another up to 100 points, against bots or humans, or both at the same table.',
   modes: [
     {
       icon: 'bot',
@@ -275,34 +263,10 @@ const en: LandingText = {
     { icon: 'globe', t: 'Online', p: 'A short-lived room, a code or a link to share. No account.' },
   ],
 
-  tableTitle: 'Your rules, your table',
-  tableSub:
-    'At your place, the Jack might do something else. Before the game, every rule can be set: values, powers, penalties, how the game ends. And shared with a link.',
-  presetsAria: 'Presets',
-  presetRows: ['Out at', 'Failed Tamalou', 'Game ends', 'Cards already seen'],
-  presets: [
-    {
-      id: 'classic',
-      name: 'Classic',
-      desc: 'House rules: 4 cards, out at 100, +10 for a failed Tamalou.',
-      cells: ['100', '+10', 'Last one standing', 'Hidden'],
-    },
-    {
-      id: 'quick',
-      name: 'Quick',
-      desc: 'A short game: out at 50, and the game stops at the first player out.',
-      cells: ['50', '+10', 'First one out', 'Hidden'],
-    },
-    {
-      id: 'beginner',
-      name: 'Beginner',
-      desc: 'Cards already seen stay visible: learn the game without training your memory.',
-      cells: ['100', '+10', 'Last one standing', 'Shown'],
-    },
-  ],
-
-  finalTitle: 'Ready to forget where your King is?',
-  finalSub: 'In the browser, on a phone, a tablet or a computer. Installable as an app.',
+  bandTitle: 'Your rules, your table',
+  bandText:
+    'The Jack does something else at your place? Every rule can be set before the game, and shared with a link. Free, no account, works offline.',
+  bandPlay: 'Play now',
 
   footBy: 'Tamalou, a game by <a href="{url}">{name}</a>',
   footAria: 'Footer',
@@ -311,3 +275,18 @@ const en: LandingText = {
 };
 
 export const LANDING: Record<'fr' | 'en', LandingText> = { fr, en };
+
+/** "{x} and {y}" → the values given. */
+export const fill = (s: string, values: Record<string, string | number>) =>
+  s.replace(/\{(\w+)\}/g, (m, k: string) => (k in values ? String(values[k]) : m));
+
+/** A card in a sentence: "un Roi rouge", "an 8". */
+export function cardWords(t: LandingText, c: { rank: string; suit: string | null }): string {
+  if (c.rank === 'A') return t.cardAce;
+  if (c.rank === 'J') return t.cardJack;
+  if (c.rank === 'Q') return t.cardQueen;
+  if (c.rank === 'K') return fill(t.cardKing, { color: c.suit === 'H' || c.suit === 'D' ? t.red : t.black });
+  // English says "an 8"; French has no such case.
+  if (c.rank === '8' && t.cardNumber === 'a {n}') return 'an 8';
+  return fill(t.cardNumber, { n: c.rank });
+}

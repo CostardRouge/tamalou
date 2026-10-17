@@ -1,17 +1,15 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { rulesFromPreset } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
 import { inputs, link, pageBody, pageHead } from '../build/pages.ts';
 import { serviceWorkerSource } from '../build/pwa.ts';
 import { CONTACT, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '../build/site.ts';
-import { DURATIONS } from '../src/landing/live.tsx';
 import { LANDING } from '../src/landing/text.ts';
 import { LEGAL } from '../src/legal/text.ts';
 
 // The site's pages (ADR-0016): every page has its shell, the home pages carry their words in the static HTML, links
-// stay relative (the same build serves a domain's root and GitHub Pages' /tamalou/), and what the home page says about
-// the presets is what the presets do.
+// stay relative (the same build serves a domain's root and GitHub Pages' /tamalou/). The first round and the quiz have
+// their own tests (landing.test.ts).
 
 const root = resolve(import.meta.dirname, '..');
 const home = PAGES.find((p) => p.file === 'index.html');
@@ -48,14 +46,14 @@ describe('pages', () => {
       for (const text of [
         t.heroTitle,
         t.heroLead,
-        t.rulesTitle,
-        t.valuesTitle,
-        t.powersTitle,
+        t.peekTitle,
+        t.peekText,
+        t.quizTitle,
+        t.quizSub,
         t.modesTitle,
-        t.finalTitle,
+        t.bandText,
       ])
         expect(body).toContain(text);
-      for (const r of t.rules) expect(body).toContain(r.p);
       for (const m of t.modes) expect(body).toContain(m.t);
       expect(body).toContain(`href="${link(page, PLAY_PATH)}"`);
       expect(body).not.toMatch(/href="\/[^/]/);
@@ -79,25 +77,6 @@ describe('pages', () => {
     expect(siteUrl({})).toBe(SITE_URL);
     expect(siteUrl({ VITE_SITE_URL: 'https://example.org/tamalou' })).toBe('https://example.org/tamalou/');
     expect(siteUrl({ VITE_SITE_URL: 'javascript:alert(1)' })).toBe(SITE_URL);
-  });
-
-  it('says what the presets really do', () => {
-    for (const lang of ['fr', 'en'] as const) {
-      for (const p of LANDING[lang].presets) {
-        const rules = rulesFromPreset(p.id);
-        expect(p.cells[0]).toBe(String(rules.gameEnd.threshold));
-        expect(p.cells[1]).toBe(`+${rules.tamalou.failPenalty.amount}`);
-        expect(p.cells[2]).toBe(LANDING[lang].presets[rules.gameEnd.thresholdEnd === 'lastStanding' ? 0 : 1]?.cells[2]);
-        expect(p.cells[3]).toBe(LANDING[lang].presets[rules.assist.showKnownCards ? 2 : 0]?.cells[3]);
-      }
-    }
-  });
-
-  it('gives every scene of the live table a caption, in both languages', () => {
-    for (const lang of ['fr', 'en'] as const) {
-      expect(LANDING[lang].liveCaptions).toHaveLength(DURATIONS.length);
-      expect(LANDING[lang].liveSteps).toHaveLength(7);
-    }
   });
 
   it('serves a cached page for any folder offline, and the game for anything else', () => {
@@ -142,7 +121,15 @@ describe('pages', () => {
       }
     };
     walk(resolve(root, 'src'));
-    expect([...sent].sort()).toEqual(['app-installed', 'game-over', 'game-started', 'room-created', 'rules-shared']);
+    expect([...sent].sort()).toEqual([
+      'app-installed',
+      'game-over',
+      'game-started',
+      'quiz-answered',
+      'room-created',
+      'rules-shared',
+      'tutorial-finished',
+    ]);
     expect(LEGAL.fr.count2).toContain('une installation');
     expect(LEGAL.en.count3).toContain('a room’s code');
   });

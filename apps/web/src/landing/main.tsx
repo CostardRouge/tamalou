@@ -6,16 +6,15 @@ import '../styles/cards.css';
 import './landing.css';
 import { MotionConfig } from 'motion/react';
 import { StrictMode } from 'react';
-import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { startAnalytics, trackPage } from '../audience.ts';
-import { CardView } from '../cards/CardView.tsx';
 import { setLang } from '../i18n/index.ts';
-import { cardOf, LiveTable } from './live.tsx';
+import { Quiz } from './quiz.tsx';
 import { LANDING } from './text.ts';
+import { Tutorial } from './tutorial.tsx';
 
-// The home page's script (ADR-0016). The words are already in the page (markup.ts); this brings what moves: the live
-// table, the cards beside the values and the powers (drawn by the card theme), and the preset buttons.
+// The home page's script (ADR-0016). The words are already in the page (markup.ts); this brings what moves: the first
+// round against Malo and the hand quiz, their cards drawn by the card theme.
 
 startAnalytics();
 trackPage();
@@ -31,25 +30,22 @@ document.addEventListener('click', (e) => {
   if (to === 'en' || to === 'fr') setLang(to);
 });
 
-const live = document.getElementById('live');
-const slots = [...document.querySelectorAll<HTMLElement>('[data-card]')];
-if (live) {
-  createRoot(live).render(
+const text = LANDING[lang];
+const round = document.getElementById('manche');
+if (round) {
+  createRoot(round).render(
     <StrictMode>
       <MotionConfig reducedMotion="user">
-        <LiveTable text={LANDING[lang]} steps={document.getElementById('live-steps')} />
-        {slots.map((el, i) => createPortal(<CardView card={cardOf(el.dataset.card ?? '', 100 + i)} label="" />, el))}
+        <Tutorial text={text} play={round.dataset.play ?? 'jouer/'} />
       </MotionConfig>
     </StrictMode>,
   );
 }
-
-// "Your rules, your table": one preset's summary at a time.
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-preset]')) {
-  button.addEventListener('click', () => {
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-preset]'))
-      b.setAttribute('aria-pressed', String(b === button));
-    for (const card of document.querySelectorAll<HTMLElement>('[data-preset-card]'))
-      card.hidden = card.dataset.presetCard !== button.dataset.preset;
-  });
+const quiz = document.getElementById('quiz');
+if (quiz) {
+  createRoot(quiz).render(
+    <StrictMode>
+      <Quiz text={text} />
+    </StrictMode>,
+  );
 }

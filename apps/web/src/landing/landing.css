@@ -170,19 +170,21 @@ body.site {
   font-size: 15px;
 }
 
-/* ------------------------------------------------------------ hero */
+/* ------------------------------------------------------------ head */
 
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 56px;
-  align-items: center;
-  padding-block: 40px 48px;
+.head {
+  padding-block: 32px 28px;
 }
 
-.eyebrow {
+.head > * {
+  max-width: 820px;
+}
+
+.eyebrow,
+.kicker {
   font-family: var(--f-mono);
   font-size: 13px;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--b-ink);
@@ -192,250 +194,257 @@ body.site {
 .h1 {
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: clamp(40px, 6vw, 74px);
-  line-height: 0.98;
+  font-size: clamp(38px, 5.6vw, 68px);
+  line-height: 1;
   letter-spacing: -0.02em;
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
 .h1 em {
   font-style: normal;
-  color: var(--b-ink);
+  color: var(--a);
 }
 
 .lead {
   font-size: 20px;
   color: var(--muted);
-  max-width: 560px;
-  margin: 0 0 28px;
+  max-width: 780px;
+  margin: 0;
 }
 
-.ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 22px;
+/* ------------------------------------------------------------ the first round (tutorial.tsx) */
+
+.game {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  padding-bottom: 80px;
 }
 
-.facts {
+.coach {
+  position: sticky;
+  top: 16px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  font-size: 14px;
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px;
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.coach-tag {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--muted);
+}
+
+.coach h2 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.coach p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16.5px;
+}
+
+.coach p:first-of-type {
+  min-height: 78px;
+}
+
+.coach-note {
+  min-height: 22px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--b-ink);
+}
+
+.coach .coach-note {
+  color: var(--b-ink);
+}
+
+.coach-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-b {
+  background: var(--b-ink);
+  color: var(--on-accent);
+}
+
+.coach-after {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.coach-after b {
+  font-family: var(--f-display);
+  font-size: 18px;
+}
+
+.coach-moves {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.coach-moves h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.coach-moves h3 b {
+  font-family: var(--f-mono);
+  color: var(--ink);
+}
+
+.coach-moves ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.facts li {
+.coach-moves li {
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+.coach-moves li.ok {
+  background: var(--good-ink);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+.board-box {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  justify-content: center;
 }
 
-.facts svg {
-  color: var(--good-ink);
-}
-
-/* ------------------------------------------------------------ the live table (live.tsx) */
-
-.stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  min-height: 760px;
-}
-
-.lt-phone {
-  width: 364px;
-  padding: 12px;
-  border-radius: 44px;
-  background: var(--surface);
-  box-shadow:
-    var(--shadow),
-    inset 0 0 0 1px var(--line);
-}
-
-.lt-screen {
+/* The table keeps its drawing size (520×560) and shrinks as a whole on a phone. */
+.board {
   position: relative;
-  width: 340px;
-  height: 600px;
-  border-radius: 32px;
+  flex: none;
+  width: 520px;
+  height: 560px;
+  border-radius: 28px;
   background: var(--felt);
+  box-shadow: inset 0 0 0 1px var(--line);
   overflow: hidden;
 }
 
-.lt-card {
+.board-card {
   position: absolute;
   left: 0;
   top: 0;
 }
 
-.lt-card .card {
-  --w: 66px;
+.board-card .card {
+  --w: 70px;
 }
 
-.lt-glow .card-side {
-  box-shadow:
-    0 0 0 3px var(--a),
-    0 4px 14px -4px var(--a);
-}
-
-.lt-who {
+.who {
   position: absolute;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
   font-family: var(--f-display);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
-  padding: 2px 8px;
-  border-radius: var(--r-pill);
   transition:
     background 0.3s,
     color 0.3s;
 }
 
-.lt-who.on {
+.who.on {
   background: var(--a);
   color: var(--on-accent);
 }
 
-.lt-pile {
+.pile {
   position: absolute;
-  width: 62px;
+  width: 64px;
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--muted);
 }
 
-.lt-bubble,
-.lt-chip {
+.chip {
   position: absolute;
-  z-index: 41;
+  z-index: 75;
+  padding: 4px 12px;
   border-radius: var(--r-pill);
+  background: var(--surface);
   box-shadow: var(--shadow);
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
   white-space: nowrap;
 }
 
-.lt-bubble {
-  background: var(--b-ink);
-  color: var(--on-accent);
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: 14px;
-  padding: 6px 12px;
-}
-
-.lt-bubble.power {
-  background: var(--a);
-  color: var(--on-accent);
-}
-
-.lt-chip {
-  font-family: var(--f-mono);
-  font-weight: 700;
-  font-size: 13px;
-  padding: 3px 10px;
-  background: var(--surface);
-  color: var(--ink);
-}
-
-.lt-chip.win {
+.chip.win {
   background: var(--good-ink);
   color: var(--on-accent);
 }
 
-.lt-splash {
+.splash {
   position: absolute;
   inset: 0;
-  z-index: 50;
+  z-index: 90;
   display: grid;
   place-items: center;
   background: rgb(14 16 21 / 0.38);
 }
 
-.lt-splash span {
+.splash span {
+  padding: 12px 32px;
+  border-radius: 26px;
+  background: var(--b-ink);
+  box-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.5);
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: 56px;
+  font-size: 72px;
   color: var(--on-accent);
-  background: var(--b-ink);
-  padding: 10px 26px;
-  border-radius: 22px;
-  box-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.5);
-}
-
-.lt-caption {
-  min-height: 84px;
-  max-width: 364px;
-  margin: 0;
-  font-size: 16px;
-  text-align: center;
-}
-
-.lt-controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-
-.lt-steps {
-  list-style: none;
-  margin: 0 0 72px;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.lt-step {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  width: 100%;
-  min-height: 64px;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: var(--r-md);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: left;
-  color: var(--muted);
-  cursor: pointer;
-  transition:
-    background 0.3s,
-    color 0.3s;
-}
-
-.lt-step b {
-  font-family: var(--f-mono);
-  font-size: 12px;
-}
-
-.lt-step[aria-current="step"] {
-  background: var(--ink);
-  color: var(--bg);
-  box-shadow: none;
 }
 
 /* ------------------------------------------------------------ sections */
 
 .sec {
-  padding-block: 88px;
+  padding-block: 80px;
   border-top: 1px solid var(--line);
 }
 
 .h2 {
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: clamp(30px, 4vw, 46px);
+  font-size: clamp(30px, 4vw, 44px);
   line-height: 1.05;
   letter-spacing: -0.015em;
   margin: 0 0 14px;
@@ -445,7 +454,7 @@ body.site {
   color: var(--muted);
   font-size: 18px;
   max-width: 640px;
-  margin: 0 0 40px;
+  margin: 0 0 36px;
 }
 
 .grid4 {
@@ -464,7 +473,7 @@ body.site {
 .tile h3 {
   font-family: var(--f-display);
   font-weight: 700;
-  font-size: 21px;
+  font-size: 20px;
   line-height: 1.15;
   margin: 12px 0 8px;
 }
@@ -473,13 +482,6 @@ body.site {
   margin: 0;
   color: var(--muted);
   font-size: 15.5px;
-}
-
-.num {
-  font-family: var(--f-mono);
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--b-ink);
 }
 
 .ico {
@@ -492,183 +494,181 @@ body.site {
   color: var(--a);
 }
 
-.card-slot {
-  display: block;
+/* ------------------------------------------------------------ the hand quiz (quiz.tsx) */
+
+.quiz {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: center;
 }
 
-.card-slot .card {
-  --w: 64px;
+.quiz .sub {
+  margin-bottom: 0;
 }
 
-.values {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.quiz-hand {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px 14px;
-  align-items: flex-end;
+  gap: 14px;
+  margin: 0 0 30px;
+  padding: 0;
+  list-style: none;
 }
 
-.val {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 72px;
+.quiz-hand li {
+  position: relative;
+  animation: deal 0.5s cubic-bezier(0.2, 1.2, 0.4, 1) backwards;
 }
 
-.val .card-slot {
-  margin-bottom: 6px;
+.quiz-hand li:nth-child(2) {
+  animation-delay: 0.08s;
 }
 
-.val-name {
-  font-size: 13px;
+.quiz-hand li:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.quiz-hand li:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+@keyframes deal {
+  from {
+    transform: translateY(-30px) rotate(-8deg);
+    opacity: 0;
+  }
+}
+
+.quiz-hand .card {
+  --w: 96px;
+}
+
+.quiz-value {
+  position: absolute;
+  bottom: -26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 15px;
   color: var(--muted);
 }
 
-.val b {
-  font-family: var(--f-mono);
-  font-size: 16px;
-}
-
-.val.star .card {
-  --w: 84px;
-}
-
-.val.star .card-side {
-  box-shadow:
-    0 0 0 3px var(--good),
-    0 12px 28px -8px var(--good);
-}
-
-.val.star b,
-.val .tag {
-  color: var(--good-ink);
-}
-
-.val .tag {
-  font-size: 13px;
-  font-weight: 700;
-  max-width: 130px;
-  text-align: center;
-  line-height: 1.25;
-}
-
-.fan {
-  display: flex;
-  min-height: 64px;
-  margin-bottom: 6px;
-}
-
-.fan .card {
-  --w: 46px;
-}
-
-.fan .card-slot + .card-slot {
-  margin-left: -14px;
-  transform: rotate(8deg);
-}
-
-.rulebox {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 40px;
-  align-items: center;
-}
-
-.rulebox .sub {
-  margin-bottom: 24px;
-}
-
-.presets {
+.quiz-answers {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-bottom: 14px;
 }
 
-.pchip {
-  min-height: 44px;
+.quiz-answer {
+  min-width: 76px;
+  min-height: 56px;
   padding: 0 18px;
   border: 0;
-  border-radius: var(--r-pill);
-  background: none;
-  font: inherit;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow:
+    var(--shadow),
+    inset 0 0 0 1.5px var(--line);
+  font-family: var(--f-mono);
   font-weight: 700;
+  font-size: 22px;
   color: var(--ink);
-  box-shadow: inset 0 0 0 1.5px var(--field);
   cursor: pointer;
 }
 
-.pchip[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--bg);
+.quiz-answer:disabled {
+  cursor: default;
+}
+
+.quiz-answer.good {
+  background: var(--good-ink);
+  color: var(--on-accent);
   box-shadow: none;
 }
 
-.rulecard {
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  padding: 24px 26px;
-  box-shadow: var(--shadow);
+.quiz-answer.bad {
+  background: var(--b-ink);
+  color: var(--on-accent);
+  box-shadow: none;
 }
 
-.rulecard p {
+.quiz-verdict {
+  min-height: 56px;
   margin: 0 0 14px;
   font-size: 18px;
+  font-weight: 600;
 }
 
-.rl {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 15px;
-}
-
-.rl li {
+.quiz-foot {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 9px;
-  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
 }
 
-.rl li span:last-child {
+.quiz-score {
   font-family: var(--f-mono);
-  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
 }
 
-.final {
-  text-align: center;
-  padding-block: 96px;
+/* ------------------------------------------------------------ the closing band */
+
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-block: 0 80px;
+  padding: 40px 44px;
+  border-radius: 28px;
+  background: var(--ink);
+  color: var(--bg);
 }
 
-.final .h2 {
-  font-size: clamp(34px, 5vw, 60px);
+.band .h2 {
+  margin-bottom: 8px;
 }
 
-.final .sub {
-  margin: 0 auto 28px;
+.band p {
+  max-width: 560px;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.site a.btn-light {
+  background: var(--bg);
+  color: var(--ink);
 }
 
 /* ------------------------------------------------------------ narrower screens */
 
 @media (max-width: 980px) {
-  .hero {
+  .game {
     grid-template-columns: minmax(0, 1fr);
-    gap: 40px;
+  }
+
+  .coach {
+    position: static;
+    order: 2;
   }
 
   .grid4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .lt-steps {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .rulebox {
+  .quiz {
     grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
   }
 }
 
@@ -681,12 +681,12 @@ body.site {
     display: none;
   }
 
-  .grid4 {
-    grid-template-columns: minmax(0, 1fr);
+  .board {
+    zoom: 0.66;
   }
 
-  .lt-steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .grid4 {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .sec {
@@ -696,22 +696,23 @@ body.site {
   .lead {
     font-size: 18px;
   }
-}
 
-/* The phone keeps its drawing size and shrinks as a whole on the narrowest screens. */
-@media (max-width: 400px) {
-  .lt-phone {
-    zoom: 0.84;
+  .quiz-hand {
+    gap: 10px;
   }
 
-  .stage {
-    min-height: 680px;
+  .quiz-hand .card {
+    --w: 68px;
+  }
+
+  .band {
+    padding: 28px 22px;
   }
 }
 
-@media (max-width: 340px) {
-  .lt-phone {
-    zoom: 0.76;
+@media (max-width: 370px) {
+  .board {
+    zoom: 0.58;
   }
 }
 

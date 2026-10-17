@@ -47,7 +47,7 @@ const fr = {
   count1:
     'Les visites sont comptées avec <a href="https://umami.is">Umami</a>, auto-hébergé sur un serveur de l’éditeur à l’adresse <code>insight.steevepommier.com</code>&#160;: aucun tiers ne reçoit les données, et rien ne sert à la publicité.',
   count2:
-    '<b>Ce qui est compté&#160;:</b> les pages vues (l’accueil, ces mentions, l’écran d’accueil du jeu, une partie, une salle en ligne, sans son code)&#160;; le site d’où tu viens&#160;; quelques événements anonymes (une partie lancée, avec son mode, le nombre et le niveau des bots, le préréglage et si des règles ont été changées&#160;; une partie terminée et son nombre de manches&#160;; une salle créée&#160;; des règles partagées et par quel moyen&#160;; une installation)&#160;; ton navigateur, ton système, le type d’appareil, la taille d’écran, la langue et le pays.',
+    '<b>Ce qui est compté&#160;:</b> les pages vues (l’accueil, ces mentions, l’écran d’accueil du jeu, une partie, une salle en ligne, sans son code)&#160;; le site d’où tu viens&#160;; quelques événements anonymes (une partie lancée, avec son mode, le nombre et le niveau des bots, le préréglage et si des règles ont été changées&#160;; une partie terminée et son nombre de manches&#160;; une salle créée&#160;; des règles partagées et par quel moyen&#160;; une installation&#160;; sur l’accueil, la manche d’essai finie, gagnée ou non, avec le nombre de gestes essayés, et chaque réponse au test des valeurs, juste ou non)&#160;; ton navigateur, ton système, le type d’appareil, la taille d’écran, la langue et le pays.',
   count3:
     '<b>Ce qui ne l’est jamais&#160;:</b> les prénoms, le code d’une salle, le détail des règles, tes coups ou tes cartes, ton adresse IP (elle donne le pays, puis est oubliée), ni rien qui puisse te suivre d’un site à l’autre. Aucun cookie n’est déposé. La version pour le réseau local ne compte rien.',
   count4:
@@ -120,7 +120,7 @@ const en: LegalText = {
   count1:
     'Visits are counted with <a href="https://umami.is">Umami</a>, self-hosted on a server of the publisher’s at <code>insight.steevepommier.com</code>: no third party receives the data, and nothing is used for advertising.',
   count2:
-    '<b>What is counted:</b> page views (the home page, this notice, the game’s home screen, a game, an online room without its code); the site you came from; a few anonymous events (a game started, with its mode, the number and level of bots, the preset and whether rules were changed; a game finished and its number of rounds; a room created; rules shared and how; an install); your browser, system, device type, screen size, language and country.',
+    '<b>What is counted:</b> page views (the home page, this notice, the game’s home screen, a game, an online room without its code); the site you came from; a few anonymous events (a game started, with its mode, the number and level of bots, the preset and whether rules were changed; a game finished and its number of rounds; a room created; rules shared and how; an install; on the home page, the practice round finished, won or not, with the number of moves tried, and each answer to the values test, right or not); your browser, system, device type, screen size, language and country.',
   count3:
     '<b>What never is:</b> names, a room’s code, the details of the rules, your moves or your cards, your IP address (it gives the country, then is forgotten), nor anything that could follow you from one site to another. No cookie is set. The local network version counts nothing.',
   count4:
