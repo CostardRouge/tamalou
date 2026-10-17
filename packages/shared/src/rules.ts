@@ -186,6 +186,11 @@ export const RuleSetSchema = z
       .object({
         /** Beginner mode: a player's view shows the cards they have seen and that have not moved since. */
         showKnownCards: z.boolean().default(false),
+        /**
+         * Each consequential touch (swapping, looking at or discarding a card, a quick discard) and a Tamalou call is
+         * staged and confirmed before it is sent. The table's UI applies it; the engine does not read it (ADR-0016).
+         */
+        confirmMoves: z.boolean().default(false),
       })
       .prefault({}),
   })

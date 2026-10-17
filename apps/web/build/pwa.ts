@@ -2,10 +2,14 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import type { Plugin } from 'vite';
+import { PLAY_PATH } from './site.ts';
 
-// The offline game (docs/SPEC.md §8, M8): after the build, a service worker is written next to index.html with the
+const PLAY_PAGE = `${PLAY_PATH}index.html`;
+
+// The offline game (docs/SPEC.md §8, M8): after the build, a service worker is written at the site's root with the
 // list of every file to keep and a version made from their contents. Solo and pass-and-play then work without a
-// network; rooms never go through it (/api/ is left to the network).
+// network; rooms never go through it (/api/ is left to the network). The game page (jouer/) registers it for the whole
+// site, so the home pages open offline too (ADR-0017).
 
 /** Files a phone needs offline: the page, scripts, styles, fonts, icons, manifest. */
 export function precacheList(files: string[]): string[] {
@@ -43,8 +47,16 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.includes('/api/')) return;
   if (request.mode === 'navigate') {
-    // The page from the network when it answers (a new version shows at once), else the cached one.
-    event.respondWith(fresh(request).catch(() => caches.match(scoped('index.html'))));
+    // The page from the network when it answers (a new version shows at once), else the cached one: the folder's
+    // index.html, or the game for an address the site does not have.
+    const scope = new URL(self.registration.scope).pathname;
+    const rel = url.pathname.startsWith(scope) ? url.pathname.slice(scope.length) : '';
+    const page = rel === '' || rel.endsWith('/') ? rel + 'index.html' : rel;
+    event.respondWith(
+      fresh(request).catch(() =>
+        caches.match(scoped(page)).then((hit) => hit || caches.match(scoped(${JSON.stringify(PLAY_PAGE)}))),
+      ),
+    );
     return;
   }
   // Built files never change under the same name: the cache first.

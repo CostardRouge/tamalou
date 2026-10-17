@@ -48,6 +48,9 @@ export function Settings() {
           <small className="muted">{t('installHint')}</small>
         </div>
       ) : null}
+      <p className="legal-link">
+        <a href={t('legalHref')}>{t('legalLink')}</a>
+      </p>
     </section>
   );
 }

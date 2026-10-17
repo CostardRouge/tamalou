@@ -36,17 +36,24 @@ function values(r: RuleSet): string {
   return ranks.map((rank) => `${rankName({ rank })}\u00a0${v[rank]}`).join(' · ');
 }
 
-function powers(r: RuleSet): string[] {
+/** The ranks that carry each power, in rank order (jokers only when the deck has them). */
+export function powerGroups(r: RuleSet): [Power, Rank[]][] {
   const groups = new Map<Power, Rank[]>();
   for (const rank of RANKS) {
     const p = r.powers.byRank[rank];
     if (p === 'none' || (rank === 'JOKER' && !r.deck.jokers)) continue;
     groups.set(p, [...(groups.get(p) ?? []), rank]);
   }
-  if (groups.size === 0) return [t('sum_noPowers')];
-  return [...groups].map(([power, ranks]) =>
-    t('sum_power', { ranks: ranks.map((rank) => rankName({ rank })).join(', '), power: t(`power_${power}` as Key) }),
-  );
+  return [...groups];
+}
+
+export const powerLine = (power: Power, ranks: Rank[]) =>
+  t('sum_power', { ranks: ranks.map((rank) => rankName({ rank })).join(', '), power: t(`power_${power}` as Key) });
+
+function powers(r: RuleSet): string[] {
+  const groups = powerGroups(r);
+  if (groups.length === 0) return [t('sum_noPowers')];
+  return groups.map(([power, ranks]) => powerLine(power, ranks));
 }
 
 function peek(r: RuleSet): string {
@@ -157,6 +164,7 @@ export function summarize(r: RuleSet): SummarySection[] {
           r.pace.turnTimerSeconds !== d.pace.turnTimerSeconds,
         ),
         ...(r.assist.showKnownCards ? [line(t('sum_beginner'), true)] : []),
+        ...(r.assist.confirmMoves ? [line(t('sum_confirmMoves'), true)] : []),
       ],
     },
   ];

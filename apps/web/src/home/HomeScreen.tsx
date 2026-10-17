@@ -1,6 +1,7 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
 import { normalizeRoomCode, PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
 import { useState } from 'react';
+import { trackEvent } from '../audience.ts';
 import { createRoom } from '../connection/remote.ts';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
@@ -324,8 +325,10 @@ function OnlineForm({
     setError(null);
     const made = await createRoom();
     setBusy(false);
-    if (made) onRoom(made, typed);
-    else setError('onlineCreateFailed');
+    if (made) {
+      trackEvent('room-created');
+      onRoom(made, typed);
+    } else setError('onlineCreateFailed');
   };
   const join = () => {
     const normal = normalizeRoomCode(code);

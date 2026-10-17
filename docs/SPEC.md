@@ -7,7 +7,7 @@ Le brief d'origine du projet (2026-10-16), tenu à jour au fil des décisions. C
 ## 0. Mode de travail
 
 1. **Commencer en mode plan.** Avant d'écrire du code, proposer la stack, l'architecture et le découpage en milestones, puis attendre la validation.
-2. **Le dépôt** `CostardRouge/tamalou` : le brief le voulait privé pour l'instant, mais il a été créé **public** (constaté le 2026-10-16 par le job `check` de `registry.yml`) ; c'est au propriétaire de le passer en privé ou non. Il porte un README, un `.gitignore`, la licence MIT et un `CLAUDE.md` avec les conventions du projet. Il suit la spec commune du portfolio (`COMMON-PROJECT-SPEC.md` dans `second-brain`) : `MEMORY.md`, `docs/memory/`, `AGENTS.md`, `/memorize`, `registry.yml`. *(Amendé : le dépôt existait déjà, vide ; il n'a pas été créé avec `gh repo create`.)*
+2. **Le dépôt** `CostardRouge/tamalou` : le brief le voulait privé pour l'instant, mais il a été créé **public** (constaté le 2026-10-16 par le job `check` de `registry.yml`), et il le reste : décision du propriétaire du 2026-10-17. Il porte un README, un `.gitignore`, la licence MIT et un `CLAUDE.md` avec les conventions du projet. Il suit la spec commune du portfolio (`COMMON-PROJECT-SPEC.md` dans `second-brain`) : `MEMORY.md`, `docs/memory/`, `AGENTS.md`, `/memorize`, `registry.yml`. *(Amendé : le dépôt existait déjà, vide ; il n'a pas été créé avec `gh repo create`.)*
 3. **Cette spécification** vit dans `docs/SPEC.md` et reste à jour. Chaque choix structurant est consigné dans `docs/DECISIONS.md` (format ADR court : contexte, décision, alternatives écartées).
 4. **Conventions :**
    - Le code, les commits et les noms techniques sont en anglais.
