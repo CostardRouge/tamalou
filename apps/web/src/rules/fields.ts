@@ -240,6 +240,7 @@ export const SECTIONS: Section[] = [
         unit: 'seconds',
       },
       { id: 'beginner', kind: 'toggle', path: ['assist', 'showKnownCards'] },
+      { id: 'confirmMoves', kind: 'toggle', path: ['assist', 'confirmMoves'] },
     ],
   },
 ];

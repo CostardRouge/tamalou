@@ -157,6 +157,7 @@ export function summarize(r: RuleSet): SummarySection[] {
           r.pace.turnTimerSeconds !== d.pace.turnTimerSeconds,
         ),
         ...(r.assist.showKnownCards ? [line(t('sum_beginner'), true)] : []),
+        ...(r.assist.confirmMoves ? [line(t('sum_confirmMoves'), true)] : []),
       ],
     },
   ];

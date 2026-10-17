@@ -56,3 +56,7 @@ ADR-0015. `feedback/cues.ts` (pure, tested) maps events to one cue per batch and
 ## The action bar (2026-10-17)
 
 The owner picked design A of the "actions sur une seule ligne" exploration: the bar never wraps. `game/ActionBar.tsx` draws a list of `Act`s: the main one (`main`, else the first with an icon) is the wide button, every other action a 56px square icon with a one-word caption (`bar*` keys) and the full label as its accessible name, so tests and screen readers still find "Prendre la défausse". Plain choices without an icon (pass-and-play: who claims) stay text buttons, and the line scrolls sideways (`touch-action: pan-x`) rather than wrap. `actsFor()` in `GameScreen.tsx` replaced `buttons()`; the end-of-round panel keeps the wrapping `.buttons`. Emoji left the bar (icons are inline stroke SVG).
+
+## Spotlight and confirmation (2026-10-17)
+
+ADR-0016. `.game` carries `turn-mine` / `turn-other` and `choosing`; the fade of untouchable cards sits on `.card`, never on `.card-inner`: opacity or filter on a `preserve-3d` element flattens it and the face-down back (rotated 180°, `backface-visibility: hidden`) vanished. A staged move (`staged` in `GameScreen.tsx`, question from `game/confirm.ts`) is dropped with the pending selection on every step change, so a quick discard staged too late cannot be sent against another top card. The new `turnBanner` key exists because `yourTurn` was already taken.

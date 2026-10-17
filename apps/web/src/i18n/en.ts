@@ -79,6 +79,16 @@ export const en: Messages = {
   promptQuickGive: 'Pick the card you give them.',
   promptRoundEnding: 'End of the round…',
   promptWaiting: '{name}’s turn.',
+  turnBanner: 'Your turn!',
+  confirm_swap: 'Replace your card {n} with the drawn card?',
+  confirm_peekOwn: 'Look at your card {n}?',
+  confirm_peekOther: 'Look at {name}’s card {n}?',
+  confirm_blind: 'Swap your card {n} with {name}’s card {m}, without looking?',
+  confirm_queen: 'Swap the card you looked at with {name}’s card {n}?',
+  confirm_queenMine: 'Swap the card you looked at with your card {n}?',
+  confirm_quick: 'Put your card {n} on the discard?',
+  confirm_quickGive: 'Put {name}’s card {m} on the discard and give them your card {n}?',
+  confirm_call: 'Call Tamalou? The others play one last turn.',
 
   actReady: 'Got it',
   actConfirmPeek: 'Look',
@@ -92,6 +102,7 @@ export const en: Messages = {
   actPass: 'Continue',
   actQuick: 'Quick discard',
   actCancel: 'Cancel',
+  actConfirm: 'Confirm',
   actNextRound: 'Next round',
   actReplay: 'Play again',
   actHome: 'Menu',
@@ -226,6 +237,9 @@ export const en: Messages = {
   rule_turnTimer_help: 'After this delay, a bot plays for the player. 0: no timer.',
   rule_beginner: 'Beginner mode',
   rule_beginner_help: 'Cards already seen stay shown.',
+  rule_confirmMoves: 'Confirm every move',
+  rule_confirmMoves_help:
+    'Before swapping, looking at or discarding a card, and before Tamalou, the game asks to confirm.',
 
   opt_peekFixed: 'Set',
   opt_peekChoose: 'Chosen',
@@ -287,6 +301,7 @@ export const en: Messages = {
   sum_timer: '{s} s per turn, then a bot plays.',
   sum_noTimer: 'No turn timer.',
   sum_beginner: 'Beginner mode: seen cards stay shown.',
+  sum_confirmMoves: 'Every move is confirmed before it goes.',
 
   editorTitle: 'Game rules',
   editorCustomize: 'Customise the rules',

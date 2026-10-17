@@ -83,6 +83,17 @@ export const fr = {
   promptQuickGive: 'Choisis la carte que tu lui donnes.',
   promptRoundEnding: 'Fin de la manche…',
   promptWaiting: 'Au tour de {name}.',
+  turnBanner: 'À toi !',
+  // A move staged when the game master asks to confirm every move (assist.confirmMoves).
+  confirm_swap: 'Remplacer ta carte {n} par la carte piochée ?',
+  confirm_peekOwn: 'Regarder ta carte {n} ?',
+  confirm_peekOther: 'Regarder la carte {n} de {name} ?',
+  confirm_blind: 'Échanger ta carte {n} avec la carte {m} de {name}, sans les regarder ?',
+  confirm_queen: 'Échanger la carte regardée avec la carte {n} de {name} ?',
+  confirm_queenMine: 'Échanger la carte regardée avec ta carte {n} ?',
+  confirm_quick: 'Poser ta carte {n} sur la défausse ?',
+  confirm_quickGive: 'Poser la carte {m} de {name} sur la défausse et lui donner ta carte {n} ?',
+  confirm_call: 'Annoncer Tamalou ? Les autres jouent un dernier tour.',
 
   // Buttons
   actReady: 'C’est mémorisé',
@@ -97,6 +108,7 @@ export const fr = {
   actPass: 'Continuer',
   actQuick: 'Défausse rapide',
   actCancel: 'Annuler',
+  actConfirm: 'Confirmer',
   actNextRound: 'Manche suivante',
   actReplay: 'Rejouer',
   actHome: 'Menu',
@@ -237,6 +249,9 @@ export const fr = {
   rule_turnTimer_help: 'Après ce délai, un bot joue à la place du joueur. 0 : pas de timer.',
   rule_beginner: 'Mode débutant',
   rule_beginner_help: 'Les cartes déjà vues restent affichées.',
+  rule_confirmMoves: 'Confirmer chaque coup',
+  rule_confirmMoves_help:
+    'Avant d’échanger, de regarder ou de défausser une carte, et avant Tamalou, le jeu demande de confirmer.',
 
   // Rules: options
   opt_peekFixed: 'Imposées',
@@ -300,6 +315,7 @@ export const fr = {
   sum_timer: '{s} s par tour, puis un bot joue.',
   sum_noTimer: 'Pas de timer de tour.',
   sum_beginner: 'Mode débutant : les cartes vues restent affichées.',
+  sum_confirmMoves: 'Chaque coup se confirme avant de partir.',
 
   // Rules: editor
   editorTitle: 'Règles de la partie',
