@@ -137,7 +137,8 @@ The project carries **one version**, `version` in the root `package.json`, in
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html): `MAJOR.MINOR.PATCH`.
 `CHANGELOG.md` says what each release brings to the people who use the
 project, newest first, in the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-shape, in English. Each release has a **codename**: here a French card word,
+shape. **It is written in English, like the code, even here where the
+project speaks French first.** Each release has a **codename**: here a French card word,
 in alphabetical order (0.1.0 As, 0.2.0 Brelan… 0.8.0 Honneur; the next starts
 with I).
 
@@ -180,7 +181,7 @@ with I).
 - **No hard-coded rule.** Every rule the engine applies is read from the `RuleSet` (`packages/shared`, Zod schema, versioned). A new rule or an ambiguous one becomes a `RuleSet` field with the default the spec describes; never invent a rule silently — ask the owner, and record the default in `docs/DECISIONS.md`.
 - **Hidden information.** Anything that leaves the engine towards a player — a UI, a bot, a socket — goes through `viewFor(state, playerId)`. A bot never reads the full state. The server never sends anything but a view. The property tests check that a view contains nothing its player may not know: keep them passing, extend them with every new piece of state.
 - **Business logic lives in `packages/`**, never in `apps/`: the apps adapt it (React, sockets, Durable Objects).
-- **User-facing text is French**, through the i18n dictionaries (once `apps/web` exists); code, identifiers, commits, memory and ADRs are English.
+- **User-facing text is French first and English**, through the i18n dictionaries (`apps/web/src/i18n/fr.ts`, `en.ts`) with the pages' heads in `apps/web/build/site.ts`; French is the default. Code, identifiers, commits, memory, ADRs and `CHANGELOG.md` are English.
 - **Visual identity comes from Versus** (`costardrouge/versus`, `src/tokens.css`): its tokens, light and dark themes and fonts. The card face is isolated behind a card theme so the owner can plug in his own decks later — never draw a card outside it.
 
 ## Related files

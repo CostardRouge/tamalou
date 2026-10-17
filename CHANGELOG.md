@@ -3,8 +3,8 @@
 What each release of Tamalou brings to the people who play it. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html); `.github/workflows/release.yml` turns each section into a
-tag and a GitHub Release once it reaches `main` (COMMON-PROJECT-SPEC C13, ADR-0016). Codenames are French card words,
-in alphabetical order.
+tag and a GitHub Release once it reaches `main` (COMMON-PROJECT-SPEC C13, ADR-0019). Written in English, like the
+code, though the game speaks French first. Codenames are French card words, in alphabetical order.
 
 ## [Unreleased]
 
@@ -12,16 +12,27 @@ in alphabetical order.
 
 ### Added
 
+- A home page in French and English: play a guided first round against a bot right on the page, then guess what a
+  hand is worth; the game itself moves to `jouer/`, and old links follow.
+- A legal notice, and anonymous visit counting without cookies that anyone can decline.
 - Sounds and vibrations follow the game (only what concerns you vibrates), with switches on the home screen and a
-  mute button at the table; the slots a move touched flash, and a call shows a "Tamalou !" splash.
+  mute button at the table; a call shows a "Tamalou !" splash.
+- Play by hand: drag cards with soft physics, quick discard by dropping a card on the discard; every move flies its
+  cards across the table, and the other players' moves show in bubbles.
+- A spotlight on whose turn it is; the game master can ask for a confirmation before each move.
+- The rules at the table as illustrated cards to leaf through, showing tonight's values.
 - French and English, switched from the home screen and remembered on the device.
 - Install the game: solo and pass-and-play work offline; a new version is offered on the home screen.
-- The home screen shows the version you are playing.
+- The game's home screen shows the version you are playing.
+
+### Changed
+
+- The action bar stays on one line, with icons for the secondary moves.
 
 ### Fixed
 
-- On a phone, the deck and the discard no longer overlap the opponents: cards follow the visible height too, and
-  the table scrolls rather than overlap.
+- The table is pinned to the screen: the page never moves under a finger, and on a phone the deck and the discard
+  no longer overlap the opponents.
 
 ## [0.7.0] - 2026-10-16 — Garde
 <!-- commit: 3632d460fc31c92a4f0421109dc82176c9a7f6dd -->
