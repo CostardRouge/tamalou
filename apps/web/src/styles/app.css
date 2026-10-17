@@ -508,6 +508,19 @@ html:has(.game) body {
   font-size: 0.85rem;
 }
 
+.game-bar .ghost,
+.round {
+  white-space: nowrap;
+}
+
+/* The narrowest phones: the header stays on one line too. */
+@media (max-width: 359px) {
+  .game-bar .ghost {
+    padding: 0 6px;
+    font-size: 0.9rem;
+  }
+}
+
 .opponents {
   display: flex;
   flex-wrap: wrap;
@@ -634,11 +647,98 @@ html:has(.game) body {
   font-weight: 600;
 }
 
+/* Buttons that may wrap: the end-of-round panel. */
 .buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+}
+
+/* One line, always (ActionBar.tsx): the main button takes the room left, the others are captioned icons. */
+.bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.bar .btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+.bar .bar-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 320px;
+  min-height: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.btn-good {
+  background: var(--good-ink);
+  border-color: var(--good-ink);
+  color: var(--on-accent);
+}
+
+.ibtn {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  border-radius: 18px;
+  border: 1px solid var(--field);
+  background: var(--surface);
+  color: var(--ink);
+  transition: transform 0.08s ease;
+}
+
+.ibtn:active {
+  transform: scale(0.94);
+}
+
+.ibtn .icon {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ibtn small {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ibtn-call {
+  background: var(--b-ink);
+  border-color: var(--b-ink);
+  color: var(--on-accent);
+}
+
+.ibtn-good {
+  color: var(--good-ink);
+  border-color: var(--good-ink);
+}
+
+.ibtn-on {
+  background: var(--good-ink);
+  color: var(--on-accent);
 }
 
 .ticker {
@@ -756,7 +856,7 @@ html:has(.game) body {
     min-height: 2.6em;
     font-size: 14px;
   }
-  .controls .buttons {
+  .bar {
     gap: 6px;
   }
   .opponents {

@@ -100,6 +100,14 @@ export const fr = {
   actNextRound: 'Manche suivante',
   actReplay: 'Rejouer',
   actHome: 'Menu',
+  // Captions under the action bar's icon buttons: one short word.
+  barTake: 'Défausse',
+  barCall: 'Tamalou',
+  barQuick: 'Rapide',
+  barSkip: 'Passer',
+  barKeep: 'Garder',
+  barPass: 'Continuer',
+  barCancel: 'Annuler',
 
   // Powers
   power_none: 'Aucun',

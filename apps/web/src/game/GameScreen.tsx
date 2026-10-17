@@ -7,6 +7,7 @@ import { updateSettings, useSettings } from '../feedback/settings.ts';
 import { useFeedback } from '../feedback/useFeedback.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
+import { type Act, ActionBar } from './ActionBar.tsx';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { RoundOver } from './RoundOver.tsx';
@@ -275,29 +276,23 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         <p className="prompt" aria-live="polite">
           {prompt}
         </p>
-        <div className="buttons">
-          {claim === 'who' ? (
-            whoCanClaim.map((id) => (
-              <button key={id} type="button" className="btn btn-secondary" onClick={() => setClaim(id)}>
-                {nameOf(id)}
-              </button>
-            ))
-          ) : claim ? null : (
-            <>
-              {buttons(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers)}
-              {pending.kind === 'none' && whoCanClaim.length > 0 ? (
-                <button type="button" className="btn btn-secondary" onClick={() => setClaim('who')}>
-                  ⚡ {t('actQuick')}
-                </button>
-              ) : null}
-            </>
-          )}
-          {claim ? (
-            <button type="button" className="btn btn-secondary" onClick={() => setClaim(null)}>
-              {t('actCancel')}
-            </button>
-          ) : null}
-        </div>
+        <ActionBar
+          acts={
+            claim === 'who'
+              ? [
+                  ...whoCanClaim.map((id): Act => ({ key: id, label: nameOf(id), onClick: () => setClaim(id) })),
+                  cancelAct(() => setClaim(null)),
+                ]
+              : claim
+                ? [cancelAct(() => setClaim(null))]
+                : [
+                    ...actsFor(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers),
+                    ...(pending.kind === 'none' && whoCanClaim.length > 0
+                      ? [quickAct(() => setClaim('who'), false)]
+                      : []),
+                  ]
+          }
+        />
       </footer>
 
       {showLog ? (
@@ -392,7 +387,26 @@ function promptFor(
   }
 }
 
-function buttons(
+const cancelAct = (onClick: () => void): Act => ({
+  key: 'cancel',
+  label: t('actCancel'),
+  caption: t('barCancel'),
+  icon: 'cancel',
+  onClick,
+});
+
+const quickAct = (onClick: () => void, on: boolean): Act => ({
+  key: 'quick',
+  label: t('actQuick'),
+  caption: t('barQuick'),
+  icon: 'quick',
+  tone: 'good',
+  on,
+  onClick,
+});
+
+/** Everything the player can do now that is not a touch on a card, main action first. */
+function actsFor(
   ui: ReturnType<typeof interaction>,
   pending: Pending,
   view: PlayerView,
@@ -401,46 +415,87 @@ function buttons(
   setPending: (p: Pending) => void,
   /** A shared screen offers the quick discard per player instead (pass-and-play). */
   shared = false,
-) {
-  const out: ReactNode[] = [];
-  const btn = (key: string, label: string, onClick: () => void, kind: 'primary' | 'secondary' | 'call' = 'secondary') =>
-    out.push(
-      <button key={key} type="button" className={`btn btn-${kind}`} onClick={onClick}>
-        {label}
-      </button>,
-    );
-
+): Act[] {
+  const out: Act[] = [];
   if (pending.kind !== 'none') {
-    if (pending.kind === 'choosePeek') {
-      if (pending.slots.length === peekCount) {
-        const slots = pending.slots;
-        btn('peek', t('actConfirmPeek'), () => send({ type: 'choosePeek', by: view.me, slots }), 'primary');
-      }
+    if (pending.kind === 'choosePeek' && pending.slots.length === peekCount) {
+      const slots = pending.slots;
+      out.push({
+        key: 'peek',
+        label: t('actConfirmPeek'),
+        icon: 'look',
+        tone: 'primary',
+        main: true,
+        onClick: () => send({ type: 'choosePeek', by: view.me, slots }),
+      });
     }
-    btn('cancel', t('actCancel'), () => setPending(NONE));
     const skipPower = ui.find('skipPower');
-    if (pending.kind === 'blindOwn' && skipPower) btn('skip', t('actSkipPower'), () => send(skipPower));
+    if (pending.kind === 'blindOwn' && skipPower) {
+      out.push({
+        key: 'skip',
+        label: t('actSkipPower'),
+        caption: t('barSkip'),
+        icon: 'skip',
+        onClick: () => send(skipPower),
+      });
+    }
+    out.push(cancelAct(() => setPending(NONE)));
     return out;
   }
   const ready = ui.find('ready');
-  if (ready) btn('ready', t('actReady'), () => send(ready), 'primary');
+  if (ready) out.push({ key: 'ready', label: t('actReady'), tone: 'primary', main: true, onClick: () => send(ready) });
   const deck = ui.find('draw', (a) => a.from === 'deck');
-  if (deck) btn('deck', t('actDrawDeck'), () => send(deck), 'primary');
-  const take = ui.find('draw', (a) => a.from === 'discard');
-  if (take) btn('take', t('actTakeDiscard'), () => send(take));
+  if (deck)
+    out.push({
+      key: 'deck',
+      label: t('actDrawDeck'),
+      icon: 'draw',
+      tone: 'primary',
+      main: true,
+      onClick: () => send(deck),
+    });
   const discard = ui.find('discardDrawn');
-  if (discard) btn('discard', t('actDiscard'), () => send(discard), 'primary');
-  const skip = ui.find('skipPower');
-  if (skip) btn('skip', t('actSkipPower'), () => send(skip));
+  if (discard) {
+    out.push({
+      key: 'discard',
+      label: t('actDiscard'),
+      icon: 'discard',
+      tone: 'primary',
+      main: true,
+      onClick: () => send(discard),
+    });
+  }
   const end = ui.find('endReveal');
-  if (end) btn('end', t('actEndReveal'), () => send(end), 'primary');
+  if (end) out.push({ key: 'end', label: t('actEndReveal'), tone: 'primary', main: true, onClick: () => send(end) });
+  const take = ui.find('draw', (a) => a.from === 'discard');
+  if (take)
+    out.push({
+      key: 'take',
+      label: t('actTakeDiscard'),
+      caption: t('barTake'),
+      icon: 'take',
+      onClick: () => send(take),
+    });
+  const skip = ui.find('skipPower');
+  if (skip)
+    out.push({ key: 'skip', label: t('actSkipPower'), caption: t('barSkip'), icon: 'skip', onClick: () => send(skip) });
   const keep = ui.find('queenDecide', (a) => a.swapWith === null);
-  if (keep) btn('keep', t('actKeep'), () => send(keep));
+  if (keep)
+    out.push({ key: 'keep', label: t('actKeep'), caption: t('barKeep'), icon: 'keep', onClick: () => send(keep) });
   const pass = ui.find('passCall');
-  if (pass) btn('pass', t('actPass'), () => send(pass));
+  if (pass)
+    out.push({ key: 'pass', label: t('actPass'), caption: t('barPass'), icon: 'pass', onClick: () => send(pass) });
   const call = ui.find('callTamalou');
-  if (call) btn('call', t('actCall'), () => send(call), 'call');
-  if (ui.canQuick && !shared) btn('quick', `⚡ ${t('actQuick')}`, () => setPending({ kind: 'quick' }));
+  if (call)
+    out.push({
+      key: 'call',
+      label: t('actCall'),
+      caption: t('barCall'),
+      icon: 'call',
+      tone: 'call',
+      onClick: () => send(call),
+    });
+  if (ui.canQuick && !shared) out.push(quickAct(() => setPending({ kind: 'quick' }), false));
   return out;
 }
 

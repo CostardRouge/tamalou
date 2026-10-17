@@ -95,6 +95,14 @@ export const en: Messages = {
   actNextRound: 'Next round',
   actReplay: 'Play again',
   actHome: 'Menu',
+  // Captions under the action bar's icon buttons: one short word.
+  barTake: 'Discard',
+  barCall: 'Tamalou',
+  barQuick: 'Quick',
+  barSkip: 'Skip',
+  barKeep: 'Keep',
+  barPass: 'Go on',
+  barCancel: 'Cancel',
 
   power_none: 'None',
   power_peekOwn: 'Look at one of your cards',
