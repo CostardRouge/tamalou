@@ -48,6 +48,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device; a build-generated service worker makes solo and pass-and-play work offline — ADR-0015, `web.md`.
 - Readability: a spotlight on whose turn it is, always; confirming each move is the game master's choice (`assist.confirmMoves`, off by default) — ADR-0016, `web.md`.
+- The table's look, chosen by the owner on the 2026-10-17 canvas: one-line action bar (A), rules as cards to leaf through (B), cards flying on soft springs for every move with the others' moves told in bubbles, drag and drop with soft physics (D) and quick discard by dragging onto the discard (C) — `web.md`.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items

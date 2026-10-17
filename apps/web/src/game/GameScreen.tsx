@@ -1,5 +1,5 @@
 import type { Action, PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
@@ -9,6 +9,8 @@ import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { type Act, ActionBar } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
+import { useFlights } from './FlightLayer.tsx';
+import { slotPlace } from './flights.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { RoundOver } from './RoundOver.tsx';
@@ -36,6 +38,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const rules = conn.rules;
   const events = conn.events();
   const feedback = useFeedback(events, view.me);
+  const reduced = useReducedMotion();
+  const fly = useFlights(events, view.me, !reduced);
   const settings = useSettings();
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
@@ -141,9 +145,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             : `${mine ? t('slotMine', { n: s.slot + 1 }) : t('slotOf', { n: s.slot + 1, name: p.name })}, ${
                 s.card ? cardName(s.card) : t('cardHidden')
               }${s.locked ? `, ${t('locked')}` : ''}`;
+          const place = slotPlace(ref);
           return (
             <CardView
               key={s.slot}
+              place={place}
+              ghost={fly.landing.has(place)}
               card={s.card}
               label={label}
               size={size}
@@ -223,6 +230,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         {opponents.map((p) => (
           <div
             key={p.id}
+            data-seat={p.id}
             className={`seat${view.current === p.id ? ' seat-turn' : ''}${p.eliminated ? ' seat-out' : ''}`}
           >
             <div className="seat-head">
@@ -243,6 +251,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         <div className="pile">
           <CardView
             card={null}
+            place="deck"
             label={plural('deckCount', view.deckSize)}
             size="md"
             hint={!!ui.find('draw', (a) => a.from === 'deck')}
@@ -265,6 +274,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             >
               <CardView
                 card={view.discardTop}
+                place="discard"
+                ghost={fly.landing.has('discard')}
                 empty={!view.discardTop}
                 label={view.discardTop ? `${t('discard')} : ${cardName(view.discardTop)}` : t('discardEmpty')}
                 size="md"
@@ -289,6 +300,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             >
               <CardView
                 card={view.drawn.card}
+                place="drawn"
+                ghost={fly.landing.has('drawn')}
                 label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
                 size="lg"
               />
@@ -299,7 +312,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       </section>
 
       {me ? (
-        <section className={`mine${myTurn ? ' seat-turn' : ''}`} aria-label={t('you')}>
+        <section className={`mine${myTurn ? ' seat-turn' : ''}`} aria-label={t('you')} data-seat={view.me}>
           <div className="seat-head">
             <span className="seat-name">{me.name}</span>
             {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
@@ -397,6 +410,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      {fly.layer}
 
       {view.phase === 'roundOver' || view.phase === 'gameOver' ? (
         <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onReplay={onReplay} />

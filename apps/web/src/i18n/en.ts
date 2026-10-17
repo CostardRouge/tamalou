@@ -145,6 +145,18 @@ export const en: Messages = {
   rc_count: '{n} / {total}',
   rc_goTo: 'Rule {n}: {title}',
 
+  bubbleDraw: 'I draw.',
+  bubbleTake: 'I take the discard.',
+  bubbleKeep: 'I keep it.',
+  bubbleThrow: 'I throw: {card}.',
+  bubblePeekOwn: 'I look at one of my cards.',
+  bubblePeekYou: 'I look at your card!',
+  bubblePeekOther: 'I look at a card.',
+  bubbleSwapYou: 'I swap with you!',
+  bubbleSwap: 'I swap two cards.',
+  bubbleQuick: 'Quick discard: {card}!',
+  bubbleMissed: 'Missed…',
+
   power_none: 'None',
   power_peekOwn: 'Look at one of your cards',
   power_peekOther: 'Look at an opponent’s card',

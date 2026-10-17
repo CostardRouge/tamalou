@@ -153,6 +153,19 @@ export const fr = {
   rc_count: '{n} / {total}',
   rc_goTo: 'Règle {n} : {title}',
 
+  // What another player says while playing (game/flights.ts).
+  bubbleDraw: 'Je pioche.',
+  bubbleTake: 'Je prends la défausse.',
+  bubbleKeep: 'Je la garde.',
+  bubbleThrow: 'Je jette : {card}.',
+  bubblePeekOwn: 'Je regarde une de mes cartes.',
+  bubblePeekYou: 'Je regarde ta carte !',
+  bubblePeekOther: 'Je regarde une carte.',
+  bubbleSwapYou: 'J’échange avec toi !',
+  bubbleSwap: 'J’échange deux cartes.',
+  bubbleQuick: 'Défausse rapide : {card} !',
+  bubbleMissed: 'Raté…',
+
   power_none: 'Aucun',
   power_peekOwn: 'Regarder une de ses cartes',
   power_peekOther: 'Regarder une carte adverse',
