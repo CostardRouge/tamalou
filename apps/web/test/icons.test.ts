@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { pageHead } from '../build/pages.ts';
+import { PAGES, SITE_URL, toRoot } from '../build/site.ts';
 
 // COMMON-PROJECT-SPEC C11, whose failure is silent (every desktop tab looks right while an iPhone shows a screenshot):
 // the touch icon exists, is 180×180 and has no alpha channel; every icon the page and the manifest name exists; the
@@ -21,12 +23,19 @@ describe('icon set', () => {
   });
 
   it('declares only files that exist, at the size they claim', () => {
-    const html = readFileSync(resolve(root, 'index.html'), 'utf8');
-    for (const [, href] of html.matchAll(/<link rel="(?:icon|apple-touch-icon|manifest)" href="\.\/([^"]+)"/g)) {
-      expect(existsSync(pub(href as string)), href).toBe(true);
+    for (const page of PAGES) {
+      const head = pageHead(page, SITE_URL);
+      const links = [...head.matchAll(/<link rel="(?:icon|apple-touch-icon|manifest)" href="([^"]+)"/g)];
+      expect(links.length, page.file).toBe(5);
+      for (const [, href] of links) {
+        // Relative to the page, so a page in a folder climbs back to the root.
+        expect(href?.startsWith(toRoot(page)), href).toBe(true);
+        expect(existsSync(pub((href as string).slice(toRoot(page).length))), href).toBe(true);
+      }
     }
     const manifest = JSON.parse(readFileSync(pub('manifest.webmanifest'), 'utf8'));
-    expect(manifest.start_url).toBe('./');
+    // An installed game opens on the game, not on the home page (ADR-0017).
+    expect(manifest.start_url).toBe('./jouer/');
     for (const icon of manifest.icons) {
       expect(icon.src.startsWith('/')).toBe(false);
       const [w, h] = icon.sizes.split('x').map(Number);

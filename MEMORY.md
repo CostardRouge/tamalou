@@ -48,6 +48,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
 - Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device; a build-generated service worker makes solo and pass-and-play work offline — ADR-0015, `web.md`.
+- The root is a static home page (FR `/`, EN `/en/`) written at build time, the game lives under `jouer/`; on it, the visitor plays a guided first round against a bot, then a hand-value quiz (the owner's pick among three directions); cards from the card theme — ADR-0017, `site.md`.
+- A legal notice (`/mentions-legales/`, `/en/legal/`) and Versus's anonymous Umami measurement, ported as is; the notice lists every event, a test holds the code to it — ADR-0018, `site.md`.
 - Readability: a spotlight on whose turn it is, always; confirming each move is the game master's choice (`assist.confirmMoves`, off by default) — ADR-0016, `web.md`.
 - The table's look, chosen by the owner on the 2026-10-17 canvas: one-line action bar (A), rules as cards to leaf through (B), cards flying on soft springs for every move with the others' moves told in bubbles, drag and drop with soft physics (D) and quick discard by dragging onto the discard (C) — `web.md`.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
@@ -59,7 +61,6 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-16 — Owner to judge M5 at the table with 2 or 3 people: the cover between players, the table view while bots play.
 - 2026-10-16 — Owner to judge on his phone (M3's acceptance): the easy bot never wins against a thinking bot (`bots.md`), card sizes with five opponents, the quick-discard armed mode.
 
-
 - 2026-10-16 — Confirm with the owner: penalty cards the empty pile cannot give are skipped (`rules.md`, provisional default).
 
 - 2026-10-16 — `bin/registry-setup.sh tamalou` must be run by the owner (from his machine) so `registry.yml`'s `send` job can report; until then it says so and stays green.
@@ -69,6 +70,9 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 - 2026-10-16 — Owner to judge M8 on his phone: sounds and vibrations (Android vibrates, iPhone does not), "Installer le jeu", a solo game in airplane mode, the English switch.
 
+- 2026-10-17 — Measurement is off until the owner adds Tamalou in Umami (insight.steevepommier.com, "Add website", domain tamalou.steevepommier.com) and sets the repository variable `UMAMI_WEBSITE_ID` to its id; also to confirm the contact address `pommier.steeve+tamalou@gmail.com` on the legal notice — ADR-0018.
+- 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
+
 ## Topic files
 
 | file | read when |
@@ -77,4 +81,5 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 | `docs/memory/rules.md` | touching the `RuleSet`, a rule's default, presets, the engine's resolution order |
 | `docs/memory/design.md` | touching the UI's look, tokens, fonts, the card theme |
 | `docs/memory/bots.md` | touching a bot level, bot memory, the match driver, `pnpm bots` |
+| `docs/memory/site.md` | touching the home page, the site's pages and addresses, SEO, the service worker's scope |
 | `docs/memory/web.md` | touching `apps/web`: screens, connection, interaction, dictionaries, build |

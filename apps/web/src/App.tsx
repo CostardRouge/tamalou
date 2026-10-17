@@ -1,6 +1,7 @@
 import { decodeRulesChoice, normalizeRoomCode, type RulesChoice, rulesOf } from '@tamalou/shared';
 import { MotionConfig } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
+import { trackEvent, trackView } from './audience.ts';
 import { LocalConnection } from './connection/local.ts';
 import { roomsAvailable } from './connection/remote.ts';
 import type { GameConnection } from './connection/types.ts';
@@ -81,9 +82,21 @@ export function App() {
     });
   }, []);
   const play = useCallback(
-    (choice: GameChoice) => replace({ id: Date.now(), conn: newGame(choice), choice }),
+    (choice: GameChoice) => {
+      replace({ id: Date.now(), conn: newGame(choice), choice });
+      trackEvent('game-started', {
+        mode: choice.mode,
+        bots: choice.bots,
+        level: choice.level,
+        preset: choice.preset,
+        custom: Object.keys(choice.overrides).length > 0,
+      });
+    },
     [replace],
   );
+  // One view per screen, never a room's code (ADR-0018): the game's home, a local game, a room.
+  const screen = room ? 'salle' : game ? 'partie' : '';
+  useEffect(() => trackView(`/jouer/${screen}`), [screen]);
 
   return (
     // Animations follow the system's "reduce motion" setting.
