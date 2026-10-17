@@ -73,6 +73,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 - 2026-10-17 — Measurement is off until the owner adds Tamalou in Umami (insight.steevepommier.com, "Add website", domain tamalou.steevepommier.com) and sets the repository variable `UMAMI_WEBSITE_ID` to its id; also to confirm the contact address `pommier.steeve+tamalou@gmail.com` on the legal notice — ADR-0018.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
+- 2026-10-17 — The backfilled releases v0.1.0 to v0.7.0 wait on the owner: create a fine-grained token (this repository, Contents and Workflows: read and write), save it as the repository secret `RELEASE_TOKEN`, then Actions → Release → Run workflow — ADR-0019.
 
 ## Topic files
 
