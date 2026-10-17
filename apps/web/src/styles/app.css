@@ -444,21 +444,45 @@ button {
      1.25 units (its small cards follow the unit). */
   --opp-rows: 1;
   --unit: clamp(
-    40px,
+    30px,
     min(22vw, calc((100dvh - 370px - (var(--opp-rows) - 1) * 48px) / (5.2 + (var(--opp-rows) - 1) * 1.25))),
     112px
   );
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto auto;
+  /* The opponents' row gives way first: on a screen too short for everything it scrolls on its own, so the centre,
+     your cards and the buttons always stay whole. */
+  grid-template-rows: auto auto minmax(0, max-content) 1fr auto auto;
   gap: 8px;
-  /* At least the screen, never squeezed below its content: on a very short screen the table scrolls, it never overlaps. */
-  min-height: 100dvh;
-  box-sizing: border-box;
+  /* The table is pinned to the screen: the page never scrolls, bounces or zooms under a finger moving a card. The card
+     sizes above make everything fit; panels that need it (journal, rules, end of round) scroll on their own. */
+  position: fixed;
+  inset: 0;
   max-width: 640px;
   margin: 0 auto;
+  box-sizing: border-box;
   padding: max(6px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
   background: var(--felt);
-  overflow-x: hidden;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* While a table is on screen the document itself cannot scroll or pull to refresh. */
+html:has(.game),
+html:has(.game) body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.journal,
+.panel {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .game .card-lg {
@@ -470,7 +494,7 @@ button {
 }
 
 .game .card-sm {
-  --w: clamp(24px, calc(var(--unit) * 0.44), 46px);
+  --w: clamp(18px, calc(var(--unit) * 0.44), 46px);
 }
 
 .game-bar {
@@ -484,11 +508,107 @@ button {
   font-size: 0.85rem;
 }
 
+.game-bar .ghost,
+.round {
+  white-space: nowrap;
+}
+
+/* The spotlight: whose turn glows; while I choose, what I cannot touch fades and what I can breathes. */
+.game.turn-mine .mine.seat-turn {
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--a) 22%, transparent),
+    0 10px 28px -12px var(--a);
+}
+
+.game.turn-other .opponents .seat-turn {
+  animation: seat-pulse 1.4s ease-in-out infinite;
+}
+
+/* On the card, not its 3D inner face: opacity on a preserve-3d element flattens it and hides the back. */
+.game.choosing
+  :is(.opponents, .mine, .center .pile:not(.drawn))
+  .card:not(.card-active, .card-selected, .card-empty, .card-drop, .card-hot) {
+  opacity: 0.42;
+  filter: saturate(0.5);
+}
+
+.game .card {
+  transition:
+    opacity 0.3s,
+    filter 0.3s;
+}
+
+.game.choosing .card-hint:not(.card-selected) .card-side {
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+.turn-banner {
+  position: fixed;
+  z-index: 25;
+  top: 28%;
+  left: 50%;
+  translate: -50% 0;
+  padding: 10px 26px;
+  border-radius: var(--r-pill);
+  background: var(--a);
+  color: var(--on-accent);
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px -10px var(--a);
+  pointer-events: none;
+}
+
+@keyframes seat-pulse {
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--a) 22%, transparent);
+  }
+}
+
+@keyframes breathe {
+  50% {
+    box-shadow:
+      0 0 0 3px var(--a),
+      0 8px 22px -4px var(--a);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game.turn-other .opponents .seat-turn,
+  .game.choosing .card-hint:not(.card-selected) .card-side {
+    animation: none;
+  }
+}
+
+/* The narrowest phones: the header stays on one line too. */
+@media (max-width: 359px) {
+  .game-bar .ghost {
+    padding: 0 6px;
+    font-size: 0.9rem;
+  }
+}
+
 .opponents {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+  min-height: 0;
+  overflow: hidden auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.opponents .grid {
+  grid-template-columns: repeat(var(--opp-cols, var(--cols, 2)), auto);
+}
+
+/* Five opponents on a short screen: their cards line up in one row, which halves the height of their seats. */
+@media (max-height: 640px) {
+  .game-crowded {
+    --opp-cols: 4;
+  }
 }
 
 .seat {
@@ -533,6 +653,7 @@ button {
 
 .grid {
   display: grid;
+  grid-template-columns: repeat(var(--cols, 2), auto);
   margin: 0;
   padding: 0;
   border: 0;
@@ -550,7 +671,6 @@ button {
   justify-content: center;
   align-items: center;
   gap: 18px;
-  min-height: 0;
 }
 
 .pile {
@@ -595,11 +715,98 @@ button {
   font-weight: 600;
 }
 
+/* Buttons that may wrap: the end-of-round panel. */
 .buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+}
+
+/* One line, always (ActionBar.tsx): the main button takes the room left, the others are captioned icons. */
+.bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.bar .btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+.bar .bar-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 320px;
+  min-height: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.btn-good {
+  background: var(--good-ink);
+  border-color: var(--good-ink);
+  color: var(--on-accent);
+}
+
+.ibtn {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  border-radius: 18px;
+  border: 1px solid var(--field);
+  background: var(--surface);
+  color: var(--ink);
+  transition: transform 0.08s ease;
+}
+
+.ibtn:active {
+  transform: scale(0.94);
+}
+
+.ibtn .icon {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ibtn small {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ibtn-call {
+  background: var(--b-ink);
+  border-color: var(--b-ink);
+  color: var(--on-accent);
+}
+
+.ibtn-good {
+  color: var(--good-ink);
+  border-color: var(--good-ink);
+}
+
+.ibtn-on {
+  background: var(--good-ink);
+  color: var(--on-accent);
 }
 
 .ticker {
@@ -717,7 +924,7 @@ button {
     min-height: 2.6em;
     font-size: 14px;
   }
-  .controls .buttons {
+  .bar {
     gap: 6px;
   }
   .opponents {
@@ -1366,4 +1573,517 @@ button {
   font-family: var(--f-display);
   font-size: clamp(2.2rem, 12vw, 3.4rem);
   line-height: 1;
+}
+
+/* ------------------------------------------------------------ rules as cards to leaf through (RulesCards.tsx) */
+
+.rc-panel {
+  height: min(720px, 92dvh);
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  padding-inline: 0;
+}
+
+.rc-panel .panel-head {
+  padding-inline: 16px;
+}
+
+.rc {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 10px;
+  min-height: 0;
+}
+
+.rc-viewport {
+  overflow: hidden;
+  min-height: 0;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.rc-viewport:focus-visible {
+  outline: 3px solid var(--a);
+  outline-offset: -3px;
+}
+
+.rc-track {
+  display: flex;
+  height: 100%;
+}
+
+.rc-track,
+.rc-slide {
+  /* Each card scrolls up and down on its own; sideways belongs to the swipe (a scroll container's default
+     touch-action would let the browser take the gesture and cancel the drag). */
+  touch-action: pan-y;
+}
+
+.rc-slide {
+  flex: 0 0 100%;
+  box-sizing: border-box;
+  padding: 0 16px;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.rc-slide h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-display);
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.rc-slide ul {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 6px;
+}
+
+.rc-slide li.changed {
+  font-weight: 700;
+}
+
+.rc-art {
+  position: relative;
+  height: 170px;
+  border-radius: var(--r-lg);
+  background: var(--felt);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  --w: 40px;
+}
+
+.rc-art .card {
+  --w: inherit;
+}
+
+.rc-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rc-col {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.rc-pic {
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% 100%;
+}
+
+.rc-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--a);
+  color: var(--on-accent);
+}
+
+.rc-badge-b {
+  background: var(--b-ink);
+}
+
+.rc-badge svg,
+.rc-clock {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rc-clock {
+  width: 64px;
+  height: 64px;
+  stroke-width: 1.6;
+  color: var(--a);
+}
+
+.rc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--a);
+  color: var(--on-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rc-tag-b {
+  background: var(--b-ink);
+}
+
+.rc-tag-g {
+  background: var(--good-ink);
+}
+
+.rc-arrow {
+  height: 30px;
+  stroke: var(--muted);
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 4 5;
+}
+
+.rc-hand,
+.rc-mini {
+  gap: 5px;
+}
+
+.rc-mini {
+  --w: 26px;
+}
+
+.rc-fan {
+  display: flex;
+  align-items: flex-end;
+}
+
+.rc-values {
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  gap: 6px 8px;
+  --w: 30px;
+}
+
+.rc-value {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.rc-special b {
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--b-ink);
+  color: var(--on-accent);
+}
+
+.rc-meter {
+  position: relative;
+  width: 78%;
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+}
+
+.rc-meter-fill {
+  position: absolute;
+  inset: 0 22% 0 0;
+  border-radius: inherit;
+  background: var(--a);
+  animation: rc-grow 2.4s ease-in-out infinite alternate;
+}
+
+.rc-meter-mark {
+  position: absolute;
+  right: 0;
+  top: -6px;
+  bottom: -6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--b-ink);
+}
+
+.rc-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--a);
+}
+
+.rc-dots {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rc-dotbtn {
+  width: 28px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+}
+
+.rc-dotbtn span {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--field);
+  transition:
+    width 0.3s,
+    background 0.2s;
+}
+
+.rc-dotbtn.on span {
+  width: 22px;
+  background: var(--a);
+}
+
+.rc-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+}
+
+.rc-nav .btn {
+  min-width: 112px;
+}
+
+.rc-nav .btn:disabled {
+  opacity: 0.4;
+}
+
+.rc-count {
+  min-width: 52px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.rc-peek {
+  animation: rc-peek 2.8s ease-in-out infinite;
+}
+
+.rc-float {
+  animation: rc-float 2.6s ease-in-out infinite;
+}
+
+.rc-throw {
+  animation: rc-throw 2.6s cubic-bezier(0.3, 0.7, 0.3, 1) infinite;
+}
+
+.rc-drop {
+  animation: rc-drop 2.6s ease-in-out infinite;
+}
+
+.rc-swapL {
+  animation: rc-swapL 3.2s ease-in-out infinite;
+}
+
+.rc-swapR {
+  animation: rc-swapR 3.2s ease-in-out infinite;
+}
+
+@keyframes rc-peek {
+  0%,
+  20%,
+  80%,
+  100% {
+    transform: none;
+  }
+  35%,
+  65% {
+    transform: translateY(-8px) rotateX(40deg) scale(1.1);
+  }
+}
+
+@keyframes rc-float {
+  50% {
+    transform: translateY(-6px) rotate(-2deg);
+  }
+}
+
+@keyframes rc-throw {
+  0%,
+  25% {
+    transform: none;
+  }
+  55%,
+  100% {
+    transform: translate(-64px, -4px) rotate(-12deg);
+  }
+}
+
+@keyframes rc-drop {
+  0%,
+  30% {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  50%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes rc-swapL {
+  0%,
+  22% {
+    transform: none;
+  }
+  52%,
+  100% {
+    transform: translateX(-60px) rotate(-8deg);
+  }
+}
+
+@keyframes rc-swapR {
+  0%,
+  22% {
+    transform: none;
+  }
+  52%,
+  100% {
+    transform: translateX(60px) rotate(8deg);
+  }
+}
+
+@keyframes rc-grow {
+  from {
+    width: 10%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-peek,
+  .rc-float,
+  .rc-throw,
+  .rc-drop,
+  .rc-swapL,
+  .rc-swapR,
+  .rc-meter-fill {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------ cards in flight, what the others say (FlightLayer.tsx) */
+
+.card-ghost {
+  visibility: hidden;
+}
+
+.flights {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.flight {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+.flight .card {
+  --w: inherit;
+}
+
+.flight .card-side {
+  box-shadow: 0 18px 26px -12px rgb(0 0 0 / 0.45);
+}
+
+.bubble {
+  position: absolute;
+  translate: -50% 0;
+  width: max-content;
+  max-width: 200px;
+  box-sizing: border-box;
+  padding: 7px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow:
+    var(--shadow),
+    0 0 0 1px var(--line);
+}
+
+.bubble::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  rotate: 45deg;
+  border-radius: 2px;
+}
+
+/* ------------------------------------------------------------ by hand (Draggable.tsx, drag.ts) */
+
+.draggable {
+  position: relative;
+  touch-action: none;
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.card-drop .card-side {
+  outline: 2px dashed var(--a);
+  outline-offset: 3px;
+}
+
+.card-hot {
+  transform: scale(1.07);
+  transition: transform 0.18s cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+.card-hot .card-side {
+  outline: 3px solid var(--a);
+  outline-offset: 3px;
+}
+
+.mine.zone-hot {
+  box-shadow: inset 0 0 0 3px var(--a);
+}
+
+.ask {
+  position: fixed;
+  z-index: 30;
+  left: 10px;
+  right: 10px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  max-width: 560px;
+  margin: 0 auto;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: 0 -10px 40px -12px rgb(0 0 0 / 0.45);
+}
+
+.ask h2 {
+  font-size: 1.2rem;
 }

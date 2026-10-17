@@ -1,12 +1,18 @@
-import type { PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
-import { AnimatePresence, motion } from 'motion/react';
+import type { Action, PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
-import { updateSettings, useSettings } from '../feedback/settings.ts';
+import { getSettings, updateSettings, useSettings } from '../feedback/settings.ts';
 import { useFeedback } from '../feedback/useFeedback.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
+import { type Act, ActionBar } from './ActionBar.tsx';
+import { confirmQuestion } from './confirm.ts';
+import { Draggable, measurePlaces } from './Draggable.tsx';
+import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
+import { noteDrop, useFlights } from './FlightLayer.tsx';
+import { type Place, slotPlace } from './flights.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { RoundOver } from './RoundOver.tsx';
@@ -34,12 +40,27 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const rules = conn.rules;
   const events = conn.events();
   const feedback = useFeedback(events, view.me);
+  const reduced = useReducedMotion();
+  const fly = useFlights(events, view.me, !reduced);
   const settings = useSettings();
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
   const [showRules, setShowRules] = useState(false);
   /** Pass-and-play quick discard: choosing who claims, then that player's card. */
   const [claim, setClaim] = useState<'who' | PlayerId | null>(null);
+  /** A move waiting for "Confirmer" when the game master asks to confirm every move (rules.assist.confirmMoves). */
+  const [staged, setStaged] = useState<{
+    action: Action;
+    ref: SlotRef | null;
+    question: string;
+    after?: () => void;
+  } | null>(null);
+  /** A card being carried by hand: where it may land, and where it would land now. */
+  const [drag, setDrag] = useState<{ drops: Drop[]; hot: Place[] } | null>(null);
+  /** A drop that could mean two things, waiting for the player's answer. */
+  const [ask, setAsk] = useState<Drop[] | null>(null);
+  /** The second half of a drop: a card drawn onto one of mine is swapped there once the draw is through. */
+  const [queued, setQueued] = useState<Action | null>(null);
   const ui = interaction(view, rules, pending);
   const handoff = conn.handoff?.() ?? null;
 
@@ -49,7 +70,19 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   useEffect(() => {
     setPending(NONE);
     setClaim(null);
+    setStaged(null);
+    setAsk(null);
   }, [stepKey]);
+
+  // The spotlight: "À toi !" for a moment when my turn starts.
+  const myTurnNow = view.phase === 'play' && view.current === view.me && !handoff;
+  const [hello, setHello] = useState(false);
+  useEffect(() => {
+    setHello(myTurnNow);
+    if (!myTurnNow) return;
+    const id = window.setTimeout(() => setHello(false), 1400);
+    return () => window.clearTimeout(id);
+  }, [myTurnNow]);
 
   // On a shared screen, a quick discard is claimed for a named player, from that player's own legal moves; their
   // cards stay face down on screen (their view is only used to know what they may claim).
@@ -68,35 +101,104 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const me = view.players.find((p) => p.id === view.me);
   const opponents = view.players.filter((p) => p.id !== view.me);
 
+  /** Sends a move, or stages it behind a question when every move is confirmed. */
+  const go = (action: Action, ref: SlotRef | null, after?: () => void) => {
+    const question = rules.assist.confirmMoves ? confirmQuestion(action, view, nameOf) : null;
+    if (question) {
+      setStaged({ action, ref, question, ...(after ? { after } : {}) });
+      return;
+    }
+    conn.send(action);
+    after?.();
+  };
+  const confirmStaged = () => {
+    if (!staged) return;
+    conn.send(staged.action);
+    staged.after?.();
+    setStaged(null);
+    setPending(NONE);
+  };
   const touch = (ref: SlotRef) => {
     if (claim && claim !== 'who' && claimUi) {
       const c = claimUi.slot(ref);
-      if (c?.send) conn.send(c.send);
-      setClaim(null);
+      if (c?.send) go(c.send, ref, () => setClaim(null));
+      else setClaim(null);
       return;
     }
     const a = ui.slot(ref);
     if (!a) return;
     if (a.next) setPending(a.next);
-    if (a.send) {
-      conn.send(a.send);
-      setPending(NONE);
-    }
+    if (a.send) go(a.send, ref, () => setPending(NONE));
   };
   const send = (a: Parameters<GameConnection['send']>[0] | undefined) => {
     if (!a) return;
-    conn.send(a);
-    setPending(NONE);
+    go(a, null, () => setPending(NONE));
   };
 
   const lines = events.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
+
+  // By hand (design D): a card picked up shows where it may land; let go, it plays that move, or asks when the drop
+  // could mean two things; dropped nowhere, it springs back.
+  const perform = (d: Drop) => {
+    setAsk(null);
+    if (d.followUp) setQueued(d.followUp);
+    go(d.send, null, () => setPending(NONE));
+  };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: checked after every render, like the queue it serves
+  useEffect(() => {
+    if (queued?.type !== 'swap') return;
+    const swap = ui.find('swap', (a) => a.slot === queued.slot);
+    if (swap) {
+      setQueued(null);
+      go(swap, { player: view.me, slot: queued.slot });
+    } else if (view.current !== view.me || view.phase !== 'play') setQueued(null);
+  });
+  const handsFree = pending.kind === 'none' && !staged && !claim && !ask;
+  const carry = (source: DragSource, place: Place, child: ReactNode, key?: string | number) => {
+    const drops = handsFree ? dropsFor(source, ui, view) : [];
+    return (
+      <Draggable
+        key={key}
+        enabled={drops.length > 0}
+        onPick={() => {
+          setDrag({ drops, hot: [] });
+          buzz(8);
+        }}
+        onMove={(point) => {
+          const hot = resolveDrop(drops, measurePlaces(), point, { x: 0, y: 0 }).map((d) => d.place);
+          setDrag((d) => (d && d.hot.join() === hot.join() ? d : { drops, hot }));
+        }}
+        onRelease={(point, velocity, box) => {
+          setDrag(null);
+          const found = resolveDrop(drops, measurePlaces(), point, velocity);
+          const [only] = found;
+          if (!only) return false;
+          if (found.length > 1) {
+            setAsk(found);
+            return false;
+          }
+          buzz(15);
+          perform(only);
+          // A drop that only starts a move (drawing onto one of my cards) lets the card spring back to the deck: the
+          // drawn card then flies from there. Any other move goes on from where the card was let go.
+          if (only.followUp) return false;
+          noteDrop(place, box);
+          return true;
+        }}
+      >
+        {child}
+      </Draggable>
+    );
+  };
+  const mark = (place: Place) =>
+    drag?.hot.includes(place) ? 'hot' : drag?.drops.some((d) => d.place === place) ? 'drop' : undefined;
 
   const seat = (p: PlayerSeatView, size: 'sm' | 'lg') => {
     const mine = p.id === view.me;
     return (
       <fieldset
         className="grid"
-        style={{ gridTemplateColumns: `repeat(${rules.hand.columns}, auto)` }}
+        style={{ '--cols': rules.hand.columns } as CSSProperties}
         aria-label={mine ? t('you') : p.name}
       >
         {p.slots.map((s) => {
@@ -108,9 +210,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             : `${mine ? t('slotMine', { n: s.slot + 1 }) : t('slotOf', { n: s.slot + 1, name: p.name })}, ${
                 s.card ? cardName(s.card) : t('cardHidden')
               }${s.locked ? `, ${t('locked')}` : ''}`;
-          return (
+          const place = slotPlace(ref);
+          return carry(
+            { kind: 'slot', ref },
+            place,
             <CardView
-              key={s.slot}
+              place={place}
+              mark={mark(place)}
+              ghost={fly.landing.has(place)}
               card={s.card}
               label={label}
               size={size}
@@ -118,9 +225,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               locked={s.locked}
               hint={action !== null}
               flash={feedback.flash.has(`${p.id}:${s.slot}`)}
-              selected={ui.selected(ref)}
+              selected={ui.selected(ref) || (!!staged?.ref && sameRef(staged.ref, ref))}
               onSelect={action ? () => touch(ref) : undefined}
-            />
+            />,
+            s.slot,
           );
         })}
       </fieldset>
@@ -128,12 +236,20 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   };
 
   const myTurn = view.current === view.me;
-  const prompt =
-    claim === 'who'
+  const prompt = staged
+    ? staged.question
+    : claim === 'who'
       ? t('promptQuickWho')
       : claim
         ? t('promptQuickAs', { name: nameOf(claim) })
         : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
+
+  // The spotlight (design B of "lisibilité du tour"): whose turn glows; while I choose, what I cannot touch fades.
+  const choosing =
+    !!staged ||
+    pending.kind !== 'none' ||
+    (myTurn && view.phase === 'play' && (view.step === 'draw' || view.step === 'place' || view.step === 'power'));
+  const spot = view.phase === 'play' ? (myTurn ? ' turn-mine' : ' turn-other') : '';
 
   if (handoff) {
     return (
@@ -147,7 +263,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
   return (
     // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
-    <div className="game" style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}>
+    <div
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}`}
+      style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
+    >
       <header className="game-bar">
         <button type="button" className="ghost" onClick={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}>
           ← {t('actHome')}
@@ -179,6 +298,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         {opponents.map((p) => (
           <div
             key={p.id}
+            data-seat={p.id}
             className={`seat${view.current === p.id ? ' seat-turn' : ''}${p.eliminated ? ' seat-out' : ''}`}
           >
             <div className="seat-head">
@@ -197,17 +317,22 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
       <section className="center" aria-label={t('table')}>
         <div className="pile">
-          <CardView
-            card={null}
-            label={plural('deckCount', view.deckSize)}
-            size="md"
-            hint={!!ui.find('draw', (a) => a.from === 'deck')}
-            onSelect={
-              ui.find('draw', (a) => a.from === 'deck')
-                ? () => send(ui.find('draw', (a) => a.from === 'deck'))
-                : undefined
-            }
-          />
+          {carry(
+            { kind: 'deck' },
+            'deck',
+            <CardView
+              card={null}
+              place="deck"
+              label={plural('deckCount', view.deckSize)}
+              size="md"
+              hint={!!ui.find('draw', (a) => a.from === 'deck')}
+              onSelect={
+                ui.find('draw', (a) => a.from === 'deck')
+                  ? () => send(ui.find('draw', (a) => a.from === 'deck'))
+                  : undefined
+              }
+            />,
+          )}
           <span className="pile-label mono">{view.deckSize}</span>
         </div>
         <div className="pile">
@@ -219,18 +344,25 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
             >
-              <CardView
-                card={view.discardTop}
-                empty={!view.discardTop}
-                label={view.discardTop ? `${t('discard')} : ${cardName(view.discardTop)}` : t('discardEmpty')}
-                size="md"
-                hint={!!ui.find('draw', (a) => a.from === 'discard')}
-                onSelect={
-                  ui.find('draw', (a) => a.from === 'discard')
-                    ? () => send(ui.find('draw', (a) => a.from === 'discard'))
-                    : undefined
-                }
-              />
+              {carry(
+                { kind: 'discard' },
+                'discard',
+                <CardView
+                  card={view.discardTop}
+                  place="discard"
+                  mark={mark('discard')}
+                  ghost={fly.landing.has('discard')}
+                  empty={!view.discardTop}
+                  label={view.discardTop ? `${t('discard')} : ${cardName(view.discardTop)}` : t('discardEmpty')}
+                  size="md"
+                  hint={!!ui.find('draw', (a) => a.from === 'discard')}
+                  onSelect={
+                    ui.find('draw', (a) => a.from === 'discard')
+                      ? () => send(ui.find('draw', (a) => a.from === 'discard'))
+                      : undefined
+                  }
+                />,
+              )}
             </motion.div>
           </AnimatePresence>
           <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
@@ -243,11 +375,17 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               animate={{ scale: 1, opacity: 1, x: 0 }}
               exit={{ scale: 0.8, opacity: 0 }}
             >
-              <CardView
-                card={view.drawn.card}
-                label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
-                size="lg"
-              />
+              {carry(
+                { kind: 'drawn' },
+                'drawn',
+                <CardView
+                  card={view.drawn.card}
+                  place="drawn"
+                  ghost={fly.landing.has('drawn')}
+                  label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
+                  size="lg"
+                />,
+              )}
               <span className="pile-label">{myTurn ? t('drawn') : nameOf(view.current ?? '')}</span>
             </motion.div>
           ) : null}
@@ -255,7 +393,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       </section>
 
       {me ? (
-        <section className={`mine${myTurn ? ' seat-turn' : ''}`} aria-label={t('you')}>
+        <section
+          className={`mine${myTurn ? ' seat-turn' : ''}${drag?.hot.includes(MY_ZONE) ? ' zone-hot' : ''}`}
+          aria-label={t('you')}
+          data-seat={view.me}
+          data-zone="mine"
+        >
           <div className="seat-head">
             <span className="seat-name">{me.name}</span>
             {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
@@ -272,29 +415,35 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         <p className="prompt" aria-live="polite">
           {prompt}
         </p>
-        <div className="buttons">
-          {claim === 'who' ? (
-            whoCanClaim.map((id) => (
-              <button key={id} type="button" className="btn btn-secondary" onClick={() => setClaim(id)}>
-                {nameOf(id)}
-              </button>
-            ))
-          ) : claim ? null : (
-            <>
-              {buttons(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers)}
-              {pending.kind === 'none' && whoCanClaim.length > 0 ? (
-                <button type="button" className="btn btn-secondary" onClick={() => setClaim('who')}>
-                  ⚡ {t('actQuick')}
-                </button>
-              ) : null}
-            </>
-          )}
-          {claim ? (
-            <button type="button" className="btn btn-secondary" onClick={() => setClaim(null)}>
-              {t('actCancel')}
-            </button>
-          ) : null}
-        </div>
+        <ActionBar
+          acts={
+            staged
+              ? [
+                  {
+                    key: 'confirm',
+                    label: t('actConfirm'),
+                    icon: 'keep',
+                    tone: staged.action.type === 'callTamalou' ? 'call' : 'primary',
+                    main: true,
+                    onClick: confirmStaged,
+                  },
+                  cancelAct(() => setStaged(null)),
+                ]
+              : claim === 'who'
+                ? [
+                    ...whoCanClaim.map((id): Act => ({ key: id, label: nameOf(id), onClick: () => setClaim(id) })),
+                    cancelAct(() => setClaim(null)),
+                  ]
+                : claim
+                  ? [cancelAct(() => setClaim(null))]
+                  : [
+                      ...actsFor(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers),
+                      ...(pending.kind === 'none' && whoCanClaim.length > 0
+                        ? [quickAct(() => setClaim('who'), false)]
+                        : []),
+                    ]
+          }
+        />
       </footer>
 
       {showLog ? (
@@ -312,6 +461,22 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       ) : null}
 
       {showRules ? <RulesPanel rules={rules} onClose={() => setShowRules(false)} /> : null}
+
+      <AnimatePresence>
+        {hello ? (
+          <motion.div
+            key="hello"
+            className="turn-banner"
+            aria-hidden="true"
+            initial={{ y: -24, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+          >
+            {t('turnBanner')}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <AnimatePresence>
         {feedback.splash ? (
@@ -332,11 +497,34 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         ) : null}
       </AnimatePresence>
 
+      {fly.layer}
+
+      {ask ? (
+        <div className="ask" role="dialog" aria-modal="true" aria-labelledby="ask-title">
+          <h2 id="ask-title">{t('dropAsk')}</h2>
+          {ask.map((d) => (
+            <button key={d.place} type="button" className="btn btn-secondary" onClick={() => perform(d)}>
+              {t(d.label.key, { n: d.label.n ?? '', name: d.label.player ? nameOf(d.label.player) : '' })}
+            </button>
+          ))}
+          <button type="button" className="btn" onClick={() => setAsk(null)}>
+            {t('actCancel')}
+          </button>
+        </div>
+      ) : null}
+
       {view.phase === 'roundOver' || view.phase === 'gameOver' ? (
         <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onReplay={onReplay} />
       ) : null}
     </div>
   );
+}
+
+const sameRef = (a: SlotRef, b: SlotRef) => a.player === b.player && a.slot === b.slot;
+
+/** A short tick under the finger when a card is picked up or taken, if the player wants vibrations. */
+function buzz(ms: number) {
+  if (getSettings().haptics) navigator.vibrate?.(ms);
 }
 
 /** A seat whose player lost the connection, or whose bot plays in their place (online). */
@@ -389,7 +577,26 @@ function promptFor(
   }
 }
 
-function buttons(
+const cancelAct = (onClick: () => void): Act => ({
+  key: 'cancel',
+  label: t('actCancel'),
+  caption: t('barCancel'),
+  icon: 'cancel',
+  onClick,
+});
+
+const quickAct = (onClick: () => void, on: boolean): Act => ({
+  key: 'quick',
+  label: t('actQuick'),
+  caption: t('barQuick'),
+  icon: 'quick',
+  tone: 'good',
+  on,
+  onClick,
+});
+
+/** Everything the player can do now that is not a touch on a card, main action first. */
+function actsFor(
   ui: ReturnType<typeof interaction>,
   pending: Pending,
   view: PlayerView,
@@ -398,46 +605,87 @@ function buttons(
   setPending: (p: Pending) => void,
   /** A shared screen offers the quick discard per player instead (pass-and-play). */
   shared = false,
-) {
-  const out: ReactNode[] = [];
-  const btn = (key: string, label: string, onClick: () => void, kind: 'primary' | 'secondary' | 'call' = 'secondary') =>
-    out.push(
-      <button key={key} type="button" className={`btn btn-${kind}`} onClick={onClick}>
-        {label}
-      </button>,
-    );
-
+): Act[] {
+  const out: Act[] = [];
   if (pending.kind !== 'none') {
-    if (pending.kind === 'choosePeek') {
-      if (pending.slots.length === peekCount) {
-        const slots = pending.slots;
-        btn('peek', t('actConfirmPeek'), () => send({ type: 'choosePeek', by: view.me, slots }), 'primary');
-      }
+    if (pending.kind === 'choosePeek' && pending.slots.length === peekCount) {
+      const slots = pending.slots;
+      out.push({
+        key: 'peek',
+        label: t('actConfirmPeek'),
+        icon: 'look',
+        tone: 'primary',
+        main: true,
+        onClick: () => send({ type: 'choosePeek', by: view.me, slots }),
+      });
     }
-    btn('cancel', t('actCancel'), () => setPending(NONE));
     const skipPower = ui.find('skipPower');
-    if (pending.kind === 'blindOwn' && skipPower) btn('skip', t('actSkipPower'), () => send(skipPower));
+    if (pending.kind === 'blindOwn' && skipPower) {
+      out.push({
+        key: 'skip',
+        label: t('actSkipPower'),
+        caption: t('barSkip'),
+        icon: 'skip',
+        onClick: () => send(skipPower),
+      });
+    }
+    out.push(cancelAct(() => setPending(NONE)));
     return out;
   }
   const ready = ui.find('ready');
-  if (ready) btn('ready', t('actReady'), () => send(ready), 'primary');
+  if (ready) out.push({ key: 'ready', label: t('actReady'), tone: 'primary', main: true, onClick: () => send(ready) });
   const deck = ui.find('draw', (a) => a.from === 'deck');
-  if (deck) btn('deck', t('actDrawDeck'), () => send(deck), 'primary');
-  const take = ui.find('draw', (a) => a.from === 'discard');
-  if (take) btn('take', t('actTakeDiscard'), () => send(take));
+  if (deck)
+    out.push({
+      key: 'deck',
+      label: t('actDrawDeck'),
+      icon: 'draw',
+      tone: 'primary',
+      main: true,
+      onClick: () => send(deck),
+    });
   const discard = ui.find('discardDrawn');
-  if (discard) btn('discard', t('actDiscard'), () => send(discard), 'primary');
-  const skip = ui.find('skipPower');
-  if (skip) btn('skip', t('actSkipPower'), () => send(skip));
+  if (discard) {
+    out.push({
+      key: 'discard',
+      label: t('actDiscard'),
+      icon: 'discard',
+      tone: 'primary',
+      main: true,
+      onClick: () => send(discard),
+    });
+  }
   const end = ui.find('endReveal');
-  if (end) btn('end', t('actEndReveal'), () => send(end), 'primary');
+  if (end) out.push({ key: 'end', label: t('actEndReveal'), tone: 'primary', main: true, onClick: () => send(end) });
+  const take = ui.find('draw', (a) => a.from === 'discard');
+  if (take)
+    out.push({
+      key: 'take',
+      label: t('actTakeDiscard'),
+      caption: t('barTake'),
+      icon: 'take',
+      onClick: () => send(take),
+    });
+  const skip = ui.find('skipPower');
+  if (skip)
+    out.push({ key: 'skip', label: t('actSkipPower'), caption: t('barSkip'), icon: 'skip', onClick: () => send(skip) });
   const keep = ui.find('queenDecide', (a) => a.swapWith === null);
-  if (keep) btn('keep', t('actKeep'), () => send(keep));
+  if (keep)
+    out.push({ key: 'keep', label: t('actKeep'), caption: t('barKeep'), icon: 'keep', onClick: () => send(keep) });
   const pass = ui.find('passCall');
-  if (pass) btn('pass', t('actPass'), () => send(pass));
+  if (pass)
+    out.push({ key: 'pass', label: t('actPass'), caption: t('barPass'), icon: 'pass', onClick: () => send(pass) });
   const call = ui.find('callTamalou');
-  if (call) btn('call', t('actCall'), () => send(call), 'call');
-  if (ui.canQuick && !shared) btn('quick', `⚡ ${t('actQuick')}`, () => setPending({ kind: 'quick' }));
+  if (call)
+    out.push({
+      key: 'call',
+      label: t('actCall'),
+      caption: t('barCall'),
+      icon: 'call',
+      tone: 'call',
+      onClick: () => send(call),
+    });
+  if (ui.canQuick && !shared) out.push(quickAct(() => setPending({ kind: 'quick' }), false));
   return out;
 }
 

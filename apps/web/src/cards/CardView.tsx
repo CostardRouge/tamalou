@@ -17,11 +17,32 @@ export interface CardViewProps {
   empty?: boolean;
   /** A move just touched this card: a short ring so the eye follows it. */
   flash?: boolean;
+  /** Its place on the table (`deck`, `slot:<player>:<slot>`…), where flying cards leave from and land. */
+  place?: string;
+  /** A flying copy is on its way here: this one waits, invisible, until it lands. */
+  ghost?: boolean;
+  /** A card carried by hand may land here (`drop`), or would land here now (`hot`). */
+  mark?: 'drop' | 'hot' | undefined;
 }
 
-export function CardView({ card, label, size = 'md', onSelect, selected, hint, locked, empty, flash }: CardViewProps) {
+export function CardView({
+  card,
+  label,
+  size = 'md',
+  onSelect,
+  selected,
+  hint,
+  locked,
+  empty,
+  flash,
+  place,
+  ghost,
+  mark,
+}: CardViewProps) {
   const theme = useCardTheme();
-  if (empty) return <div className={`card card-${size} card-empty`} role="img" aria-label={label} />;
+  if (empty) {
+    return <div className={`card card-${size} card-empty`} role="img" aria-label={label} data-place={place} />;
+  }
   const className = [
     'card',
     `card-${size}`,
@@ -30,6 +51,8 @@ export function CardView({ card, label, size = 'md', onSelect, selected, hint, l
     hint ? 'card-hint' : '',
     locked ? 'card-locked' : '',
     flash ? 'card-flash' : '',
+    ghost ? 'card-ghost' : '',
+    mark ? `card-${mark}` : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -48,13 +71,20 @@ export function CardView({ card, label, size = 'md', onSelect, selected, hint, l
   );
   if (onSelect) {
     return (
-      <button type="button" className={className} aria-label={label} aria-pressed={selected} onClick={onSelect}>
+      <button
+        type="button"
+        className={className}
+        aria-label={label}
+        aria-pressed={selected}
+        onClick={onSelect}
+        data-place={place}
+      >
         {inner}
       </button>
     );
   }
   return (
-    <div className={className} role="img" aria-label={label}>
+    <div className={className} role="img" aria-label={label} data-place={place}>
       {inner}
     </div>
   );
