@@ -73,6 +73,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 - 2026-10-17 — Once deployed, check the first views and events in Umami (Tamalou's site on insight.steevepommier.com): both hosts, clean paths, no room code — ADR-0018.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
+- 2026-10-17 — The backfilled releases v0.1.0 to v0.7.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository — ADR-0019.
 
 ## Topic files
 
