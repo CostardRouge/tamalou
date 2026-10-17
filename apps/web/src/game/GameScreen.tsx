@@ -3,14 +3,16 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
-import { updateSettings, useSettings } from '../feedback/settings.ts';
+import { getSettings, updateSettings, useSettings } from '../feedback/settings.ts';
 import { useFeedback } from '../feedback/useFeedback.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { type Act, ActionBar } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
-import { useFlights } from './FlightLayer.tsx';
-import { slotPlace } from './flights.ts';
+import { Draggable, measurePlaces } from './Draggable.tsx';
+import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
+import { noteDrop, useFlights } from './FlightLayer.tsx';
+import { type Place, slotPlace } from './flights.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { RoundOver } from './RoundOver.tsx';
@@ -53,6 +55,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     question: string;
     after?: () => void;
   } | null>(null);
+  /** A card being carried by hand: where it may land, and where it would land now. */
+  const [drag, setDrag] = useState<{ drops: Drop[]; hot: Place[] } | null>(null);
+  /** A drop that could mean two things, waiting for the player's answer. */
+  const [ask, setAsk] = useState<Drop[] | null>(null);
+  /** The second half of a drop: a card drawn onto one of mine is swapped there once the draw is through. */
+  const [queued, setQueued] = useState<Action | null>(null);
   const ui = interaction(view, rules, pending);
   const handoff = conn.handoff?.() ?? null;
 
@@ -63,6 +71,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     setPending(NONE);
     setClaim(null);
     setStaged(null);
+    setAsk(null);
   }, [stepKey]);
 
   // The spotlight: "À toi !" for a moment when my turn starts.
@@ -128,6 +137,62 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
   const lines = events.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
 
+  // By hand (design D): a card picked up shows where it may land; let go, it plays that move, or asks when the drop
+  // could mean two things; dropped nowhere, it springs back.
+  const perform = (d: Drop) => {
+    setAsk(null);
+    if (d.followUp) setQueued(d.followUp);
+    go(d.send, null, () => setPending(NONE));
+  };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: checked after every render, like the queue it serves
+  useEffect(() => {
+    if (queued?.type !== 'swap') return;
+    const swap = ui.find('swap', (a) => a.slot === queued.slot);
+    if (swap) {
+      setQueued(null);
+      go(swap, { player: view.me, slot: queued.slot });
+    } else if (view.current !== view.me || view.phase !== 'play') setQueued(null);
+  });
+  const handsFree = pending.kind === 'none' && !staged && !claim && !ask;
+  const carry = (source: DragSource, place: Place, child: ReactNode, key?: string | number) => {
+    const drops = handsFree ? dropsFor(source, ui, view) : [];
+    return (
+      <Draggable
+        key={key}
+        enabled={drops.length > 0}
+        onPick={() => {
+          setDrag({ drops, hot: [] });
+          buzz(8);
+        }}
+        onMove={(point) => {
+          const hot = resolveDrop(drops, measurePlaces(), point, { x: 0, y: 0 }).map((d) => d.place);
+          setDrag((d) => (d && d.hot.join() === hot.join() ? d : { drops, hot }));
+        }}
+        onRelease={(point, velocity, box) => {
+          setDrag(null);
+          const found = resolveDrop(drops, measurePlaces(), point, velocity);
+          const [only] = found;
+          if (!only) return false;
+          if (found.length > 1) {
+            setAsk(found);
+            return false;
+          }
+          buzz(15);
+          perform(only);
+          // A drop that only starts a move (drawing onto one of my cards) lets the card spring back to the deck: the
+          // drawn card then flies from there. Any other move goes on from where the card was let go.
+          if (only.followUp) return false;
+          noteDrop(place, box);
+          return true;
+        }}
+      >
+        {child}
+      </Draggable>
+    );
+  };
+  const mark = (place: Place) =>
+    drag?.hot.includes(place) ? 'hot' : drag?.drops.some((d) => d.place === place) ? 'drop' : undefined;
+
   const seat = (p: PlayerSeatView, size: 'sm' | 'lg') => {
     const mine = p.id === view.me;
     return (
@@ -146,10 +211,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 s.card ? cardName(s.card) : t('cardHidden')
               }${s.locked ? `, ${t('locked')}` : ''}`;
           const place = slotPlace(ref);
-          return (
+          return carry(
+            { kind: 'slot', ref },
+            place,
             <CardView
-              key={s.slot}
               place={place}
+              mark={mark(place)}
               ghost={fly.landing.has(place)}
               card={s.card}
               label={label}
@@ -160,7 +227,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               flash={feedback.flash.has(`${p.id}:${s.slot}`)}
               selected={ui.selected(ref) || (!!staged?.ref && sameRef(staged.ref, ref))}
               onSelect={action ? () => touch(ref) : undefined}
-            />
+            />,
+            s.slot,
           );
         })}
       </fieldset>
@@ -249,18 +317,22 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
       <section className="center" aria-label={t('table')}>
         <div className="pile">
-          <CardView
-            card={null}
-            place="deck"
-            label={plural('deckCount', view.deckSize)}
-            size="md"
-            hint={!!ui.find('draw', (a) => a.from === 'deck')}
-            onSelect={
-              ui.find('draw', (a) => a.from === 'deck')
-                ? () => send(ui.find('draw', (a) => a.from === 'deck'))
-                : undefined
-            }
-          />
+          {carry(
+            { kind: 'deck' },
+            'deck',
+            <CardView
+              card={null}
+              place="deck"
+              label={plural('deckCount', view.deckSize)}
+              size="md"
+              hint={!!ui.find('draw', (a) => a.from === 'deck')}
+              onSelect={
+                ui.find('draw', (a) => a.from === 'deck')
+                  ? () => send(ui.find('draw', (a) => a.from === 'deck'))
+                  : undefined
+              }
+            />,
+          )}
           <span className="pile-label mono">{view.deckSize}</span>
         </div>
         <div className="pile">
@@ -272,20 +344,25 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
             >
-              <CardView
-                card={view.discardTop}
-                place="discard"
-                ghost={fly.landing.has('discard')}
-                empty={!view.discardTop}
-                label={view.discardTop ? `${t('discard')} : ${cardName(view.discardTop)}` : t('discardEmpty')}
-                size="md"
-                hint={!!ui.find('draw', (a) => a.from === 'discard')}
-                onSelect={
-                  ui.find('draw', (a) => a.from === 'discard')
-                    ? () => send(ui.find('draw', (a) => a.from === 'discard'))
-                    : undefined
-                }
-              />
+              {carry(
+                { kind: 'discard' },
+                'discard',
+                <CardView
+                  card={view.discardTop}
+                  place="discard"
+                  mark={mark('discard')}
+                  ghost={fly.landing.has('discard')}
+                  empty={!view.discardTop}
+                  label={view.discardTop ? `${t('discard')} : ${cardName(view.discardTop)}` : t('discardEmpty')}
+                  size="md"
+                  hint={!!ui.find('draw', (a) => a.from === 'discard')}
+                  onSelect={
+                    ui.find('draw', (a) => a.from === 'discard')
+                      ? () => send(ui.find('draw', (a) => a.from === 'discard'))
+                      : undefined
+                  }
+                />,
+              )}
             </motion.div>
           </AnimatePresence>
           <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
@@ -298,13 +375,17 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               animate={{ scale: 1, opacity: 1, x: 0 }}
               exit={{ scale: 0.8, opacity: 0 }}
             >
-              <CardView
-                card={view.drawn.card}
-                place="drawn"
-                ghost={fly.landing.has('drawn')}
-                label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
-                size="lg"
-              />
+              {carry(
+                { kind: 'drawn' },
+                'drawn',
+                <CardView
+                  card={view.drawn.card}
+                  place="drawn"
+                  ghost={fly.landing.has('drawn')}
+                  label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
+                  size="lg"
+                />,
+              )}
               <span className="pile-label">{myTurn ? t('drawn') : nameOf(view.current ?? '')}</span>
             </motion.div>
           ) : null}
@@ -312,7 +393,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       </section>
 
       {me ? (
-        <section className={`mine${myTurn ? ' seat-turn' : ''}`} aria-label={t('you')} data-seat={view.me}>
+        <section
+          className={`mine${myTurn ? ' seat-turn' : ''}${drag?.hot.includes(MY_ZONE) ? ' zone-hot' : ''}`}
+          aria-label={t('you')}
+          data-seat={view.me}
+          data-zone="mine"
+        >
           <div className="seat-head">
             <span className="seat-name">{me.name}</span>
             {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
@@ -413,6 +499,20 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
       {fly.layer}
 
+      {ask ? (
+        <div className="ask" role="dialog" aria-modal="true" aria-labelledby="ask-title">
+          <h2 id="ask-title">{t('dropAsk')}</h2>
+          {ask.map((d) => (
+            <button key={d.place} type="button" className="btn btn-secondary" onClick={() => perform(d)}>
+              {t(d.label.key, { n: d.label.n ?? '', name: d.label.player ? nameOf(d.label.player) : '' })}
+            </button>
+          ))}
+          <button type="button" className="btn" onClick={() => setAsk(null)}>
+            {t('actCancel')}
+          </button>
+        </div>
+      ) : null}
+
       {view.phase === 'roundOver' || view.phase === 'gameOver' ? (
         <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onReplay={onReplay} />
       ) : null}
@@ -421,6 +521,11 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 }
 
 const sameRef = (a: SlotRef, b: SlotRef) => a.player === b.player && a.slot === b.slot;
+
+/** A short tick under the finger when a card is picked up or taken, if the player wants vibrations. */
+function buzz(ms: number) {
+  if (getSettings().haptics) navigator.vibrate?.(ms);
+}
 
 /** A seat whose player lost the connection, or whose bot plays in their place (online). */
 function Presence({ state }: { state: 'offline' | 'away' | null }) {

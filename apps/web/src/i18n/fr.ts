@@ -166,6 +166,17 @@ export const fr = {
   bubbleQuick: 'Défausse rapide : {card} !',
   bubbleMissed: 'Raté…',
 
+  // Dropping a card where it could mean two things: the table asks (game/drag.ts).
+  dropAsk: 'Que veux-tu faire ?',
+  dropDraw: 'Piocher',
+  dropTake: 'Prendre la défausse',
+  dropDrawSwap: 'Piocher et la mettre à la place de ta carte {n}',
+  dropTakeSwap: 'Prendre la défausse et la mettre à la place de ta carte {n}',
+  dropSwap: 'Échanger avec ta carte {n}',
+  dropDiscard: 'La jeter sur la défausse',
+  dropQuick: 'Défausse rapide de ta carte {n}',
+  dropBlind: 'Échanger avec la carte {n} de {name}',
+
   power_none: 'Aucun',
   power_peekOwn: 'Regarder une de ses cartes',
   power_peekOther: 'Regarder une carte adverse',

@@ -157,6 +157,16 @@ export const en: Messages = {
   bubbleQuick: 'Quick discard: {card}!',
   bubbleMissed: 'Missed…',
 
+  dropAsk: 'What do you want to do?',
+  dropDraw: 'Draw',
+  dropTake: 'Take the discard',
+  dropDrawSwap: 'Draw and put it in place of your card {n}',
+  dropTakeSwap: 'Take the discard and put it in place of your card {n}',
+  dropSwap: 'Swap with your card {n}',
+  dropDiscard: 'Throw it on the discard',
+  dropQuick: 'Quick discard of your card {n}',
+  dropBlind: 'Swap with {name}’s card {n}',
+
   power_none: 'None',
   power_peekOwn: 'Look at one of your cards',
   power_peekOther: 'Look at an opponent’s card',

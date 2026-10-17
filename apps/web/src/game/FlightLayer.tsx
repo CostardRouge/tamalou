@@ -10,7 +10,7 @@ import { type Bubble, bubblesOf, type Flight, flightsOf, type Place } from './fl
 // seats with `data-seat`; this layer remembers where each place was before the move (the drawn card is already gone
 // from the screen when its swap arrives), flies a copy, and hides the destination until the copy lands.
 
-interface Box {
+export interface Box {
   x: number;
   y: number;
   w: number;
@@ -31,6 +31,20 @@ interface Said {
 }
 
 const BEAT = 0.34;
+
+// Where a card was let go by hand: its flight starts there rather than from its place, so the move goes on from the
+// finger instead of jumping back first.
+const dropped = new Map<Place, { box: Box; at: number }>();
+
+export function noteDrop(place: Place, box: Box) {
+  dropped.set(place, { box, at: performance.now() });
+}
+
+function takeDrop(place: Place): Box | null {
+  const d = dropped.get(place);
+  dropped.delete(place);
+  return d && performance.now() - d.at < 1500 ? d.box : null;
+}
 
 function measure(): Map<Place, Box> {
   const out = new Map<Place, Box>();
@@ -81,7 +95,7 @@ export function useFlights(events: readonly GameEvent[], me: PlayerId, motionOn:
         first.get(place) ?? then.get(place) ?? (place === 'drawn' ? stand : null);
       const list: Active[] = [];
       for (const flight of flightsOf(fresh, me)) {
-        const from = find(flight.from, before, now);
+        const from = takeDrop(flight.from) ?? find(flight.from, before, now);
         const to = find(flight.to, now, before);
         if (from && to) list.push({ id: nextId.current++, flight, from, to });
       }
@@ -111,11 +125,11 @@ export function useFlights(events: readonly GameEvent[], me: PlayerId, motionOn:
         <FlyingCard key={a.id} a={a} onDone={() => done(a.id)} />
       ))}
       <AnimatePresence>
-        {said.map((s) => (
+        {stack(said).map(({ s, style }) => (
           <motion.div
             key={s.id}
             className="bubble"
-            style={bubbleBox(s.at)}
+            style={style}
             initial={{ opacity: 0, y: -8, scale: 0.7 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6 }}
@@ -130,10 +144,21 @@ export function useFlights(events: readonly GameEvent[], me: PlayerId, motionOn:
   return { landing, layer };
 }
 
-function bubbleBox(seat: Box): CSSProperties {
-  // Centred under the seat, kept on screen: a bubble is at most 200px wide, so its centre stays 108px from an edge.
-  const centre = Math.max(108, Math.min(window.innerWidth - 108, seat.x + seat.w / 2));
-  return { left: centre, top: seat.y + seat.h - 6 };
+/**
+ * Each bubble centred under its seat and kept on screen (at most 200px wide, so its centre stays 108px from an edge);
+ * two bubbles that would overlap (neighbouring seats, or a narrow screen) step down one under the other.
+ */
+function stack(said: readonly Said[]): { s: Said; style: CSSProperties }[] {
+  const placed: { left: number; top: number }[] = [];
+  return [...said]
+    .sort((a, b) => a.at.x - b.at.x)
+    .map((s) => {
+      const left = Math.max(108, Math.min(window.innerWidth - 108, s.at.x + s.at.w / 2));
+      let top = s.at.y + s.at.h - 6;
+      while (placed.some((p) => Math.abs(p.left - left) < 200 && Math.abs(p.top - top) < 34)) top += 36;
+      placed.push({ left, top });
+      return { s, style: { left, top } };
+    });
 }
 
 function bubbleText(b: Bubble): string {

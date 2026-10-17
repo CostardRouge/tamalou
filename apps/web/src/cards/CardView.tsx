@@ -21,6 +21,8 @@ export interface CardViewProps {
   place?: string;
   /** A flying copy is on its way here: this one waits, invisible, until it lands. */
   ghost?: boolean;
+  /** A card carried by hand may land here (`drop`), or would land here now (`hot`). */
+  mark?: 'drop' | 'hot' | undefined;
 }
 
 export function CardView({
@@ -35,6 +37,7 @@ export function CardView({
   flash,
   place,
   ghost,
+  mark,
 }: CardViewProps) {
   const theme = useCardTheme();
   if (empty) {
@@ -49,6 +52,7 @@ export function CardView({
     locked ? 'card-locked' : '',
     flash ? 'card-flash' : '',
     ghost ? 'card-ghost' : '',
+    mark ? `card-${mark}` : '',
   ]
     .filter(Boolean)
     .join(' ');
