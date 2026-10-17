@@ -149,7 +149,8 @@ function load() {
 function check() {
   const { pkg, changelog, errors } = load();
   if (errors.length) fail(errors);
-  console.log(`CHANGELOG.md and package.json agree on ${pkg} (${changelog.sections.length} releases).`);
+  const n = changelog.sections.length;
+  console.log(`CHANGELOG.md and package.json agree on ${pkg} (${n} release${n === 1 ? '' : 's'}).`);
 }
 
 function publish() {
