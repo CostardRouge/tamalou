@@ -96,7 +96,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     return (
       <fieldset
         className="grid"
-        style={{ gridTemplateColumns: `repeat(${rules.hand.columns}, auto)` }}
+        style={{ '--cols': rules.hand.columns } as CSSProperties}
         aria-label={mine ? t('you') : p.name}
       >
         {p.slots.map((s) => {
@@ -147,7 +147,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
   return (
     // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
-    <div className="game" style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}>
+    <div
+      className={opponents.length > 3 ? 'game game-crowded' : 'game'}
+      style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
+    >
       <header className="game-bar">
         <button type="button" className="ghost" onClick={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}>
           ← {t('actHome')}
