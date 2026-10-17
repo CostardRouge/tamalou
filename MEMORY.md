@@ -47,6 +47,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
 - Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device; a build-generated service worker makes solo and pass-and-play work offline — ADR-0015, `web.md`.
+- Versions: one SemVer version in the root `package.json`, `CHANGELOG.md` as source, tags and GitHub Releases made by `release.yml` on `main`, a release is its own PR on the owner's word; 0.8.0 with M1–M7 backfilled as 0.1.0–0.7.0 — ADR-0016, `CLAUDE.md` rule 4.
 - Bots see their view and their events only, pick among `legalActions`, and leave timing to the host (`profile.delays`); three levels tuned in `PROFILES`, hard beats easy 100 % and medium 73 % (2026-10-16) — `bots.md`.
 
 ## Open items
@@ -66,6 +67,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-16 — Owner to check once `deploy.yml` has pushed the image: make the `tamalou` package public on GitHub (Packages → Package settings), or `docker login ghcr.io` on the Optiplex; otherwise compose builds from the repository. Then judge M7 on the home network: `docker compose up -d`, scan the QR code in the logs, play.
 
 - 2026-10-16 — Owner to judge M8 on his phone: sounds and vibrations (Android vibrates, iPhone does not), "Installer le jeu", a solo game in airplane mode, the English switch.
+
+- 2026-10-17 — Owner to confirm the first release before merging its PR (the merge creates the tags v0.1.0 to v0.8.0 and their GitHub Releases): the starting number 0.8.0, the codenames (French card words, alphabetical), and the changelog in English while the game speaks French.
 
 ## Topic files
 

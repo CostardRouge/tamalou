@@ -46,3 +46,7 @@ ADR-0015. `feedback/cues.ts` (pure, tested) maps events to one cue per batch and
 ## The table's height (2026-10-17)
 
 **Bug reported from an iPhone** (tamalou.steevepommier.com): the deck and discard overlapped the opponents' seats. `.game` had `height: 100dvh` with the centre row `1fr; min-height: 0`, and card sizes followed the width only; Safari's toolbars leave about 390×660, too little for those sizes, so the centre row shrank under its cards. **Fix**: `.game` is `min-height: 100dvh` (a table too tall scrolls, never overlaps) and card widths derive from `--unit`, computed from `100dvh` as well as `vw` (constants measured, see the comment in `app.css`); more than three opponents set `--opp-rows: 2`; on phones the controls and the opponents' seats are tighter. **How to check a layout change**: a Playwright run over 390×664, 375×560, 360×640, 430×740, 390×844 and a tablet, with 2 and 5 bots, comparing the bounding boxes of `.opponents`, `.center`, `.mine`, `.controls` cards and `scrollHeight`. Known leftover: five opponents on a screen under ~700px tall scroll a little (their seats cannot shrink further and stay readable).
+
+## The version on the home screen (2026-10-17)
+
+It comes from `src/version.ts`, a *named* import of the root `package.json` (`import { version }`): Vite then bundles that one string, not the file (checked: no `packageManager` nor `devDependencies` in the build). No `define` constant, so Vitest needs no config for it. Rule 4 of `CLAUDE.md`, ADR-0016.

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createRoom } from '../connection/remote.ts';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
+import { VERSION } from '../version.ts';
 import { MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
 import { Settings } from './Settings.tsx';
 
@@ -299,6 +300,7 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom }: Props) {
         )}
       </form>
       <Settings />
+      <p className="version mono">v{VERSION}</p>
     </main>
   );
 }
