@@ -438,15 +438,39 @@ button {
 /* ------------------------------------------------------------ table */
 
 .game {
+  /* Card sizes follow the height left for them as well as the width: a phone browser's toolbars take a good part of
+     the screen. --unit is the width of a large card. Measured at phone sizes (2026-10-17): what is not cards (bars,
+     labels, two rows of buttons) takes about 370px and the cards 5.2 units; a second row of opponents adds 48px and
+     1.25 units (its small cards follow the unit). */
+  --opp-rows: 1;
+  --unit: clamp(
+    40px,
+    min(22vw, calc((100dvh - 370px - (var(--opp-rows) - 1) * 48px) / (5.2 + (var(--opp-rows) - 1) * 1.25))),
+    112px
+  );
   display: grid;
   grid-template-rows: auto auto auto 1fr auto auto;
   gap: 8px;
-  height: 100dvh;
+  /* At least the screen, never squeezed below its content: on a very short screen the table scrolls, it never overlaps. */
+  min-height: 100dvh;
+  box-sizing: border-box;
   max-width: 640px;
   margin: 0 auto;
   padding: max(6px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
   background: var(--felt);
-  overflow: hidden;
+  overflow-x: hidden;
+}
+
+.game .card-lg {
+  --w: var(--unit);
+}
+
+.game .card-md {
+  --w: calc(var(--unit) * 0.78);
+}
+
+.game .card-sm {
+  --w: clamp(24px, calc(var(--unit) * 0.44), 46px);
 }
 
 .game-bar {
@@ -674,6 +698,41 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
+}
+
+/* A phone, or any short screen: tighter controls (still 44px targets) leave the room to the cards. */
+@media (max-width: 699px), (max-height: 760px) {
+  .game {
+    gap: 6px;
+  }
+  .controls {
+    gap: 4px;
+  }
+  .controls .btn {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 15px;
+  }
+  .prompt {
+    min-height: 2.6em;
+    font-size: 14px;
+  }
+  .controls .buttons {
+    gap: 6px;
+  }
+  .opponents {
+    gap: 6px;
+  }
+  .opponents .seat {
+    padding: 4px 6px 6px;
+    gap: 3px;
+  }
+  .opponents .seat-head {
+    font-size: 0.78rem;
+  }
+  .opponents .grid {
+    gap: 4px;
+  }
 }
 
 @media (min-width: 700px) {

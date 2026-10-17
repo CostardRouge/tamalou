@@ -1,6 +1,6 @@
 import type { PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
 import { AnimatePresence, motion } from 'motion/react';
-import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { updateSettings, useSettings } from '../feedback/settings.ts';
@@ -146,7 +146,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   }
 
   return (
-    <div className="game">
+    // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
+    <div className="game" style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}>
       <header className="game-bar">
         <button type="button" className="ghost" onClick={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}>
           ← {t('actHome')}
