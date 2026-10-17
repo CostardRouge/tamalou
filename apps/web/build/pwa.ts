@@ -8,7 +8,7 @@ const PLAY_PAGE = `${PLAY_PATH}index.html`;
 
 // The offline game (docs/SPEC.md §8, M8): after the build, a service worker is written at the site's root with the
 // list of every file to keep and a version made from their contents. Solo and pass-and-play then work without a
-// network; rooms never go through it (/api/ is left to the network). The game page (jouer/) registers it for the whole
+// network; rooms never go through it (/api/ is left to the network). The game page (play/) registers it for the whole
 // site, so the home pages open offline too (ADR-0017).
 
 /** Files a phone needs offline: the page, scripts, styles, fonts, icons, manifest. */

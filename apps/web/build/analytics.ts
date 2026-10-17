@@ -50,7 +50,7 @@ export function analyticsConfig(
 
 /**
  * The settings in the head, as JSON the page's script reads, with the page's address on the site (`/`, `/en/`,
- * `/jouer/`…): the same on every host, whatever folder the site is served from (github.io/tamalou/). No preconnect
+ * `/play/`…): the same on every host, whatever folder the site is served from (github.io/tamalou/). No preconnect
  * to the tracker's host: that alone would reach the server for visitors who said no.
  */
 export function analyticsTag(config: AnalyticsConfig, path: string): string {

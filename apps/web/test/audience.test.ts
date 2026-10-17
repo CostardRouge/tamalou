@@ -16,7 +16,7 @@ const ID = { VITE_UMAMI_WEBSITE_ID: 'site-id' };
 const CONFIG = analyticsConfig(ID, { production: true, url: URL_ });
 
 async function page(opts: { config?: boolean; path?: string; title?: string } = {}): Promise<Audience> {
-  const tag = opts.config === false || !CONFIG ? '' : analyticsTag(CONFIG, opts.path ?? 'jouer/');
+  const tag = opts.config === false || !CONFIG ? '' : analyticsTag(CONFIG, opts.path ?? 'play/');
   document.head.innerHTML = `<title>${opts.title ?? 'Tamalou'}</title>${tag}`;
   vi.resetModules();
   return import('../src/audience.ts');
@@ -89,7 +89,7 @@ describe('loading the tracker', () => {
     const a = await page({ config: false });
     expect(a.measurement()).toBe('none');
     a.startAnalytics();
-    a.trackView('/jouer/');
+    a.trackView('/play/');
     expect(tracker()).toBeNull();
   });
 
@@ -146,26 +146,26 @@ describe('views and events', () => {
   it('waits for the tracker, then sends clean addresses, each view once, the previous one as referrer', async () => {
     const a = await page();
     a.startAnalytics();
-    a.trackView('/jouer/');
-    a.trackView('/jouer/');
-    a.trackView('/jouer/partie');
+    a.trackView('/play/');
+    a.trackView('/play/');
+    a.trackView('/play/game');
     a.trackEvent('game-started', { mode: 'solo' });
     const sent = fakeUmami();
     expect(sent).toHaveLength(0);
     tracker()?.dispatchEvent(new Event('load'));
     expect(sent).toHaveLength(3);
-    expect(sent[0]).toMatchObject({ url: '/jouer/', referrer: '', website: 'w' });
-    expect(sent[1]).toMatchObject({ url: '/jouer/partie', referrer: '/jouer/' });
-    expect(sent[2]).toMatchObject({ url: '/jouer/partie', name: 'game-started', data: { mode: 'solo' } });
-    a.trackView('/jouer/salle');
-    expect(sent[3]).toMatchObject({ url: '/jouer/salle', referrer: '/jouer/partie' });
+    expect(sent[0]).toMatchObject({ url: '/play/', referrer: '', website: 'w' });
+    expect(sent[1]).toMatchObject({ url: '/play/game', referrer: '/play/' });
+    expect(sent[2]).toMatchObject({ url: '/play/game', name: 'game-started', data: { mode: 'solo' } });
+    a.trackView('/play/room');
+    expect(sent[3]).toMatchObject({ url: '/play/room', referrer: '/play/game' });
   });
 
   it('reports the page’s own title, read once', async () => {
     const a = await page({ title: 'Tamalou' });
     a.startAnalytics();
     document.title = 'Something else';
-    a.trackView('/jouer/salle');
+    a.trackView('/play/room');
     a.trackEvent('room-created');
     const sent = fakeUmami();
     tracker()?.dispatchEvent(new Event('load'));
@@ -185,11 +185,11 @@ describe('views and events', () => {
   it('drops everything when the tracker fails to load, or when the visitor opts out', async () => {
     const a = await page();
     a.startAnalytics();
-    a.trackView('/jouer/');
+    a.trackView('/play/');
     const sent = fakeUmami();
     tracker()?.dispatchEvent(new Event('error'));
     tracker()?.dispatchEvent(new Event('load'));
-    a.trackView('/jouer/partie');
+    a.trackView('/play/game');
     expect(sent).toHaveLength(0);
 
     const b = await page();
@@ -209,7 +209,7 @@ describe('views and events', () => {
   it('keeps a bounded queue while the tracker is away', async () => {
     const a = await page();
     a.startAnalytics();
-    for (let i = 0; i < 100; i++) a.trackView(`/jouer/${i}`);
+    for (let i = 0; i < 100; i++) a.trackView(`/play/${i}`);
     const sent = fakeUmami();
     tracker()?.dispatchEvent(new Event('load'));
     expect(sent.length).toBeLessThanOrEqual(30);

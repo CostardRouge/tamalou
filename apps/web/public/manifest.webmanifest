@@ -3,7 +3,7 @@
   "short_name": "Tamalou",
   "description": "Le jeu de cartes Tamalou : quatre cartes, de la mémoire et du bluff.",
   "lang": "fr",
-  "start_url": "./jouer/",
+  "start_url": "./play/",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

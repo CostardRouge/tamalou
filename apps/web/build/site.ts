@@ -24,12 +24,13 @@ export const ANALYTICS = {
 };
 
 export type Lang = 'fr' | 'en';
-export type PageKind = 'home' | 'play' | 'legal';
+/** `moved`: an old address that sends its visitor on (the game was at jouer/ before play/). */
+export type PageKind = 'home' | 'play' | 'legal' | 'moved';
 
 export interface Page {
   /** The HTML file, relative to apps/web (Vite's root). */
   file: string;
-  /** Its address on the site, relative to the root: '' for the home page, 'jouer/' for the game. */
+  /** Its address on the site, relative to the root: '' for the home page, 'play/' for the game. */
   path: string;
   lang: Lang;
   kind: PageKind;
@@ -40,13 +41,14 @@ export interface Page {
 export const PAGES: Page[] = [
   { file: 'index.html', path: '', lang: 'fr', kind: 'home', twin: 'en/' },
   { file: 'en/index.html', path: 'en/', lang: 'en', kind: 'home', twin: '' },
-  { file: 'jouer/index.html', path: 'jouer/', lang: 'fr', kind: 'play' },
+  { file: 'play/index.html', path: 'play/', lang: 'fr', kind: 'play' },
   { file: 'mentions-legales/index.html', path: 'mentions-legales/', lang: 'fr', kind: 'legal', twin: 'en/legal/' },
   { file: 'en/legal/index.html', path: 'en/legal/', lang: 'en', kind: 'legal', twin: 'mentions-legales/' },
+  { file: 'jouer/index.html', path: 'jouer/', lang: 'fr', kind: 'moved' },
 ];
 
 /** The game's address from the root. */
-export const PLAY_PATH = 'jouer/';
+export const PLAY_PATH = 'play/';
 
 /** The page a file is, from its path relative to apps/web (any separator). */
 export function pageOf(file: string): Page | undefined {

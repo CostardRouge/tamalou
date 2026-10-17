@@ -35,6 +35,6 @@ mountCount();
 const lang = document.documentElement.lang === 'en' ? 'en' : 'fr';
 document.addEventListener('click', (e) => {
   const a = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
-  const to = a?.dataset.lang ?? (/jouer\/$/.test(a?.getAttribute('href') ?? '') ? lang : null);
+  const to = a?.dataset.lang ?? (/play\/$/.test(a?.getAttribute('href') ?? '') ? lang : null);
   if (to === 'en' || to === 'fr') rememberLang(to);
 });

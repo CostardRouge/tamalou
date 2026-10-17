@@ -33,8 +33,8 @@ describe('pages', () => {
     expect(toRoot(home)).toBe('');
     expect(toRoot(homeEn)).toBe('../');
     expect(link(home, '')).toBe('./');
-    expect(link(home, PLAY_PATH)).toBe('jouer/');
-    expect(link(homeEn, PLAY_PATH)).toBe('../jouer/');
+    expect(link(home, PLAY_PATH)).toBe('play/');
+    expect(link(homeEn, PLAY_PATH)).toBe('../play/');
     expect(link(homeEn, '')).toBe('../');
   });
 
@@ -67,10 +67,21 @@ describe('pages', () => {
     expect(head).toContain(`hreflang="en" href="${SITE_URL}en/"`);
     expect(head).toContain(`hreflang="x-default" href="${SITE_URL}"`);
     // Old room and rules links, and an app installed when the game was at the root, land on the game.
-    expect(head).toContain('location.replace("jouer/"+h)');
+    expect(head).toContain('location.replace("play/"+h)');
     const game = pageHead(play, SITE_URL);
     expect(game).toContain('noindex');
     expect(game).not.toContain('location.replace');
+  });
+
+  it('sends the game’s old address, jouer/, on to play/ with its room or rules link', () => {
+    const old = PAGES.find((p) => p.kind === 'moved');
+    if (!old) throw new Error('page missing');
+    expect(old.path).toBe('jouer/');
+    const head = pageHead(old, SITE_URL);
+    expect(head).toContain('noindex');
+    expect(head).toContain('content="0; url=../play/"');
+    expect(head).toContain('location.replace("../play/"+location.search+location.hash)');
+    expect(pageBody(old)).toContain('href="../play/"');
   });
 
   it('reads the canonical address from the build', () => {
@@ -80,9 +91,9 @@ describe('pages', () => {
   });
 
   it('serves a cached page for any folder offline, and the game for anything else', () => {
-    const src = serviceWorkerSource(['index.html', 'jouer/index.html'], 'v1');
+    const src = serviceWorkerSource(['index.html', 'play/index.html'], 'v1');
     expect(src).toContain("rel + 'index.html'");
-    expect(src).toContain('"jouer/index.html"');
+    expect(src).toContain('"play/index.html"');
   });
 
   it('writes the legal notice in both languages, linked from every static page', () => {
@@ -104,7 +115,7 @@ describe('pages', () => {
       for (const state of ['on', 'off', 'signal', 'none']) expect(body).toContain(`data-when="${state}"`);
       expect(pageHead(page, SITE_URL)).toContain(`<link rel="canonical" href="${SITE_URL}${page.path}" />`);
     }
-    for (const page of PAGES.filter((p) => p.kind !== 'play')) {
+    for (const page of PAGES.filter((p) => p.kind === 'home' || p.kind === 'legal')) {
       const legal = PAGES.find((p) => p.kind === 'legal' && p.lang === page.lang);
       expect(pageBody(page)).toContain(`href="${link(page, legal?.path ?? '')}">${LANDING[page.lang].footLegal}</a>`);
     }

@@ -95,8 +95,8 @@ export function App() {
     [replace],
   );
   // One view per screen, never a room's code (ADR-0018): the game's home, a local game, a room.
-  const screen = room ? 'salle' : game ? 'partie' : '';
-  useEffect(() => trackView(`/jouer/${screen}`), [screen]);
+  const screen = room ? 'room' : game ? 'game' : '';
+  useEffect(() => trackView(`/play/${screen}`), [screen]);
 
   return (
     // Animations follow the system's "reduce motion" setting.

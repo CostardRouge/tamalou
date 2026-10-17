@@ -31,7 +31,7 @@ export function startPwa(): void {
   // too (clients.claim), and must not announce an update.
   const hadController = navigator.serviceWorker.controller !== null;
   navigator.serviceWorker
-    // The game lives in jouer/; the service worker sits at the site's root and keeps every page (ADR-0017).
+    // The game lives in play/; the service worker sits at the site's root and keeps every page (ADR-0017).
     .register('../sw.js', { scope: '../' })
     .then((reg) => {
       reg.addEventListener('updatefound', () => {
