@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Changed
+
+- The game's address is now `play/`, the same word in both languages; `jouer/` links, shared rooms and the app
+  installed on a phone follow on their own.
+
 ## [0.8.0] - 2026-10-17 — Honneur
 
 ### Added

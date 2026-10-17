@@ -62,7 +62,7 @@ function settings(): Config | null {
   return config;
 }
 
-/** This page's address on the site (`/jouer/` for the game), which the game extends with its views. */
+/** This page's address on the site (`/play/` for the game), which the game extends with its views. */
 export const pagePath = (): string => settings()?.page ?? '/';
 
 /** The visitor switched measurement off in this browser (the legal page's switch, or Umami's key set by hand). */
@@ -172,7 +172,7 @@ function externalReferrer(): string {
 const pageTitle = typeof document === 'undefined' ? '' : document.title;
 
 /**
- * A page view, at `path` on the site (`/en/`, `/jouer/partie`). The same path twice in a row counts
+ * A page view, at `path` on the site (`/en/`, `/play/game`). The same path twice in a row counts
  * once; the previous view is the next one's referrer, as a page load would report it.
  */
 export function trackView(path: string): void {

@@ -26,7 +26,7 @@ setLang(lang, false);
 document.addEventListener('click', (e) => {
   const a = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
   if (!a) return;
-  const to = a.dataset.lang ?? (/jouer\/$/.test(a.getAttribute('href') ?? '') ? lang : null);
+  const to = a.dataset.lang ?? (/play\/$/.test(a.getAttribute('href') ?? '') ? lang : null);
   if (to === 'en' || to === 'fr') setLang(to);
 });
 
@@ -36,7 +36,7 @@ if (round) {
   createRoot(round).render(
     <StrictMode>
       <MotionConfig reducedMotion="user">
-        <Tutorial text={text} play={round.dataset.play ?? 'jouer/'} />
+        <Tutorial text={text} play={round.dataset.play ?? 'play/'} />
       </MotionConfig>
     </StrictMode>,
   );

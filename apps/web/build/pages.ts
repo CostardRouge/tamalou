@@ -37,11 +37,16 @@ const PLAY_HEAD = {
 };
 
 /**
- * Sends an old link to the game: a shared room or rules link from before the game moved to /jouer/ (`#room=…`,
+ * Sends an old link to the game: a shared room or rules link from before the game moved off the root (`#room=…`,
  * `#rules=…`), and the app installed on a phone back then, whose start address is still the root.
  */
 const redirect = (play: string) =>
   `<script>(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()</script>`;
+
+/** The game's old address (jouer/, until the owner asked for play/): it forwards everything, the room or rules
+ * fragment included, before anything is drawn. */
+const moved = (to: string) =>
+  `<meta http-equiv="refresh" content="0; url=${to}" />\n    <script>location.replace(${JSON.stringify(to)}+location.search+location.hash)</script>`;
 
 const headText = (page: Page) => {
   if (page.kind === 'home') return LANDING[page.lang];
@@ -53,9 +58,10 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
   const root = toRoot(page);
   const t = headText(page);
   const lines = [`<title>${t.title}</title>`, `<meta name="description" content="${esc(t.description)}" />`];
-  if (page.kind === 'play') {
+  if (page.kind === 'play' || page.kind === 'moved') {
     // The home pages carry the words; the game screen is not a page to find.
     lines.push('<meta name="robots" content="noindex" />');
+    if (page.kind === 'moved') lines.push(moved(link(page, PLAY_PATH)));
   } else {
     lines.push(`<link rel="canonical" href="${site}${page.path}" />`);
     if (page.twin !== undefined) {
@@ -94,6 +100,7 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
 
 export function pageBody(page: Page): string {
   if (page.kind === 'play') return '';
+  if (page.kind === 'moved') return `<p class="wrap"><a href="${link(page, PLAY_PATH)}">Tamalou</a></p>`;
   const home = PAGES.find((p) => p.kind === 'home' && p.lang === page.lang);
   const legal = PAGES.find((p) => p.kind === 'legal' && p.lang === page.lang);
   const links = {
