@@ -20,6 +20,11 @@ const jobs = [
   ['icon.svg', 'icon-512.png', 512],
   ['icon-maskable.svg', 'icon-maskable-192.png', 192],
   ['icon-maskable.svg', 'icon-maskable-512.png', 512],
+  // The manifest's shortcuts (SHORTCUTS and SHORTCUT_SIZES in build/site.ts): a long press on the installed icon.
+  ['shortcut-solo.svg', 'shortcut-solo-96.png', 96],
+  ['shortcut-solo.svg', 'shortcut-solo-192.png', 192],
+  ['shortcut-pass.svg', 'shortcut-pass-96.png', 96],
+  ['shortcut-pass.svg', 'shortcut-pass-192.png', 192],
 ];
 for (const [from, to, size] of jobs) {
   await sharp(await src(from), { density: 384 })

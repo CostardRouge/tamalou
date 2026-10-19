@@ -6,6 +6,7 @@ import { legalBody } from '../src/legal/markup.ts';
 import { LEGAL } from '../src/legal/text.ts';
 import { type AnalyticsConfig, analyticsConfig, analyticsTag } from './analytics.ts';
 import {
+  APP,
   AUTHOR,
   CONTACT,
   LICENSE_URL,
@@ -15,6 +16,7 @@ import {
   pageOf,
   SOURCE_URL,
   siteUrl,
+  THEME,
   toRoot,
 } from './site.ts';
 
@@ -84,9 +86,12 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
     );
   }
   lines.push(
-    '<meta name="theme-color" content="#eceef2" media="(prefers-color-scheme: light)" />',
-    '<meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)" />',
-    '<meta name="apple-mobile-web-app-title" content="Tamalou" />',
+    `<meta name="theme-color" content="${THEME.bg.light}" media="(prefers-color-scheme: light)" />`,
+    `<meta name="theme-color" content="${THEME.bg.dark}" media="(prefers-color-scheme: dark)" />`,
+    // The installed game on iPhone and iPad: the name under the icon, a window of its own, the status bar in its colours.
+    `<meta name="apple-mobile-web-app-title" content="${APP.name}" />`,
+    '<meta name="mobile-web-app-capable" content="yes" />',
+    '<meta name="apple-mobile-web-app-status-bar-style" content="default" />',
     `<link rel="icon" href="${root}icon.svg" type="image/svg+xml" />`,
     `<link rel="icon" href="${root}favicon-32.png" sizes="32x32" type="image/png" />`,
     `<link rel="icon" href="${root}favicon-16.png" sizes="16x16" type="image/png" />`,

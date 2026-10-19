@@ -1371,12 +1371,23 @@ html:has(.game) body {
   gap: 6px;
 }
 
+/* A new version waits (ADR-0020): one line, the words then Reload and Later; it wraps on a narrow phone. */
 .banner.update {
   top: max(12px, env(safe-area-inset-top));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px 8px;
 }
 
 .banner .link {
-  min-height: 0;
+  margin-left: 0;
+  min-height: 32px;
+}
+
+.banner .link.muted {
+  color: var(--muted);
 }
 
 /* A card a move just touched: one ring that fades. */

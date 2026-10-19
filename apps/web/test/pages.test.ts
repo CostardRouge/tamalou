@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { inputs, link, pageBody, pageHead } from '../build/pages.ts';
-import { serviceWorkerSource } from '../build/pwa.ts';
 import { CONTACT, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '../build/site.ts';
 import { LANDING } from '../src/landing/text.ts';
 import { LEGAL } from '../src/legal/text.ts';
@@ -88,12 +87,6 @@ describe('pages', () => {
     expect(siteUrl({})).toBe(SITE_URL);
     expect(siteUrl({ VITE_SITE_URL: 'https://example.org/tamalou' })).toBe('https://example.org/tamalou/');
     expect(siteUrl({ VITE_SITE_URL: 'javascript:alert(1)' })).toBe(SITE_URL);
-  });
-
-  it('serves a cached page for any folder offline, and the game for anything else', () => {
-    const src = serviceWorkerSource(['index.html', 'play/index.html'], 'v1');
-    expect(src).toContain("rel + 'index.html'");
-    expect(src).toContain('"play/index.html"');
   });
 
   it('writes the legal notice in both languages, linked from every static page', () => {

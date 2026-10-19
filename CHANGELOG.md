@@ -8,6 +8,25 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Added
+
+- The install dialog (Chrome on Android and desktop) shows screenshots of the game and what it is about.
+- A long press on the installed icon (a right click on desktop) offers "Partie solo", which deals at once with your
+  last setup, and "À plusieurs, un téléphone".
+- On iPhone and iPad, the settings say how to add the game to the home screen.
+
+### Changed
+
+- A new version no longer takes over on its own: the home screen says one is ready, with "Recharger" and "Plus
+  tard", and the game checks for one when it comes back to the foreground.
+- The installed game opens at once from the files it keeps, online or not; the home pages and the legal notice stay
+  current when the network answers.
+
+### Fixed
+
+- Offline on tamalou.steevepommier.com: the pages are now stored under the addresses the host serves directly, so
+  they open without a network there too, not only on GitHub Pages.
+
 ## [0.9.0] - 2026-10-17 — Impasse
 
 ### Changed

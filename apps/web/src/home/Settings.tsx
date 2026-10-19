@@ -8,7 +8,7 @@ const LANG_KEY = { fr: 'langFr', en: 'langEn' } as const;
 
 export function Settings() {
   const settings = useSettings();
-  const { canInstall } = usePwa();
+  const { canInstall, installed, iosHint } = usePwa();
   const lang = currentLang();
   return (
     <section className="settings" aria-labelledby="settings-title">
@@ -47,6 +47,14 @@ export function Settings() {
           </button>
           <small className="muted">{t('installHint')}</small>
         </div>
+      ) : installed ? (
+        <p className="install" role="status">
+          <small className="muted">{t('installed')}</small>
+        </p>
+      ) : iosHint ? (
+        <p className="install">
+          <small className="muted">{t('installIos')}</small>
+        </p>
       ) : null}
       <p className="legal-link">
         <a href={t('legalHref')}>{t('legalLink')}</a>

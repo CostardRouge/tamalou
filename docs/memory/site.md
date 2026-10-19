@@ -14,7 +14,7 @@ Read before touching `apps/web/index.html`, `en/`, `play/`, `jouer/`, `mentions-
 ## Traps (2026-10-17)
 
 - **Vite 8 is Rolldown**: multi-page inputs go in `build.rolldownOptions.input`; entry names come from the page's folder (`home`, `en`, `play`), shared chunks are named after a module (`CardView-*`, and `remember-*` which carries `src/audience.ts` today). Check after a build that no chunk is named `analytics`/`audience`/`tracker` (Versus's trap: filter lists block the chunk and every page with it).
-- The service worker is `/sw.js`, registered from `play/` with `'../sw.js', { scope: '../' }`; offline, a navigation gets the cached `<folder>/index.html`, else `play/index.html`.
+- The service worker is `/sw.js`, registered from `play/` with `'../sw.js', { scope: '../' }`; every page of `PAGES` is stored under its folder's address (`./en/`, never `en/index.html`: Cloudflare redirects the file to the folder, and a navigation cannot be served a redirected response). A new page = a row in `PAGES` and it is stored and served offline on its own (`web.md`, ADR-0020).
 - **The game is at `play/`** (owner, 2026-10-17: one word for both languages, like Versus's `/app/`; it shipped first as `jouer/`). `jouer/` stays as a `moved` page (`build/site.ts`) that forwards with search and fragment, so room and rules links and installs from that time follow; links at the root are forwarded by the home pages' inline script, as is an app installed when the game was at the root (`display-mode: standalone`). Room and rules links are built from `location.pathname`, so new ones say `play/`.
 - Verified 2026-10-17 with Playwright on `vite preview`: `/`, `/en/`, the game at 390×844 and 1280×900, light and dark, no console error, no horizontal scroll.
 
