@@ -139,8 +139,8 @@ The project carries **one version**, `version` in the root `package.json`, in
 project, newest first, in the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 shape. **It is written in English, like the code, even here where the
 project speaks French first.** Each release has a **codename**: here a French card word,
-in alphabetical order (0.1.0 As, 0.2.0 Brelan… 0.8.0 Honneur; the next starts
-with I).
+in alphabetical order (0.1.0 As, 0.2.0 Brelan… 0.8.0 Honneur, 0.9.0 Impasse; the
+next starts with J).
 
 - **Every pull request that changes what users get** adds its lines under
   `## [Unreleased]` (`### Added`, `### Changed`, `### Fixed`, `### Removed`,
