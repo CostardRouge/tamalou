@@ -65,7 +65,12 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
     lines.push('<meta name="robots" content="noindex" />');
     if (page.kind === 'moved') lines.push(moved(link(page, PLAY_PATH)));
   } else {
-    lines.push(`<link rel="canonical" href="${site}${page.path}" />`);
+    lines.push(
+      `<link rel="canonical" href="${site}${page.path}" />`,
+      // What build/seo.ts writes at the root, from any folder.
+      `<link rel="sitemap" type="application/xml" href="${root}sitemap.xml" />`,
+      `<link rel="alternate" type="text/markdown" href="${root}llms.txt" title="Tamalou in Markdown" />`,
+    );
     if (page.twin !== undefined) {
       const fr = page.lang === 'fr' ? page.path : page.twin;
       const en = page.lang === 'en' ? page.path : page.twin;

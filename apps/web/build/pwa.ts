@@ -2,12 +2,13 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import type { Plugin } from 'vite';
+import { GENERATED } from './seo.ts';
 import { OG_IMAGES, PLAY_PATH } from './site.ts';
 
 const PLAY_PAGE = `${PLAY_PATH}index.html`;
 
-/** Read by unfurlers, never by a phone playing offline: the social cards. */
-const NOT_OFFLINE = new Set<string>(Object.values(OG_IMAGES).map((card) => card.path));
+/** Read by crawlers and unfurlers, never by a phone playing offline: robots.txt, the sitemap, llms.txt, the social cards. */
+const NOT_OFFLINE = new Set<string>([...GENERATED, ...Object.values(OG_IMAGES).map((card) => card.path)]);
 
 // The offline game (docs/SPEC.md §8, M8): after the build, a service worker is written at the site's root with the
 // list of every file to keep and a version made from their contents. Solo and pass-and-play then work without a

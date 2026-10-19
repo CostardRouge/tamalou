@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Added
+
+- Search engines and answer engines can find the site: a sitemap, a `robots.txt` and an `llms.txt` describing the
+  game are published with the pages.
+
 ### Changed
 
 - A link to Tamalou shared in a chat or on a social network now shows a card with the game's name and promise, in the
