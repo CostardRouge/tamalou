@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Changed
+
+- A link to Tamalou shared in a chat or on a social network now shows a card with the game's name and promise, in the
+  language of the page, instead of the icon.
+
 ## [0.9.0] - 2026-10-17 — Impasse
 
 ### Changed

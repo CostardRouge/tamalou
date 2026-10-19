@@ -7,8 +7,10 @@ import { LEGAL } from '../src/legal/text.ts';
 import { type AnalyticsConfig, analyticsConfig, analyticsTag } from './analytics.ts';
 import {
   AUTHOR,
+  COLORS,
   CONTACT,
   LICENSE_URL,
+  OG_IMAGES,
   PAGES,
   type Page,
   PLAY_PATH,
@@ -73,6 +75,8 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
         `<link rel="alternate" hreflang="x-default" href="${site}${fr}" />`,
       );
     }
+    // The link preview: the language's card (C17), with its size so unfurlers lay it out before fetching it.
+    const card = OG_IMAGES[page.lang];
     lines.push(
       '<meta property="og:type" content="website" />',
       '<meta property="og:site_name" content="Tamalou" />',
@@ -80,12 +84,19 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
       `<meta property="og:description" content="${esc(t.description)}" />`,
       `<meta property="og:url" content="${site}${page.path}" />`,
       `<meta property="og:locale" content="${page.lang === 'fr' ? 'fr_FR' : 'en_US'}" />`,
-      `<meta property="og:image" content="${site}icon-512.png" />`,
+      `<meta property="og:image" content="${site}${card.path}" />`,
+      '<meta property="og:image:type" content="image/png" />',
+      `<meta property="og:image:width" content="${card.width}" />`,
+      `<meta property="og:image:height" content="${card.height}" />`,
+      `<meta property="og:image:alt" content="${esc(card.alt)}" />`,
+      '<meta name="twitter:card" content="summary_large_image" />',
+      `<meta name="twitter:image" content="${site}${card.path}" />`,
+      `<meta name="twitter:image:alt" content="${esc(card.alt)}" />`,
     );
   }
   lines.push(
-    '<meta name="theme-color" content="#eceef2" media="(prefers-color-scheme: light)" />',
-    '<meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)" />',
+    `<meta name="theme-color" content="${COLORS.bg}" media="(prefers-color-scheme: light)" />`,
+    `<meta name="theme-color" content="${COLORS.bgDark}" media="(prefers-color-scheme: dark)" />`,
     '<meta name="apple-mobile-web-app-title" content="Tamalou" />',
     `<link rel="icon" href="${root}icon.svg" type="image/svg+xml" />`,
     `<link rel="icon" href="${root}favicon-32.png" sizes="32x32" type="image/png" />`,

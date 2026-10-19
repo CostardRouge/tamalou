@@ -1,8 +1,11 @@
 // Draws the PNG icons from the three SVG sources in public/ (COMMON-PROJECT-SPEC C11). Run by hand after changing a
 // source, and commit the PNGs: a static host cannot rasterise on request. sharp is not a dependency (CI would pay a
-// native install on every job):
+// native install on every job), and npm cannot install into this pnpm workspace (it crashes on pnpm's links, or
+// would rewrite node_modules in its own layout): install it beside the workspace and link it in for the run, as
+// scripts/card.mjs does.
 //
-//   npm i --no-save sharp && node apps/web/scripts/icons.mjs
+//   npm i --prefix /tmp/card sharp && ln -s /tmp/card/node_modules/sharp node_modules/
+//   node apps/web/scripts/icons.mjs && rm node_modules/sharp
 //
 // The touch icon is flattened onto the background colour: iOS shows transparency as black.
 
