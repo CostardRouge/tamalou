@@ -8,7 +8,7 @@
     "@tamalou/shared": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261015.1",
-    "wrangler": "^4.151.0"
+    "@cloudflare/workers-types": "^5.20261016.1",
+    "wrangler": "^4.151.1"
   }
 }
