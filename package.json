@@ -1,6 +1,6 @@
 {
   "name": "tamalou",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
   "description": "Tamalou, the French card game, playable on the web: solo against bots, pass-and-play, LAN and online.",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "biome check .",
     "format": "biome check --write .",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/web && tsc --noEmit -p apps/worker",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/web && tsc --noEmit -p apps/web/src/sw && tsc --noEmit -p apps/worker",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",

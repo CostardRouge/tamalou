@@ -87,6 +87,9 @@ function fit(c: GameChoice): GameChoice {
   return { ...c, bots: Math.min(c.bots, MAX_SEATS - c.players.length) };
 }
 
+/** The remembered setup, in the given mode (the icon's shortcuts, ADR-0020): solo keeps at least one bot. */
+export const choiceFor = (mode: Mode): GameChoice => fit({ ...loadChoice(), mode });
+
 /** A player's name as typed, or "Joueur n" when left empty. */
 export const playerName = (typed: string, i: number) => typed.trim() || t('playerN', { n: i + 1 });
 
@@ -102,11 +105,13 @@ interface Props {
   online?: boolean;
   /** Enter a room (made or typed here) under this name. */
   onRoom?: (code: string, name: string) => void;
+  /** Open on this mode rather than the remembered one (the icon's shortcuts). */
+  mode?: Mode;
 }
 
-export function HomeScreen({ onPlay, linked, online = false, onRoom }: Props) {
+export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Props) {
   const [stored, setC] = useState<GameChoice>(() => {
-    const stored = loadChoice();
+    const stored = mode ? choiceFor(mode) : loadChoice();
     return linked ? { ...stored, preset: linked.preset, overrides: linked.overrides } : stored;
   });
   // A remembered online choice on a page without rooms (GitHub Pages) falls back to solo.
@@ -140,6 +145,10 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom }: Props) {
       <div className="brand">
         <h1>{t('appName')}</h1>
         <p className="tagline">{t('tagline')}</p>
+        {/* The site's home page (ADR-0017): what the game is, a first round, the rules; in this language. */}
+        <p className="site-link">
+          <a href={t('siteHref')}>{t('siteLink')}</a>
+        </p>
       </div>
       <form
         className="setup"
