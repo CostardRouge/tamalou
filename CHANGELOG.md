@@ -8,6 +8,13 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Fixed
+
+- Playing on the home network and online works again: since the game moved to `play/`, the "En ligne" mode no longer
+  appeared, because the game looked for its server in the wrong folder.
+- A game on the home network no longer shows « Connexion perdue » every 25 seconds: the LAN server mistook every
+  phone for a lost one at each of its connection checks.
+
 ## [0.10.0] - 2026-10-20 — Joker
 
 ### Added
