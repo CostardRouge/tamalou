@@ -6,11 +6,11 @@ import { LocalConnection } from './connection/local.ts';
 import { roomsAvailable } from './connection/remote.ts';
 import type { GameConnection } from './connection/types.ts';
 import { GameScreen } from './game/GameScreen.tsx';
-import { type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
+import { choiceFor, type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
 import { MODE_DEFAULTS } from './home/modes.ts';
 import { onLangChange, t } from './i18n/index.ts';
 import { OnlineScreen } from './online/OnlineScreen.tsx';
-import { usePwa } from './pwa.ts';
+import { applyUpdate, dismissUpdate, readShortcut, usePwa } from './pwa.ts';
 
 export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
@@ -48,6 +48,9 @@ function setRoomLink(code: string | null) {
 export function App() {
   const [game, setGame] = useState<Game | null>(null);
   const [linked] = useState(rulesFromLink);
+  // The icon's shortcut that opened the game, if any (ADR-0020): "Partie solo" deals at once with the remembered
+  // setup, "À plusieurs" opens the home screen on pass-and-play.
+  const [shortcut] = useState(readShortcut);
   const [room, setRoom] = useState<{ code: string; name?: string } | null>(() => {
     const code = roomFromLink();
     return code ? { code } : null;
@@ -97,15 +100,22 @@ export function App() {
   // One view per screen, never a room's code (ADR-0018): the game's home, a local game, a room.
   const screen = room ? 'room' : game ? 'game' : '';
   useEffect(() => trackView(`/play/${screen}`), [screen]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once, on arrival (the shortcut left the address when read)
+  useEffect(() => {
+    if (shortcut === 'solo' && !room) play(choiceFor('solo'));
+  }, []);
 
   return (
     // Animations follow the system's "reduce motion" setting.
     <MotionConfig reducedMotion="user">
       {updateReady && !game && !room ? (
         <p className="banner update" role="status">
-          {t('updateReady')}{' '}
-          <button type="button" className="link" onClick={() => location.reload()}>
+          <span>{t('updateReady')}</span>
+          <button type="button" className="link" onClick={applyUpdate}>
             {t('updateReload')}
+          </button>
+          <button type="button" className="link muted" onClick={dismissUpdate}>
+            {t('updateLater')}
           </button>
         </p>
       ) : null}
@@ -114,7 +124,13 @@ export function App() {
       ) : game ? (
         <GameScreen key={game.id} conn={game.conn} onQuit={() => replace(null)} onReplay={() => play(game.choice)} />
       ) : (
-        <HomeScreen onPlay={play} linked={linked} online={online} onRoom={enterRoom} />
+        <HomeScreen
+          onPlay={play}
+          linked={linked}
+          online={online}
+          onRoom={enterRoom}
+          {...(shortcut === 'pass' ? { mode: 'pass' as const } : {})}
+        />
       )}
     </MotionConfig>
   );

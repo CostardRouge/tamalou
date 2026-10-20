@@ -6,8 +6,8 @@ import { legalBody } from '../src/legal/markup.ts';
 import { LEGAL } from '../src/legal/text.ts';
 import { type AnalyticsConfig, analyticsConfig, analyticsTag } from './analytics.ts';
 import {
+  APP,
   AUTHOR,
-  COLORS,
   CONTACT,
   LICENSE_URL,
   OG_IMAGES,
@@ -17,6 +17,7 @@ import {
   pageOf,
   SOURCE_URL,
   siteUrl,
+  THEME,
   toRoot,
 } from './site.ts';
 
@@ -40,11 +41,13 @@ const PLAY_HEAD = {
 
 /**
  * Sends an old link to the game: a shared room or rules link from before the game moved off the root (`#room=…`,
- * `#rules=…`), and the app installed on a phone back then, whose start address is still the root. The script's body,
- * written between its tags exactly as returned: the content security policy names it by hash (build/security.ts).
+ * `#rules=…`), and the app installed on a phone back then, whose start address is still the root. An installed app
+ * is sent on only when it was just launched (no referrer): the game's own link to this page (HomeScreen.tsx) must
+ * land here, in the installed window too. The script's body, written between its tags exactly as returned: the
+ * content security policy names it by hash (build/security.ts).
  */
 const redirectScript = (play: string) =>
-  `(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()`;
+  `(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(!document.referrer&&window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()`;
 
 /** The game's old address (jouer/, until the owner asked for play/): it forwards everything, the room or rules
  * fragment included, before anything is drawn. The script's body, named by hash like the one above. */
@@ -112,9 +115,12 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
     );
   }
   lines.push(
-    `<meta name="theme-color" content="${COLORS.bg}" media="(prefers-color-scheme: light)" />`,
-    `<meta name="theme-color" content="${COLORS.bgDark}" media="(prefers-color-scheme: dark)" />`,
-    '<meta name="apple-mobile-web-app-title" content="Tamalou" />',
+    `<meta name="theme-color" content="${THEME.bg.light}" media="(prefers-color-scheme: light)" />`,
+    `<meta name="theme-color" content="${THEME.bg.dark}" media="(prefers-color-scheme: dark)" />`,
+    // The installed game on iPhone and iPad: the name under the icon, a window of its own, the status bar in its colours.
+    `<meta name="apple-mobile-web-app-title" content="${APP.name}" />`,
+    '<meta name="mobile-web-app-capable" content="yes" />',
+    '<meta name="apple-mobile-web-app-status-bar-style" content="default" />',
     `<link rel="icon" href="${root}icon.svg" type="image/svg+xml" />`,
     `<link rel="icon" href="${root}favicon-32.png" sizes="32x32" type="image/png" />`,
     `<link rel="icon" href="${root}favicon-16.png" sizes="16x16" type="image/png" />`,

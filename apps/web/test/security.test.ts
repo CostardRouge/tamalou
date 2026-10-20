@@ -74,6 +74,6 @@ describe('security headers', () => {
     expect(file).toContain('/assets/*\n  Cache-Control: public, max-age=31536000, immutable');
     expect(file).toContain('/llms.txt\n  Content-Type: text/markdown; charset=utf-8');
     expect(generatedFiles(SITE_URL, '2026-10-19')._headers?.body).toBe(file);
-    expect(precacheList(['_headers', 'index.html'])).toEqual(['index.html']);
+    expect(precacheList(['_headers', 'index.html'])).toEqual(['./']);
   });
 });

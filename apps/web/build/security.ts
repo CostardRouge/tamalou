@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { inlineScripts } from './pages.ts';
+import { MANIFEST_FILE, SW_FILE } from './pwa.ts';
 import { ANALYTICS } from './site.ts';
 
 /**
@@ -68,6 +69,14 @@ export function headersFile(): string {
   return [
     '/*',
     ...Object.entries(securityHeaders()).map(([name, value]) => `  ${name}: ${value}`),
+    '',
+    // The worker and the manifest are checked on every load; the hashed files are kept for a year.
+    `/${SW_FILE}`,
+    '  Cache-Control: no-cache',
+    '',
+    `/${MANIFEST_FILE}`,
+    '  Content-Type: application/manifest+json; charset=utf-8',
+    '  Cache-Control: no-cache',
     '',
     '/assets/*',
     '  Cache-Control: public, max-age=31536000, immutable',

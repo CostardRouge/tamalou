@@ -112,7 +112,12 @@ export function startServer(port: number, hostname: string, opts: ServerOptions 
       return;
     }
     const code = normalizeRoomCode(m[1] ?? '') ?? '';
-    wss.handleUpgrade(req, socket, head, (ws) => host.attach(code, adapt(ws)));
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      // handleUpgrade with a callback emits no 'connection' by itself: without this line the heartbeat below never
+      // saw the socket answer and ended every one at its first beat (« Connexion perdue » every 25 s).
+      wss.emit('connection', ws, req);
+      host.attach(code, adapt(ws));
+    });
   });
 
   // Phones drop off networks without closing their sockets: a ping that gets no pong ends the connection.

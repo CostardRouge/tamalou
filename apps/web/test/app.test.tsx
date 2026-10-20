@@ -24,4 +24,10 @@ describe('the app', () => {
     render(<App />);
     expect(screen.getByText(`v${pkg.version}`)).toBeTruthy();
   });
+
+  it('links back to the site’s home page, in the game’s language', () => {
+    render(<App />);
+    const link = screen.getByRole('link', { name: 'Découvrir le jeu et ses règles' });
+    expect(link.getAttribute('href')).toBe('../');
+  });
 });

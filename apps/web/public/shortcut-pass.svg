@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>À plusieurs, un téléphone</title>
+  <!-- The icon's shortcut "À plusieurs": three hands fanned around one table, a coral pip on the one in front. -->
+  <rect width="512" height="512" rx="112" fill="#2743f5"/>
+  <g transform="rotate(-22 256 300)">
+    <rect x="166" y="118" width="180" height="252" rx="26" fill="#dfe5ff" opacity="0.45"/>
+  </g>
+  <g transform="rotate(22 256 300)">
+    <rect x="166" y="118" width="180" height="252" rx="26" fill="#dfe5ff" opacity="0.45"/>
+  </g>
+  <rect x="166" y="130" width="180" height="252" rx="26" fill="#fffdf8"/>
+  <circle cx="256" cy="256" r="42" fill="#e4492a"/>
+</svg>

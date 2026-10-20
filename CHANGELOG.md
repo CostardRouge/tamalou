@@ -18,10 +18,39 @@ code, though the game speaks French first. Codenames are French card words, in a
 - A link to Tamalou shared in a chat or on a social network now shows a card with the game's name and promise, in the
   language of the page, instead of the icon.
 
+### Fixed
+
+- Playing on the home network and online works again: since the game moved to `play/`, the "En ligne" mode no longer
+  appeared, because the game looked for its server in the wrong folder.
+- A game on the home network no longer shows « Connexion perdue » every 25 seconds: the LAN server mistook every
+  phone for a lost one at each of its connection checks.
+
 ### Security
 
 - The pages served online and by the LAN server carry security headers: the game can no longer be framed by another
   site, and a content security policy (reported only, for now) lists what the pages may load.
+
+## [0.10.0] - 2026-10-20 — Joker
+
+### Added
+
+- The install dialog (Chrome on Android and desktop) shows screenshots of the game and what it is about.
+- A long press on the installed icon (a right click on desktop) offers "Partie solo", which deals at once with your
+  last setup, and "À plusieurs, un téléphone".
+- On iPhone and iPad, the settings say how to add the game to the home screen.
+- The game's home screen links back to the site's page ("Découvrir le jeu et ses règles"), in the installed app too.
+
+### Changed
+
+- A new version no longer takes over on its own: the home screen says one is ready, with "Recharger" and "Plus
+  tard", and the game checks for one when it comes back to the foreground.
+- The installed game opens at once from the files it keeps, online or not; the home pages and the legal notice stay
+  current when the network answers.
+
+### Fixed
+
+- Offline on tamalou.steevepommier.com: the pages are now stored under the addresses the host serves directly, so
+  they open without a network there too, not only on GitHub Pages.
 
 ## [0.9.0] - 2026-10-17 — Impasse
 

@@ -1,6 +1,5 @@
 import type { Card, GameEvent } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { precacheList, serviceWorkerSource } from '../build/pwa.ts';
 import { cueOf, strongestCue, touchedSlots } from '../src/feedback/cues.ts';
 import { getSettings, updateSettings } from '../src/feedback/settings.ts';
 
@@ -55,24 +54,5 @@ describe('settings', () => {
     updateSettings({ sound: false });
     expect(getSettings()).toEqual({ sound: false, haptics: true });
     updateSettings({ sound: true });
-  });
-});
-
-describe('the service worker', () => {
-  it('precaches the page first and leaves out itself, maps and old fonts', () => {
-    expect(precacheList(['assets/b.js', 'sw.js', 'index.html', 'assets/b.js.map', 'f.woff', 'f.woff2'])).toEqual([
-      'index.html',
-      'assets/b.js',
-      'f.woff2',
-    ]);
-  });
-
-  it('is versioned by its files and leaves the rooms API to the network', () => {
-    const src = serviceWorkerSource(['index.html', 'assets/a.js'], 'abc123');
-    expect(src).toContain('const VERSION = "abc123"');
-    expect(src).toContain('["index.html","assets/a.js"]');
-    expect(src).toContain("url.pathname.includes('/api/')");
-    // It must parse as a script.
-    expect(() => new Function(src)).not.toThrow();
   });
 });

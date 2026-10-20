@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { pageHead } from '../build/pages.ts';
-import { precacheList } from '../build/pwa.ts';
+import { MANIFEST_FILE, manifest, precacheList } from '../build/pwa.ts';
 import { COLORS, OG_IMAGES, PAGES, SITE_URL, toRoot } from '../build/site.ts';
 
 // COMMON-PROJECT-SPEC C11, whose failure is silent (every desktop tab looks right while an iPhone shows a screenshot):
@@ -31,13 +31,15 @@ describe('icon set', () => {
       for (const [, href] of links) {
         // Relative to the page, so a page in a folder climbs back to the root.
         expect(href?.startsWith(toRoot(page)), href).toBe(true);
-        expect(existsSync(pub((href as string).slice(toRoot(page).length))), href).toBe(true);
+        const file = (href as string).slice(toRoot(page).length);
+        // The manifest is written by the build (build/pwa.ts); the icons sit in public/.
+        expect(file === MANIFEST_FILE || existsSync(pub(file)), href).toBe(true);
       }
     }
-    const manifest = JSON.parse(readFileSync(pub('manifest.webmanifest'), 'utf8'));
-    // An installed game opens on the game, not on the home page (ADR-0017).
-    expect(manifest.start_url).toBe('./play/');
-    for (const icon of manifest.icons) {
+    const m = manifest() as { start_url: string; icons: { src: string; sizes: string }[] };
+    // An installed game opens on the game, not on the home page (ADR-0017); the rest of the manifest: pwa.test.ts.
+    expect(m.start_url).toBe('./play/');
+    for (const icon of m.icons) {
       expect(icon.src.startsWith('/')).toBe(false);
       const [w, h] = icon.sizes.split('x').map(Number);
       expect(png(pub(icon.src)), icon.src).toMatchObject({ width: w, height: h });
@@ -65,7 +67,7 @@ describe('icon set', () => {
       }
     }
     // A phone playing offline never needs a link preview: the service worker leaves the cards out.
-    expect(precacheList(['og.png', 'index.html', 'og-en.png', 'icon-192.png'])).toEqual(['index.html', 'icon-192.png']);
+    expect(precacheList(['og.png', 'index.html', 'og-en.png', 'icon.svg'])).toEqual(['./', 'icon.svg']);
   });
 
   it('draws outside CSS with the stylesheet’s own light tokens', () => {

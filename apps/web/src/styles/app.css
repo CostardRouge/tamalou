@@ -140,6 +140,19 @@ button {
   color: var(--muted);
 }
 
+/* The way back to the site's home page from the game, under the title: one quiet link, 44px tall for a thumb. */
+.site-link {
+  margin: 4px 0 0;
+  font-size: 0.92rem;
+}
+
+.site-link a {
+  display: inline-block;
+  padding: 10px 4px;
+  color: var(--a);
+  font-weight: 600;
+}
+
 /* The release on screen, so a phone in hand says which build it runs (CHANGELOG.md). */
 .version {
   margin: 24px 0 0;
@@ -1371,12 +1384,23 @@ html:has(.game) body {
   gap: 6px;
 }
 
+/* A new version waits (ADR-0020): one line, the words then Reload and Later; it wraps on a narrow phone. */
 .banner.update {
   top: max(12px, env(safe-area-inset-top));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px 8px;
 }
 
 .banner .link {
-  min-height: 0;
+  margin-left: 0;
+  min-height: 32px;
+}
+
+.banner .link.muted {
+  color: var(--muted);
 }
 
 /* A card a move just touched: one ring that fades. */

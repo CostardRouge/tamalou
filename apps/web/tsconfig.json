@@ -18,5 +18,7 @@
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["src", "test", "build", "vite.config.ts"]
+  "include": ["src", "test", "build", "vite.config.ts"],
+  // The service worker has its own project (src/sw/tsconfig.json): worker globals, no DOM.
+  "exclude": ["src/sw"]
 }

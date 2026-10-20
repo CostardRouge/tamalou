@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { inputs, link, pageBody, pageHead } from '../build/pages.ts';
-import { serviceWorkerSource } from '../build/pwa.ts';
 import { CONTACT, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '../build/site.ts';
 import { LANDING } from '../src/landing/text.ts';
 import { LEGAL } from '../src/legal/text.ts';
@@ -90,10 +89,14 @@ describe('pages', () => {
     expect(siteUrl({ VITE_SITE_URL: 'javascript:alert(1)' })).toBe(SITE_URL);
   });
 
-  it('serves a cached page for any folder offline, and the game for anything else', () => {
-    const src = serviceWorkerSource(['index.html', 'play/index.html'], 'v1');
-    expect(src).toContain("rel + 'index.html'");
-    expect(src).toContain('"play/index.html"');
+  it('sends an installed app on to the game only when it was just launched, so the game can link back', () => {
+    if (!home) throw new Error('pages missing');
+    const head = pageHead(home, SITE_URL);
+    const script = /<script>(.*?)<\/script>/.exec(head)?.[1] ?? '';
+    expect(script).toContain("matchMedia('(display-mode: standalone)')");
+    expect(script).toContain('!document.referrer&&');
+    // Old room and rules links are sent on whatever the referrer.
+    expect(script).toContain('/^#(room|rules)=/.test(h)||');
   });
 
   it('writes the legal notice in both languages, linked from every static page', () => {
