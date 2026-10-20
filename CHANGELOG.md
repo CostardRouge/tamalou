@@ -18,6 +18,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 - A link to Tamalou shared in a chat or on a social network now shows a card with the game's name and promise, in the
   language of the page, instead of the icon.
 
+### Security
+
+- The pages served online and by the LAN server carry security headers: the game can no longer be framed by another
+  site, and a content security policy (reported only, for now) lists what the pages may load.
+
 ## [0.9.0] - 2026-10-17 — Impasse
 
 ### Changed

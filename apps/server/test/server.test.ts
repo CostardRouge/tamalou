@@ -12,6 +12,7 @@ import {
 } from '@tamalou/shared';
 import { afterEach, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
+import { parseHeadersFile } from '../src/headers.ts';
 import { type RunningServer, startServer } from '../src/index.ts';
 
 // Real sockets against a real server on a free port: what the LAN mode runs, and the online one through the same Room.
@@ -137,6 +138,44 @@ describe('LAN server HTTP', () => {
     expect((await fetch(`${url}/%E0%A4%A`)).status).toBe(403);
     expect((await fetch(`${url}/`, { method: 'POST' })).status).toBe(405);
     expect((await fetch(`${url}/`, { method: 'HEAD' })).status).toBe(200);
+  });
+
+  it('sends the response headers the web build wrote in _headers, on every answer', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tamalou-web-'));
+    await mkdir(join(dir, 'assets'));
+    await writeFile(join(dir, 'index.html'), '<!doctype html><title>Tamalou</title>');
+    await writeFile(join(dir, 'assets', 'app-1234.js'), 'console.log(1)');
+    // The shape apps/web/build/security.ts writes: the `/*` block, then per-path blocks the server leaves alone.
+    await writeFile(
+      join(dir, '_headers'),
+      [
+        '/*',
+        '  X-Frame-Options: DENY',
+        "  Content-Security-Policy-Report-Only: default-src 'self'; frame-ancestors 'none'",
+        '',
+        '/assets/*',
+        '  Cache-Control: public, max-age=0',
+        '',
+      ].join('\n'),
+    );
+    const { url } = await serve({ staticDir: dir });
+    for (const path of ['/', '/assets/app-1234.js', '/salle/ABCDE', '/missing.png', '/api/health', '/api/nope']) {
+      const res = await fetch(`${url}${path}`);
+      expect(res.headers.get('x-frame-options'), path).toBe('DENY');
+      expect(res.headers.get('content-security-policy-report-only'), path).toContain("frame-ancestors 'none'");
+    }
+    // The server's own caching wins over the file's per-path blocks, and the file itself is never served.
+    expect((await fetch(`${url}/assets/app-1234.js`)).headers.get('cache-control')).toContain('immutable');
+    expect((await fetch(`${url}/_headers`)).status).toBe(404);
+  });
+
+  it('reads the /* block of a _headers file and nothing else', () => {
+    expect(parseHeadersFile('/*\n  A-B: one\n  C: two: three \n\n/x\n  D: four\n')).toEqual({
+      'a-b': 'one',
+      c: 'two: three',
+    });
+    expect(parseHeadersFile('/x\n  D: four\n')).toEqual({});
+    expect(parseHeadersFile('')).toEqual({});
   });
 });
 

@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import type { Plugin } from 'vite';
 import { LANDING } from '../src/landing/text.ts';
+import { headersFile } from './security.ts';
 import { AUTHOR, PAGES, type Page, PLAY_PATH, SOURCE_URL, siteUrl } from './site.ts';
 
 /**
@@ -8,11 +9,12 @@ import { AUTHOR, PAGES, type Page, PLAY_PATH, SOURCE_URL, siteUrl } from './site
  * from build/site.ts and the dictionaries, and answered by the dev server. Pure functions of the site's address, so the
  * tests (test/seo.test.ts) call the same code. Crawlers read robots.txt at the root of a host only: the copy under
  * GitHub Pages' /tamalou/ is never read and the canonical domain's counts; the sitemap's addresses are absolute, on
- * that domain, as every page's canonical tag is.
+ * that domain, as every page's canonical tag is. The response headers' file (C16, build/security.ts) is written the
+ * same way.
  */
 
 /** The files written beside index.html. */
-export const GENERATED = ['robots.txt', 'sitemap.xml', 'llms.txt'] as const;
+export const GENERATED = ['robots.txt', 'sitemap.xml', 'llms.txt', '_headers'] as const;
 
 /** The pages a crawler may list: the ones with a canonical address (the game and the old address say noindex). */
 export const indexedPages = (): Page[] => PAGES.filter((p) => p.kind === 'home' || p.kind === 'legal');
@@ -100,16 +102,17 @@ export interface GeneratedFile {
   type: string;
 }
 
-/** The three files, by name, with the content type the dev server answers. */
+/** The generated files, by name, with the content type the dev server answers. */
 export function generatedFiles(site: string, lastmod: string): Record<string, GeneratedFile> {
   return {
     'robots.txt': { body: robotsTxt(site), type: 'text/plain; charset=utf-8' },
     'sitemap.xml': { body: sitemapXml(site, lastmod), type: 'application/xml; charset=utf-8' },
     'llms.txt': { body: llmsTxt(site), type: 'text/markdown; charset=utf-8' },
+    _headers: { body: headersFile(), type: 'text/plain; charset=utf-8' },
   };
 }
 
-/** Writes the three files at the root of the build and answers them on the dev server. */
+/** Writes the generated files at the root of the build and answers them on the dev server. */
 export function seo(): Plugin {
   let site = '';
   return {

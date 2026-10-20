@@ -49,13 +49,13 @@ describe('findability', () => {
     }
   });
 
-  it('writes the three files at the root with their types, and keeps them out of the offline cache', () => {
+  it('writes the generated files at the root with their types, and keeps them out of the offline cache', () => {
     const files = generatedFiles(SITE_URL, '2026-10-19');
     expect(Object.keys(files)).toEqual([...GENERATED]);
     expect(files['robots.txt']?.type).toBe('text/plain; charset=utf-8');
     expect(files['sitemap.xml']?.type).toBe('application/xml; charset=utf-8');
     expect(files['llms.txt']?.type).toBe('text/markdown; charset=utf-8');
-    expect(precacheList(['robots.txt', 'index.html', 'sitemap.xml', 'llms.txt'])).toEqual(['index.html']);
+    expect(precacheList(['robots.txt', 'index.html', 'sitemap.xml', 'llms.txt', '_headers'])).toEqual(['index.html']);
     expect(lastmod()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });

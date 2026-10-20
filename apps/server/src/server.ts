@@ -6,6 +6,7 @@ import { extname, join, normalize, resolve, sep } from 'node:path';
 import { type Scheduler, systemClock } from '@tamalou/room';
 import { MAX_MESSAGE_LENGTH, normalizeRoomCode, PROTOCOL_VERSION } from '@tamalou/shared';
 import { WebSocket, WebSocketServer } from 'ws';
+import { readHeaders } from './headers.ts';
 import { RoomHost } from './rooms.ts';
 
 // The room server for the LAN (docs/SPEC.md §5.4), the same protocol as online: a small HTTP API, one WebSocket per
@@ -64,9 +65,12 @@ export function startServer(port: number, hostname: string, opts: ServerOptions 
     maxRooms: opts.maxRooms ?? 500,
   });
   const staticDir = opts.staticDir ? resolve(opts.staticDir) : null;
+  // The build's response headers (its `_headers`, apps/web/build/security.ts), on every answer: pages, files, API.
+  const headers = staticDir ? readHeaders(staticDir) : {};
   const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE_LENGTH * 4 });
 
   const server = createServer((req, res) => {
+    for (const [name, value] of Object.entries(headers)) res.setHeader(name, value);
     handle(req, res).catch(() => {
       if (!res.headersSent) res.writeHead(500);
       res.end();
@@ -185,7 +189,13 @@ async function serveFile(root: string, path: string, req: IncomingMessage, res: 
     res.end();
     return;
   }
-  let info = await stat(file).catch(() => null);
+  // The headers' file is read at startup, never served: Cloudflare's asset server keeps it to itself too.
+  let info = decoded === '/_headers' ? null : await stat(file).catch(() => null);
+  if (decoded === '/_headers') {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
   if (info?.isDirectory()) {
     file = join(file, 'index.html');
     info = await stat(file).catch(() => null);

@@ -40,15 +40,27 @@ const PLAY_HEAD = {
 
 /**
  * Sends an old link to the game: a shared room or rules link from before the game moved off the root (`#room=…`,
- * `#rules=…`), and the app installed on a phone back then, whose start address is still the root.
+ * `#rules=…`), and the app installed on a phone back then, whose start address is still the root. The script's body,
+ * written between its tags exactly as returned: the content security policy names it by hash (build/security.ts).
  */
-const redirect = (play: string) =>
-  `<script>(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()</script>`;
+const redirectScript = (play: string) =>
+  `(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()`;
 
 /** The game's old address (jouer/, until the owner asked for play/): it forwards everything, the room or rules
- * fragment included, before anything is drawn. */
+ * fragment included, before anything is drawn. The script's body, named by hash like the one above. */
+const movedScript = (to: string) => `location.replace(${JSON.stringify(to)}+location.search+location.hash)`;
+
 const moved = (to: string) =>
-  `<meta http-equiv="refresh" content="0; url=${to}" />\n    <script>location.replace(${JSON.stringify(to)}+location.search+location.hash)</script>`;
+  `<meta http-equiv="refresh" content="0; url=${to}" />\n    <script>${movedScript(to)}</script>`;
+
+/** Every inline script the pages write, as the policy's hashes must name them (build/security.ts). */
+export function inlineScripts(): string[] {
+  return PAGES.flatMap((page) => {
+    if (page.kind === 'home') return [redirectScript(link(page, PLAY_PATH))];
+    if (page.kind === 'moved') return [movedScript(link(page, PLAY_PATH))];
+    return [];
+  });
+}
 
 const headText = (page: Page) => {
   if (page.kind === 'home') return LANDING[page.lang];
@@ -109,7 +121,7 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
     `<link rel="apple-touch-icon" href="${root}apple-touch-icon.png" />`,
     `<link rel="manifest" href="${root}manifest.webmanifest" />`,
   );
-  if (page.kind === 'home') lines.push(redirect(link(page, PLAY_PATH)));
+  if (page.kind === 'home') lines.push(`<script>${redirectScript(link(page, PLAY_PATH))}</script>`);
   if (analytics) lines.push(analyticsTag(analytics, page.path));
   return lines.join('\n    ');
 }

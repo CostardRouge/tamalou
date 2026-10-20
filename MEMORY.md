@@ -50,6 +50,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device; a build-generated service worker makes solo and pass-and-play work offline — ADR-0015, `web.md`.
 - The root is a static home page (FR `/`, EN `/en/`) written at build time, the game lives under `play/` (the owner's pick, 2026-10-17; `jouer/` forwards); on it, the visitor plays a guided first round against a bot, then a hand-value quiz (the owner's pick among three directions); cards from the card theme — ADR-0017, `site.md`.
 - A legal notice (`/mentions-legales/`, `/en/legal/`) and Versus's anonymous Umami measurement, ported as is; the notice lists every event, a test holds the code to it — ADR-0018, `site.md`.
+- Security headers from one list (`build/security.ts`, C16): written into the build's `_headers` for Cloudflare, read back by the LAN server, the CSP Report-Only with every inline script named by hash; Zod runs jitless so the policy sees no `new Function` — `site.md`, `architecture.md`.
 - Readability: a spotlight on whose turn it is, always; confirming each move is the game master's choice (`assist.confirmMoves`, off by default) — ADR-0016, `web.md`.
 - The table's look, chosen by the owner on the 2026-10-17 canvas: one-line action bar (A), rules as cards to leaf through (B), cards flying on soft springs for every move with the others' moves told in bubbles, drag and drop with soft physics (D) and quick discard by dragging onto the discard (C) — `web.md`.
 - Versions: one SemVer version in the root `package.json`, `CHANGELOG.md` as source, tags and GitHub Releases made by `release.yml` on `main`, a release is its own PR on the owner's word; 0.9.0 Impasse today (the game moved to `play/`), after 0.8.0 Honneur, the first published one, with M1–M7 backfilled as 0.1.0–0.7.0 — ADR-0019, `CLAUDE.md` rule 4.
@@ -71,6 +72,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 
 - 2026-10-16 — Owner to judge M8 on his phone: sounds and vibrations (Android vibrates, iPhone does not), "Installer le jeu", a solo game in airplane mode, the English switch.
 
+- 2026-10-19 — **The content security policy is Report-Only** (`build/security.ts`): clean on the LAN server's build in headless Chromium (home pages, legal notices, the game, a room); once a tour of the deployed site (Cloudflare, the tracker on) shows a clean console, rename the header to `Content-Security-Policy` there and in `test/security.test.ts`, nothing else — `site.md`.
 - 2026-10-17 — Once deployed, check the first views and events in Umami (Tamalou's site on insight.steevepommier.com): both hosts, clean paths, no room code — ADR-0018.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.

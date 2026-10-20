@@ -7,7 +7,8 @@ import { OG_IMAGES, PLAY_PATH } from './site.ts';
 
 const PLAY_PAGE = `${PLAY_PATH}index.html`;
 
-/** Read by crawlers and unfurlers, never by a phone playing offline: robots.txt, the sitemap, llms.txt, the social cards. */
+/** Read by crawlers, unfurlers and the servers, never by a phone playing offline: robots.txt, the sitemap, llms.txt,
+ * `_headers`, the social cards. */
 const NOT_OFFLINE = new Set<string>([...GENERATED, ...Object.values(OG_IMAGES).map((card) => card.path)]);
 
 // The offline game (docs/SPEC.md §8, M8): after the build, a service worker is written at the site's root with the
