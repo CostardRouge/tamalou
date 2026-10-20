@@ -140,6 +140,32 @@ describe('LAN server HTTP', () => {
   });
 });
 
+describe('LAN server heartbeat', () => {
+  // Every other test runs with a heartbeat of an hour, which is how a server that cut every socket at its first beat
+  // went unseen: each player got « Connexion perdue » every 25 s. Here the beat is short and real.
+  const wait = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
+  it('keeps a socket that answers pings across several beats', async () => {
+    const { url } = await serve({ heartbeatSeconds: 0.05 });
+    const code = await createRoom(url);
+    const c = await enter(url, code, { name: 'Ana' });
+    await c.lobby();
+    await wait(400);
+    expect(c.ws.readyState).toBe(WebSocket.OPEN);
+    c.ws.close();
+  });
+
+  it('ends a socket that stops answering pings', async () => {
+    const { url } = await serve({ heartbeatSeconds: 0.05 });
+    const code = await createRoom(url);
+    const ws = new WebSocket(`${url.replace('http', 'ws')}/api/rooms/${code}/ws`, { autoPong: false });
+    const closed = new Promise<void>((done) => ws.once('close', () => done()));
+    await new Promise<void>((done) => ws.once('open', () => done()));
+    await closed;
+    expect(ws.readyState).toBe(WebSocket.CLOSED);
+  });
+});
+
 describe('LAN server rooms over WebSockets', () => {
   it('tells a socket the room does not exist', async () => {
     const { url } = await serve();
