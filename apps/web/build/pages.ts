@@ -40,10 +40,12 @@ const PLAY_HEAD = {
 
 /**
  * Sends an old link to the game: a shared room or rules link from before the game moved off the root (`#room=…`,
- * `#rules=…`), and the app installed on a phone back then, whose start address is still the root.
+ * `#rules=…`), and the app installed on a phone back then, whose start address is still the root. An installed app
+ * is sent on only when it was just launched (no referrer): the game's own link to this page (HomeScreen.tsx) must
+ * land here, in the installed window too.
  */
 const redirect = (play: string) =>
-  `<script>(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()</script>`;
+  `<script>(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(!document.referrer&&window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()</script>`;
 
 /** The game's old address (jouer/, until the owner asked for play/): it forwards everything, the room or rules
  * fragment included, before anything is drawn. */

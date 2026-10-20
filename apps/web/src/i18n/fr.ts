@@ -511,6 +511,8 @@ export const fr = {
   installIos: 'Sur iPhone et iPad : Partager, puis « Sur l’écran d’accueil ». Le solo marche ensuite sans réseau.',
   legalLink: 'Mentions légales et confidentialité',
   legalHref: '../mentions-legales/',
+  siteLink: 'Découvrir le jeu et ses règles',
+  siteHref: '../',
   updateReady: 'Une nouvelle version est prête.',
   updateReload: 'Recharger',
   updateLater: 'Plus tard',

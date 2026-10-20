@@ -145,6 +145,10 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
       <div className="brand">
         <h1>{t('appName')}</h1>
         <p className="tagline">{t('tagline')}</p>
+        {/* The site's home page (ADR-0017): what the game is, a first round, the rules; in this language. */}
+        <p className="site-link">
+          <a href={t('siteHref')}>{t('siteLink')}</a>
+        </p>
       </div>
       <form
         className="setup"

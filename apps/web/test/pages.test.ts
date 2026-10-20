@@ -89,6 +89,16 @@ describe('pages', () => {
     expect(siteUrl({ VITE_SITE_URL: 'javascript:alert(1)' })).toBe(SITE_URL);
   });
 
+  it('sends an installed app on to the game only when it was just launched, so the game can link back', () => {
+    if (!home) throw new Error('pages missing');
+    const head = pageHead(home, SITE_URL);
+    const script = /<script>(.*?)<\/script>/.exec(head)?.[1] ?? '';
+    expect(script).toContain("matchMedia('(display-mode: standalone)')");
+    expect(script).toContain('!document.referrer&&');
+    // Old room and rules links are sent on whatever the referrer.
+    expect(script).toContain('/^#(room|rules)=/.test(h)||');
+  });
+
   it('writes the legal notice in both languages, linked from every static page', () => {
     for (const page of PAGES.filter((p) => p.kind === 'legal')) {
       const t = LEGAL[page.lang];

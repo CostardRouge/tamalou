@@ -493,6 +493,8 @@ export const en: Messages = {
   installIos: 'On iPhone and iPad: Share, then “Add to Home Screen”. Solo then works without a network.',
   legalLink: 'Legal notice and privacy',
   legalHref: '../en/legal/',
+  siteLink: 'About the game and its rules',
+  siteHref: '../en/',
   updateReady: 'A new version is ready.',
   updateReload: 'Reload',
   updateLater: 'Later',

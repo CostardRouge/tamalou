@@ -14,6 +14,7 @@ code, though the game speaks French first. Codenames are French card words, in a
 - A long press on the installed icon (a right click on desktop) offers "Partie solo", which deals at once with your
   last setup, and "À plusieurs, un téléphone".
 - On iPhone and iPad, the settings say how to add the game to the home screen.
+- The game's home screen links back to the site's page ("Découvrir le jeu et ses règles"), in the installed app too.
 
 ### Changed
 
