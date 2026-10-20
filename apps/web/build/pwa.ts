@@ -21,7 +21,6 @@ import { APP, PAGES, PLAY_PATH, SCREEN_SIZES, SCREENSHOTS, SHORTCUT_SIZES, SHORT
 export const SW_FILE = 'sw.js';
 const SW_SOURCE = 'src/sw/sw.ts';
 export const MANIFEST_FILE = 'manifest.webmanifest';
-export const HEADERS_FILE = '_headers';
 
 /** Placeholders in src/sw/sw.ts, replaced in the built worker. */
 export const PRECACHE_MARK = '__PRECACHE__';
@@ -131,22 +130,6 @@ export function manifest(): Record<string, unknown> {
   };
 }
 
-/** Cloudflare's `_headers`: the worker and the manifest checked on every load, the hashed files kept for a year. */
-export function headersFile(): string {
-  return [
-    `/${SW_FILE}`,
-    '  Cache-Control: no-cache',
-    '',
-    `/${MANIFEST_FILE}`,
-    '  Content-Type: application/manifest+json; charset=utf-8',
-    '  Cache-Control: no-cache',
-    '',
-    '/assets/*',
-    '  Cache-Control: public, max-age=31536000, immutable',
-    '',
-  ].join('\n');
-}
-
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)],
@@ -167,7 +150,6 @@ export function pwa(): Plugin {
     },
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: MANIFEST_FILE, source: `${JSON.stringify(manifest(), null, 2)}\n` });
-      this.emitFile({ type: 'asset', fileName: HEADERS_FILE, source: headersFile() });
     },
     closeBundle() {
       // Read back from disk once everything is written (the pages after their own transforms, public/ copied): the

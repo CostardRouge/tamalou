@@ -5,14 +5,16 @@
 # Two stages: everything to build the web app, then only the server's production dependencies. The server runs its
 # TypeScript sources with Node's type stripping, which refuses files under node_modules: the workspace packages stay
 # in packages/, linked by pnpm, never copied into node_modules (docs/memory/architecture.md).
+# Node is pinned exactly (COMMON-PROJECT-SPEC C14): a moving `24-alpine` ships whatever runtime the registry holds that
+# day, which nobody tested here; Dependabot raises the tag (.github/dependabot.yml), one pull request the CI gate checks.
 
-FROM node:24-alpine AS build
+FROM node:24.22.0-alpine AS build
 WORKDIR /app
 RUN corepack enable
 COPY . .
 RUN pnpm install --frozen-lockfile && pnpm build
 
-FROM node:24-alpine
+FROM node:24.22.0-alpine
 LABEL org.opencontainers.image.source="https://github.com/CostardRouge/tamalou" \
       org.opencontainers.image.description="Tamalou, the card game: LAN server and web app" \
       org.opencontainers.image.licenses="MIT"

@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # pnpm's lockfile and workspace (pnpm-workspace.yaml) go through the npm ecosystem.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep Node type definitions in step with the Node.js version in .nvmrc.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ['*']
+
+  # The LAN server's image: raises the exact Node tag the Dockerfile pins (COMMON-PROJECT-SPEC C14).
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

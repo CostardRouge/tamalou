@@ -10,6 +10,7 @@ import {
   AUTHOR,
   CONTACT,
   LICENSE_URL,
+  OG_IMAGES,
   PAGES,
   type Page,
   PLAY_PATH,
@@ -42,15 +43,27 @@ const PLAY_HEAD = {
  * Sends an old link to the game: a shared room or rules link from before the game moved off the root (`#room=…`,
  * `#rules=…`), and the app installed on a phone back then, whose start address is still the root. An installed app
  * is sent on only when it was just launched (no referrer): the game's own link to this page (HomeScreen.tsx) must
- * land here, in the installed window too.
+ * land here, in the installed window too. The script's body, written between its tags exactly as returned: the
+ * content security policy names it by hash (build/security.ts).
  */
-const redirect = (play: string) =>
-  `<script>(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(!document.referrer&&window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()</script>`;
+const redirectScript = (play: string) =>
+  `(function(){var h=location.hash;if(/^#(room|rules)=/.test(h)||(!document.referrer&&window.matchMedia&&matchMedia('(display-mode: standalone)').matches))location.replace(${JSON.stringify(play)}+h)})()`;
 
 /** The game's old address (jouer/, until the owner asked for play/): it forwards everything, the room or rules
- * fragment included, before anything is drawn. */
+ * fragment included, before anything is drawn. The script's body, named by hash like the one above. */
+const movedScript = (to: string) => `location.replace(${JSON.stringify(to)}+location.search+location.hash)`;
+
 const moved = (to: string) =>
-  `<meta http-equiv="refresh" content="0; url=${to}" />\n    <script>location.replace(${JSON.stringify(to)}+location.search+location.hash)</script>`;
+  `<meta http-equiv="refresh" content="0; url=${to}" />\n    <script>${movedScript(to)}</script>`;
+
+/** Every inline script the pages write, as the policy's hashes must name them (build/security.ts). */
+export function inlineScripts(): string[] {
+  return PAGES.flatMap((page) => {
+    if (page.kind === 'home') return [redirectScript(link(page, PLAY_PATH))];
+    if (page.kind === 'moved') return [movedScript(link(page, PLAY_PATH))];
+    return [];
+  });
+}
 
 const headText = (page: Page) => {
   if (page.kind === 'home') return LANDING[page.lang];
@@ -67,7 +80,12 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
     lines.push('<meta name="robots" content="noindex" />');
     if (page.kind === 'moved') lines.push(moved(link(page, PLAY_PATH)));
   } else {
-    lines.push(`<link rel="canonical" href="${site}${page.path}" />`);
+    lines.push(
+      `<link rel="canonical" href="${site}${page.path}" />`,
+      // What build/seo.ts writes at the root, from any folder.
+      `<link rel="sitemap" type="application/xml" href="${root}sitemap.xml" />`,
+      `<link rel="alternate" type="text/markdown" href="${root}llms.txt" title="Tamalou in Markdown" />`,
+    );
     if (page.twin !== undefined) {
       const fr = page.lang === 'fr' ? page.path : page.twin;
       const en = page.lang === 'en' ? page.path : page.twin;
@@ -77,6 +95,8 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
         `<link rel="alternate" hreflang="x-default" href="${site}${fr}" />`,
       );
     }
+    // The link preview: the language's card (C17), with its size so unfurlers lay it out before fetching it.
+    const card = OG_IMAGES[page.lang];
     lines.push(
       '<meta property="og:type" content="website" />',
       '<meta property="og:site_name" content="Tamalou" />',
@@ -84,7 +104,14 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
       `<meta property="og:description" content="${esc(t.description)}" />`,
       `<meta property="og:url" content="${site}${page.path}" />`,
       `<meta property="og:locale" content="${page.lang === 'fr' ? 'fr_FR' : 'en_US'}" />`,
-      `<meta property="og:image" content="${site}icon-512.png" />`,
+      `<meta property="og:image" content="${site}${card.path}" />`,
+      '<meta property="og:image:type" content="image/png" />',
+      `<meta property="og:image:width" content="${card.width}" />`,
+      `<meta property="og:image:height" content="${card.height}" />`,
+      `<meta property="og:image:alt" content="${esc(card.alt)}" />`,
+      '<meta name="twitter:card" content="summary_large_image" />',
+      `<meta name="twitter:image" content="${site}${card.path}" />`,
+      `<meta name="twitter:image:alt" content="${esc(card.alt)}" />`,
     );
   }
   lines.push(
@@ -100,7 +127,7 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
     `<link rel="apple-touch-icon" href="${root}apple-touch-icon.png" />`,
     `<link rel="manifest" href="${root}manifest.webmanifest" />`,
   );
-  if (page.kind === 'home') lines.push(redirect(link(page, PLAY_PATH)));
+  if (page.kind === 'home') lines.push(`<script>${redirectScript(link(page, PLAY_PATH))}</script>`);
   if (analytics) lines.push(analyticsTag(analytics, page.path));
   return lines.join('\n    ');
 }

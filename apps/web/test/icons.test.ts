@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { pageHead } from '../build/pages.ts';
-import { MANIFEST_FILE, manifest } from '../build/pwa.ts';
-import { PAGES, SITE_URL, toRoot } from '../build/site.ts';
+import { MANIFEST_FILE, manifest, precacheList } from '../build/pwa.ts';
+import { COLORS, OG_IMAGES, PAGES, SITE_URL, toRoot } from '../build/site.ts';
 
 // COMMON-PROJECT-SPEC C11, whose failure is silent (every desktop tab looks right while an iPhone shows a screenshot):
 // the touch icon exists, is 180×180 and has no alpha channel; every icon the page and the manifest name exists; the
@@ -44,5 +44,48 @@ describe('icon set', () => {
       const [w, h] = icon.sizes.split('x').map(Number);
       expect(png(pub(icon.src)), icon.src).toMatchObject({ width: w, height: h });
     }
+  });
+
+  // COMMON-PROJECT-SPEC C17: a shared link unfurls a 1200×630 card in the page's language, never the icon.
+  it('ships a social card per language, named with its size by every page that can be shared', () => {
+    for (const lang of ['fr', 'en'] as const) {
+      const card = OG_IMAGES[lang];
+      expect(card).toMatchObject({ width: 1200, height: 630 });
+      expect(png(pub(card.path)), card.path).toMatchObject({ width: card.width, height: card.height });
+    }
+    for (const page of PAGES) {
+      const head = pageHead(page, SITE_URL);
+      const card = OG_IMAGES[page.lang];
+      if (page.kind === 'play' || page.kind === 'moved') {
+        expect(head, page.file).not.toContain('og:image');
+      } else {
+        expect(head, page.file).toContain(`<meta property="og:image" content="${SITE_URL}${card.path}" />`);
+        expect(head, page.file).toContain(`<meta property="og:image:width" content="${card.width}" />`);
+        expect(head, page.file).toContain(`<meta property="og:image:alt" content="${card.alt}" />`);
+        expect(head, page.file).toContain('<meta name="twitter:card" content="summary_large_image" />');
+        expect(head, page.file).not.toContain('icon-512.png');
+      }
+    }
+    // A phone playing offline never needs a link preview: the service worker leaves the cards out.
+    expect(precacheList(['og.png', 'index.html', 'og-en.png', 'icon.svg'])).toEqual(['./', 'icon.svg']);
+  });
+
+  it('draws outside CSS with the stylesheet’s own light tokens', () => {
+    const css = readFileSync(resolve(root, 'src/styles/tokens.css'), 'utf8');
+    const block = (selector: string) => css.slice(css.indexOf(selector)).split('}')[0] ?? '';
+    const token = (b: string, name: string) => b.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`))?.[1];
+    const light = block(':root {');
+    const dark = block(':root[data-theme="dark"]');
+    expect(COLORS).toEqual({
+      bg: token(light, 'bg'),
+      bgDark: token(dark, 'bg'),
+      ink: token(light, 'ink'),
+      muted: token(light, 'muted'),
+      a: token(light, 'a'),
+      b: token(light, 'b'),
+      cardFace: token(light, 'card-face'),
+      cardEdge: token(light, 'card-edge'),
+      cardBackInk: token(light, 'card-back-ink'),
+    });
   });
 });

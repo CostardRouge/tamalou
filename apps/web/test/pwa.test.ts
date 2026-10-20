@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   cacheVersion,
   fileOf,
-  headersFile,
   injectPrecache,
   manifest,
   PRECACHE_MARK,
@@ -13,6 +12,7 @@ import {
   shortcutUrl,
   VERSION_MARK,
 } from '../build/pwa.ts';
+import { headersFile } from '../build/security.ts';
 import { PAGES, PLAY_PATH, SCREEN_SIZES, SCREENSHOTS, SHORTCUT_SIZES, SHORTCUTS } from '../build/site.ts';
 import { SHORTCUT_KEYS } from '../src/pwa.ts';
 

@@ -23,6 +23,22 @@ export const ANALYTICS = {
   domains: ['tamalou.steevepommier.com', 'costardrouge.github.io'],
 };
 
+/**
+ * The light theme's tokens (src/styles/tokens.css) for what is drawn outside CSS: the theme-color tags and the social
+ * cards (scripts/card.mjs). test/icons.test.ts holds them to the stylesheet.
+ */
+export const COLORS = {
+  bg: '#eceef2',
+  bgDark: '#0e1015',
+  ink: '#13151b',
+  muted: '#5a6072',
+  a: '#2743f5',
+  b: '#e4492a',
+  cardFace: '#fffdf8',
+  cardEdge: '#c9ced8',
+  cardBackInk: '#dfe5ff',
+} as const;
+
 export type Lang = 'fr' | 'en';
 /** `moved`: an old address that sends its visitor on (the game was at jouer/ before play/). */
 export type PageKind = 'home' | 'play' | 'legal' | 'moved';
@@ -50,15 +66,59 @@ export const PAGES: Page[] = [
 /** The game's address from the root. */
 export const PLAY_PATH = 'play/';
 
+export interface SocialCard {
+  /** The PNG in public/, drawn by scripts/card.mjs and committed. */
+  path: string;
+  width: number;
+  height: number;
+  /** What the card shows, for og:image:alt. */
+  alt: string;
+}
+
+/**
+ * The link preview of each language (COMMON-PROJECT-SPEC C17): a 1200×630 card, not the icon, named by the og:image
+ * tags of every page of that language. A redrawn card takes a new file name: unfurlers cache a card by its URL.
+ */
+export const OG_IMAGES: Record<Lang, SocialCard> = {
+  fr: {
+    path: 'og.png',
+    width: 1200,
+    height: 630,
+    alt: 'Tamalou : quatre cartes, de la mémoire et du bluff. Le jeu de cartes, seul contre des bots, à plusieurs sur un téléphone ou en ligne.',
+  },
+  en: {
+    path: 'og-en.png',
+    width: 1200,
+    height: 630,
+    alt: 'Tamalou: four cards, memory and bluff. The card game, solo against bots, around one phone or online.',
+  },
+};
+
+/** What the card says, in the home page's own words (src/landing/text.ts): three short lines, a sentence, the button and its note. */
+export const CARD_COPY: Record<Lang, { lines: [string, string, string]; body: string; cta: string; note: string }> = {
+  fr: {
+    lines: ['Quatre cartes,', 'de la mémoire', 'et du bluff.'],
+    body: 'Le plus petit total gagne. Seul contre des bots, à plusieurs sur un téléphone, en Wi-Fi ou en ligne.',
+    cta: 'Jouer',
+    note: 'Gratuit, sans compte',
+  },
+  en: {
+    lines: ['Four cards,', 'memory', 'and bluff.'],
+    body: 'The lowest total wins. Solo against bots, around one phone, on your Wi-Fi or online.',
+    cta: 'Play',
+    note: 'Free, no account',
+  },
+};
+
 /**
  * The colours the pages' `theme-color`, the manifest and the icons share: the values of src/styles/tokens.css
  * (Versus's, ADR-0007) copied here because a manifest is plain JSON read once at install.
  */
 export const THEME = {
   /** Page background, light and dark (`--bg`). */
-  bg: { light: '#eceef2', dark: '#0e1015' },
+  bg: { light: COLORS.bg, dark: COLORS.bgDark },
   /** Cobalt (`--a`): the card back, the icon's ground. */
-  accent: '#2743f5',
+  accent: COLORS.a,
 } as const;
 
 /** What the installed app is called and says of itself (the manifest; one language: French is the default). */
