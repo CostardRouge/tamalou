@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "biome check .",
     "format": "biome check --write .",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/web && tsc --noEmit -p apps/worker",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p apps/web && tsc --noEmit -p apps/web/src/sw && tsc --noEmit -p apps/worker",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
