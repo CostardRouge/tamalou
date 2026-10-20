@@ -3,7 +3,7 @@ import { Room } from '@tamalou/room';
 import { parseClientMessage, type ServerMessage } from '@tamalou/shared';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { RemoteConnection, RoomClient, savedToken, saveToken } from '../src/connection/remote.ts';
+import { apiUrl, RemoteConnection, RoomClient, savedToken, saveToken } from '../src/connection/remote.ts';
 import { OnlineScreen } from '../src/online/OnlineScreen.tsx';
 
 // The online client against a real Room, through fake sockets delivered on microtasks: what a phone does with the
@@ -160,5 +160,17 @@ describe('the online screens', () => {
     expect(screen.getByText('Cette salle n’existe pas ou n’existe plus.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
     expect(left).toBe(true);
+  });
+});
+
+describe('the API address', () => {
+  // The game lives in play/ while both servers serve /api/* beside the site: a room request must leave play/.
+  it('reaches the site root from the game page, at a domain root and under a path', () => {
+    expect(apiUrl('health', 'https://tamalou.example/play/')).toBe('https://tamalou.example/api/health');
+    expect(apiUrl('health', 'http://192.168.1.20:8080/play/#room=ABCDE')).toBe('http://192.168.1.20:8080/api/health');
+    expect(apiUrl('rooms/ABCDE/ws', 'https://host.example/tamalou/play/?x=1')).toBe(
+      'https://host.example/tamalou/api/rooms/ABCDE/ws',
+    );
+    expect(apiUrl('rooms', 'https://tamalou.example/play/index.html')).toBe('https://tamalou.example/api/rooms');
   });
 });

@@ -61,9 +61,14 @@ export function saveToken(code: string, token: string | null): void {
   writeTokens(tokens);
 }
 
-/** The API's base address: the page's own folder, so the app works at a domain's root and under a path. */
-export function apiUrl(path: string, base: string = globalThis.location?.href ?? 'http://localhost/'): string {
-  return new URL(`./api/${path}`, base).href;
+/**
+ * The API's address: `api/` at the SITE's root, one folder above the game, which lives in `play/` (ADR-0017). Both
+ * servers serve `/api/*` beside the site, never under `play/`. Resolved relatively, so the site still works at a
+ * domain's root and under a path (`…/tamalou/play/` → `…/tamalou/api/`). It was `./api/` while the game sat at the
+ * root; the move to `play/` in 0.9.0 sent every room request to `play/api/…`, which answered the page's HTML.
+ */
+export function apiUrl(path: string, base: string = globalThis.location?.href ?? 'http://localhost/play/'): string {
+  return new URL(`../api/${path}`, base).href;
 }
 
 /** Whether this page's server hosts rooms (it does on the LAN server and online; GitHub Pages does not). */
