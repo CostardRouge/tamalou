@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-20 — Joker
+
 ### Added
 
 - The install dialog (Chrome on Android and desktop) shows screenshots of the game and what it is about.
