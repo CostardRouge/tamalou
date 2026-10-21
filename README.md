@@ -43,6 +43,7 @@ L'image de `main` est publiée sur `ghcr.io/costardrouge/tamalou:latest`.
 ## Développer
 
 ```bash
+npm install -g corepack@0.36.0   # Node 25+ ne le fournit plus
 corepack enable   # active la version de pnpm fixée dans package.json
 pnpm install
 pnpm dev          # le jeu sur http://localhost:5173 (et sur l'IP de la machine pour un téléphone du même réseau)
@@ -52,7 +53,7 @@ pnpm check        # lint + typecheck + tests + build
 pnpm coverage     # tests avec couverture (seuil 90 %)
 ```
 
-Node 24 (`.nvmrc`), 22.18 au minimum.
+Node 26 (`.nvmrc`), 22.18 au minimum.
 
 ## Documentation
 
