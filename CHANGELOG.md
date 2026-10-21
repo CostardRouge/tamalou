@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-21 — Kems
+
 ### Added
 
 - Search engines and answer engines can find the site: a sitemap, a `robots.txt` and an `llms.txt` describing the
