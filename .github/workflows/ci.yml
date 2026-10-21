@@ -27,7 +27,8 @@ jobs:
           node-version-file: .nvmrc
 
       # pnpm comes from the version pinned in package.json's packageManager field.
-      - run: corepack enable
+      # Node 25+ no longer bundles corepack: installed at an exact version, like the Dockerfile's.
+      - run: npm install -g corepack@0.36.0 && corepack enable
 
       - run: pnpm install --frozen-lockfile
 
