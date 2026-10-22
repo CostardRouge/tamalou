@@ -40,6 +40,8 @@ docker compose up -d    # puis http://<adresse du serveur>:8080/ ; les logs affi
 
 L'image de `main` est publiée sur `ghcr.io/costardrouge/tamalou:latest`.
 
+Les réglages (port, interface, adresse affichée pour les téléphones…) et ceux du build du jeu sont listés, avec leur valeur par défaut, dans [`.env.example`](.env.example). Le serveur ne lit aucun fichier `.env` : définissez-les dans `environment:` de `docker-compose.yml`, exportez-les, ou lancez `node --env-file=.env apps/server/src/main.ts`. Le build du jeu lit `apps/web/.env`, pas celui de la racine.
+
 ## Développer
 
 ```bash
