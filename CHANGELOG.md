@@ -15,6 +15,11 @@ code, though the game speaks French first. Codenames are French card words, in a
   Display button at the top of the table. The opponents' hands follow, their arcs and fans seen from across the table,
   and the rules speak of your hand as you see it: the cards you look at first are the right-hand ones in a line.
 
+### Changed
+
+- The first round on the home page is dealt on a smaller, livelier table: both hands curve like cards held in a hand,
+  Malo's seen from across the table, with the deck and the discard side by side in the middle.
+
 ## [0.11.0] - 2026-10-21 — Kems
 
 ### Added

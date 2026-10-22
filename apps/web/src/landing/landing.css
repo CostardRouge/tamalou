@@ -346,12 +346,12 @@ body.site {
   justify-content: center;
 }
 
-/* The table keeps its drawing size (520×560) and shrinks as a whole on a phone. */
+/* The table keeps its drawing size (520×480) and shrinks as a whole on a phone. */
 .board {
   position: relative;
   flex: none;
   width: 520px;
-  height: 560px;
+  height: 480px;
   border-radius: 28px;
   background: var(--felt);
   box-shadow: inset 0 0 0 1px var(--line);
@@ -370,6 +370,7 @@ body.site {
 
 .who {
   position: absolute;
+  translate: -50% 0;
   padding: 2px 9px;
   border-radius: var(--r-pill);
   font-family: var(--f-display);
