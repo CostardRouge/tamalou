@@ -5,7 +5,8 @@
 
    Tamalou adds the card tokens (--card-*): a card is a physical object, so its face stays light in both themes, its
    inks are checked at 4.5:1 on that face, and its back is the cobalt accent. The card theme (src/cards/) reads only
-   these; a deck of the owner's own can bring its own. */
+   these; a deck of the owner's own can bring its own. The seats' colours (--seat-*) tell the bots apart around the
+   launch screen's table and carry white initials at 4.5:1 in both themes. */
 :root {
   --bg: #eceef2;
   --surface: #fafbfd;
@@ -35,6 +36,12 @@
   --card-edge: #c9ced8;
   --card-back: #2743f5;
   --card-back-ink: #dfe5ff;
+  --seat-1: #b5361a;
+  --seat-2: #11704b;
+  --seat-3: #7a3fc4;
+  --seat-4: #8a5300;
+  --seat-5: #1f6f8b;
+  --on-seat: #ffffff;
   --felt: #dfe3ea;
 }
 @media (prefers-color-scheme: dark) {
@@ -60,6 +67,12 @@
     --card-edge: #3a404c;
     --card-back: #2743f5;
     --card-back-ink: #dfe5ff;
+    --seat-1: #b5361a;
+    --seat-2: #11704b;
+    --seat-3: #7a3fc4;
+    --seat-4: #8a5300;
+    --seat-5: #1f6f8b;
+    --on-seat: #ffffff;
     --felt: #12151b;
     color-scheme: dark;
   }
@@ -86,6 +99,12 @@
   --card-edge: #3a404c;
   --card-back: #2743f5;
   --card-back-ink: #dfe5ff;
+  --seat-1: #b5361a;
+  --seat-2: #11704b;
+  --seat-3: #7a3fc4;
+  --seat-4: #8a5300;
+  --seat-5: #1f6f8b;
+  --on-seat: #ffffff;
   --felt: #12151b;
   color-scheme: dark;
 }

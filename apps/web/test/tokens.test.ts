@@ -42,6 +42,7 @@ const TEXT: [string, string[]][] = [
   ['card-ink', ['card-face']],
   ['card-red', ['card-face']],
   ['card-back-ink', ['card-back']],
+  ['on-seat', ['seat-1', 'seat-2', 'seat-3', 'seat-4', 'seat-5']],
 ];
 const UI: [string, string[]][] = [
   ['field', SURFACES],

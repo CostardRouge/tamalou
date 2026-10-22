@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../src/App.tsx';
+import { openMode, playFromPanel } from './launch.ts';
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -16,13 +17,13 @@ const faces = () =>
 
 const startPassAndPlay = () => {
   render(<App />);
-  fireEvent.click(screen.getByRole('radio', { name: 'À plusieurs, un téléphone' }));
+  openMode('À plusieurs, un téléphone');
   fireEvent.change(screen.getByRole('textbox', { name: 'Joueur 1' }), { target: { value: 'Ana' } });
   fireEvent.change(screen.getByRole('textbox', { name: 'Joueur 2' }), { target: { value: 'Ben' } });
-  // No bots: the two humans alone.
-  fireEvent.click(screen.getByRole('button', { name: 'Un adversaire de moins' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Un adversaire de moins' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+  // No bots: the two humans alone (the × sits on the last bot).
+  fireEvent.click(screen.getByRole('button', { name: 'Retirer Basile' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Retirer Ada' }));
+  playFromPanel();
 };
 
 describe('pass-and-play', () => {
@@ -52,13 +53,13 @@ describe('pass-and-play', () => {
 
   it('claims a quick discard for a named player, their cards staying face down', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('radio', { name: 'À plusieurs, un téléphone' }));
+    openMode('À plusieurs, un téléphone');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));
     fireEvent.click(screen.getByRole('button', { name: 'Terminé' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Un adversaire de moins' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Un adversaire de moins' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer Basile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer Ada' }));
+    playFromPanel();
     for (const who of ['Joueur 1', 'Joueur 2']) {
       fireEvent.click(screen.getByRole('button', { name: `C’est moi, ${who}` }));
       fireEvent.click(screen.getByRole('button', { name: 'C’est mémorisé' }));
@@ -75,7 +76,7 @@ describe('pass-and-play', () => {
 
   it('starts with quick discard switched off in the rules, and lets the game master switch it back on', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('radio', { name: 'À plusieurs, un téléphone' }));
+    openMode('À plusieurs, un téléphone');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     expect(screen.getAllByText(/Pas de défausse rapide\./).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));

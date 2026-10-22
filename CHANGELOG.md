@@ -8,6 +8,13 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Changed
+
+- A new screen to start a game: your last game waits at the top, ready to play again in one touch, and each way to
+  play opens a panel where you set the table — opponents seated round it, a seat to add one, your name at your place —
+  before choosing the bots' level and the rules. The cards are then dealt round the table before the game begins. The
+  language, sounds and the hand's layout moved behind the settings button at the top.
+
 ## [0.12.0] - 2026-10-22 — Levée
 
 ### Added
