@@ -91,8 +91,11 @@ export interface Box {
 const inside = (b: Box, x: number, y: number, pad: number) =>
   x >= b.x - pad && x <= b.x + b.w + pad && y >= b.y - pad && y <= b.y + b.h + pad;
 
+const distance = (b: Box, x: number, y: number) => Math.hypot(b.x + b.w / 2 - x, b.y + b.h / 2 - y);
+
 /**
- * The drop a release means: the card under the finger (a card wins over my grid's box); when the finger is between
+ * The drop a release means: the card under the finger (a card wins over my grid's box; where cards overlap, in a line
+ * that closes up or a fan, the one whose middle is nearest); when the finger is between
  * two cards, every card it is close to, so the table can ask; a quick flick towards the discard counts as a drop on
  * it ("un lancer rapide suffit").
  */
@@ -107,7 +110,10 @@ export function resolveDrop(
       (d) => d.place !== MY_ZONE && boxes.get(d.place) && inside(boxes.get(d.place) as Box, point.x, point.y, pad),
     );
   const direct = hit(0);
-  if (direct.length > 0) return direct.slice(0, 1);
+  if (direct.length > 0) {
+    const at = (d: Drop) => distance(boxes.get(d.place) as Box, point.x, point.y);
+    return [direct.reduce((best, d) => (at(d) < at(best) ? d : best))];
+  }
   const near = hit(22);
   if (near.length > 0) return near;
   const toDiscard = drops.find((d) => d.place === 'discard');

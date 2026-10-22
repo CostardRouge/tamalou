@@ -8,6 +8,13 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Added
+
+- Choose how your hand is laid out on the table: in a row (now the default), the grid of before, laid down on the
+  felt, in an arc, in a fan or in a carousel you slide through. Pick it in the settings, or during a game from the new
+  Display button at the top of the table. The opponents' hands follow, their arcs and fans seen from across the table,
+  and the rules speak of your hand as you see it: the cards you look at first are the right-hand ones in a line.
+
 ## [0.11.0] - 2026-10-21 — Kems
 
 ### Added

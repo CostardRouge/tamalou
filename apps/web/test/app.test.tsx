@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import pkg from '../../../package.json' with { type: 'json' };
 import { App } from '../src/App.tsx';
+import { updateSettings } from '../src/feedback/settings.ts';
 
 afterEach(cleanup);
 
@@ -18,6 +19,22 @@ describe('the app', () => {
     expect(screen.getAllByRole('img', { name: /^Ta carte \d, (?!Carte face cachée)/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'C’est mémorisé' }));
     expect(screen.queryByRole('button', { name: 'C’est mémorisé' })).toBeNull();
+  });
+
+  it('lays my hand out as picked in the settings, the opponents’ fans seen from across the table', () => {
+    const { container } = render(<App />);
+    const mine = () => container.querySelector('.mine fieldset');
+    fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+    expect(mine()?.className).toBe('hand lay-row');
+    fireEvent.click(screen.getByRole('button', { name: 'Affichage' }));
+    fireEvent.click(screen.getByRole('radio', { name: /Éventail/ }));
+    expect(mine()?.className).toBe('hand lay-fan');
+    expect(container.querySelector('.opponents fieldset')?.className).toBe('hand lay-fan lay-across');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Les adversaires aussi' }));
+    expect(container.querySelector('.opponents fieldset')?.className).toBe('grid hand lay-grid');
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer' }));
+    expect(screen.queryByRole('dialog', { name: 'Affichage' })).toBeNull();
+    updateSettings({ hand: 'row', oppHand: true });
   });
 
   it('shows the release it was built from on the home screen', () => {

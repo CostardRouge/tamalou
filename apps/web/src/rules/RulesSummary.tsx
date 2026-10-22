@@ -1,10 +1,13 @@
 import type { RuleSet } from '@tamalou/shared';
+import { useSettings } from '../feedback/settings.ts';
 import { t } from '../i18n/index.ts';
 import { RulesCards } from './RulesCards.tsx';
 import { summarize } from './summary.ts';
 
 /** The active rules in plain French; a line that differs from Classique carries a "modifié" mark. */
 export function RulesSummary({ rules }: { rules: RuleSet }) {
+  // The initial peek's sentence follows this device's hand layout (summary.ts): drawn again when it changes.
+  useSettings();
   return (
     <div className="summary">
       {summarize(rules).map((section) => (

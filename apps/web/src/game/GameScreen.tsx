@@ -13,6 +13,8 @@ import { Draggable, measurePlaces } from './Draggable.tsx';
 import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
 import { noteDrop, useFlights } from './FlightLayer.tsx';
 import { type Place, slotPlace } from './flights.ts';
+import { HandPicker } from './HandPicker.tsx';
+import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { RoundOver } from './RoundOver.tsx';
@@ -46,6 +48,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showDisplay, setShowDisplay] = useState(false);
   /** Pass-and-play quick discard: choosing who claims, then that player's card. */
   const [claim, setClaim] = useState<'who' | PlayerId | null>(null);
   /** A move waiting for "Confirmer" when the game master asks to confirm every move (rules.assist.confirmMoves). */
@@ -154,11 +157,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     } else if (view.current !== view.me || view.phase !== 'play') setQueued(null);
   });
   const handsFree = pending.kind === 'none' && !staged && !claim && !ask;
-  const carry = (source: DragSource, place: Place, child: ReactNode, key?: string | number) => {
+  const carry = (source: DragSource, place: Place, child: ReactNode) => {
     const drops = handsFree ? dropsFor(source, ui, view) : [];
     return (
       <Draggable
-        key={key}
         enabled={drops.length > 0}
         onPick={() => {
           setDrag({ drops, hot: [] });
@@ -193,15 +195,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const mark = (place: Place) =>
     drag?.hot.includes(place) ? 'hot' : drag?.drops.some((d) => d.place === place) ? 'drop' : undefined;
 
+  // The hand's layout is this device's choice (game/hand.ts); an opponent's seat follows it unless told otherwise.
   const seat = (p: PlayerSeatView, size: 'sm' | 'lg') => {
     const mine = p.id === view.me;
+    const layout = mine ? settings.hand : opponentLayout(settings.hand, settings.oppHand);
+    const frame = handFrame(layout, p.slots.length, rules.hand.columns, !mine);
     return (
-      <fieldset
-        className="grid"
-        style={{ '--cols': rules.hand.columns } as CSSProperties}
-        aria-label={mine ? t('you') : p.name}
-      >
-        {p.slots.map((s) => {
+      <fieldset className={frame.className} style={frame.style} aria-label={mine ? t('you') : p.name}>
+        {p.slots.map((s, i) => {
           const ref = { player: p.id, slot: s.slot };
           const claimAction = claimUi && p.id === claim ? claimUi.slot(ref) : null;
           const action = claim ? (claimAction?.send ? claimAction : null) : ui.slot(ref);
@@ -211,24 +212,27 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 s.card ? cardName(s.card) : t('cardHidden')
               }${s.locked ? `, ${t('locked')}` : ''}`;
           const place = slotPlace(ref);
-          return carry(
-            { kind: 'slot', ref },
-            place,
-            <CardView
-              place={place}
-              mark={mark(place)}
-              ghost={fly.landing.has(place)}
-              card={s.card}
-              label={label}
-              size={size}
-              empty={!s.filled}
-              locked={s.locked}
-              hint={action !== null}
-              flash={feedback.flash.has(`${p.id}:${s.slot}`)}
-              selected={ui.selected(ref) || (!!staged?.ref && sameRef(staged.ref, ref))}
-              onSelect={action ? () => touch(ref) : undefined}
-            />,
-            s.slot,
+          return (
+            <div key={s.slot} className="slot" style={slotStyle(i, p.slots.length)}>
+              {carry(
+                { kind: 'slot', ref },
+                place,
+                <CardView
+                  place={place}
+                  mark={mark(place)}
+                  ghost={fly.landing.has(place)}
+                  card={s.card}
+                  label={label}
+                  size={size}
+                  empty={!s.filled}
+                  locked={s.locked}
+                  hint={action !== null}
+                  flash={feedback.flash.has(`${p.id}:${s.slot}`)}
+                  selected={ui.selected(ref) || (!!staged?.ref && sameRef(staged.ref, ref))}
+                  onSelect={action ? () => touch(ref) : undefined}
+                />,
+              )}
+            </div>
           );
         })}
       </fieldset>
@@ -264,7 +268,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   return (
     // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -280,6 +284,13 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             onClick={() => updateSettings({ sound: !settings.sound })}
           >
             <span aria-hidden="true">{settings.sound ? '🔊' : '🔇'}</span>
+          </button>
+          <button type="button" className="ghost" aria-label={t('display')} onClick={() => setShowDisplay(true)}>
+            <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+              <circle cx="15" cy="7" r="2" />
+              <circle cx="9" cy="17" r="2" />
+            </svg>
           </button>
           <button type="button" className="ghost" onClick={() => setShowRules(true)}>
             {t('rules')}
@@ -461,6 +472,21 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       ) : null}
 
       {showRules ? <RulesPanel rules={rules} onClose={() => setShowRules(false)} /> : null}
+
+      {showDisplay ? (
+        // At the top, over the opponents: my hand stays in sight and changes as the player picks.
+        <div className="overlay overlay-top" role="dialog" aria-modal="true" aria-labelledby="display-title">
+          <div className="panel">
+            <div className="panel-head">
+              <h2 id="display-title">{t('display')}</h2>
+              <button type="button" className="ghost" onClick={() => setShowDisplay(false)} ref={(el) => el?.focus()}>
+                {t('close')}
+              </button>
+            </div>
+            <HandPicker name="hand-table" />
+          </div>
+        </div>
+      ) : null}
 
       <AnimatePresence>
         {hello ? (

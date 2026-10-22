@@ -71,6 +71,13 @@ describe('where a release lands', () => {
     expect(resolveDrop(drops, boxes, { x: 140, y: 450 }, still).map((d) => d.place)).toEqual(['slot:me:0']);
   });
 
+  it('takes the card whose middle is nearest where two cards overlap', () => {
+    const overlapping = new Map(boxes);
+    overlapping.set('slot:me:1', { x: 150, y: 400, w: 80, h: 112 });
+    expect(resolveDrop(drops, overlapping, { x: 168, y: 450 }, still).map((d) => d.place)).toEqual(['slot:me:1']);
+    expect(resolveDrop(drops, overlapping, { x: 155, y: 450 }, still).map((d) => d.place)).toEqual(['slot:me:0']);
+  });
+
   it('asks between two cards when the finger is between them', () => {
     expect(resolveDrop(drops, boxes, { x: 185, y: 450 }, still).map((d) => d.place)).toEqual([
       'slot:me:0',

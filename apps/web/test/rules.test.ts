@@ -1,5 +1,6 @@
 import { DEFAULT_RULES, parseRules, rulesFromPreset } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
+import { updateSettings } from '../src/feedback/settings.ts';
 import { setLang } from '../src/i18n/index.ts';
 import { getAt, SECTIONS, setAt } from '../src/rules/fields.ts';
 import { summarize } from '../src/rules/summary.ts';
@@ -48,11 +49,21 @@ describe('rules summary', () => {
   it('reads the Classique rules in a few French lines, none flagged', () => {
     expect(text()).toContain('1 paquet de 52 cartes, sans joker.');
     expect(text()).toContain('Roi (♥ ♦) : 0');
-    expect(text()).toContain('Chacun regarde ses 2 cartes du bas au départ.');
+    expect(text()).toContain('Chacun regarde ses 2 cartes de droite au départ.');
     expect(text()).toContain('7, 8 : Regarder une de ses cartes');
     expect(text()).toContain('Tamalou raté (égalité comprise) : +10 points.');
     expect(text()).toContain('Éliminé à 100 points.');
     expect(summarize(DEFAULT_RULES).every((s) => s.lines.every((l) => !l.changed))).toBe(true);
+  });
+
+  it('describes the hand as this device draws it: rows and the bottom of a grid, the right end of a line', () => {
+    updateSettings({ hand: 'grid' });
+    expect(text()).toContain('4 cartes face cachée, 2 par rangée.');
+    expect(text()).toContain('Chacun regarde ses 2 cartes du bas au départ.');
+    updateSettings({ hand: 'fan' });
+    expect(text()).toContain('4 cartes face cachée.\n');
+    expect(text()).toContain('Chacun regarde ses 2 cartes de droite au départ.');
+    updateSettings({ hand: 'row' });
   });
 
   it('says and flags what differs', () => {

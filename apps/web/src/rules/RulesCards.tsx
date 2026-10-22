@@ -10,6 +10,7 @@ import {
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
+import { getSettings, useSettings } from '../feedback/settings.ts';
 import { cardName, rankName, t } from '../i18n/index.ts';
 import { powerGroups, powerLine, type SummaryLine, summarize } from './summary.ts';
 
@@ -75,9 +76,11 @@ const Arrow = ({ d, style }: { d: string; style: CSSProperties }) => (
 function HandArt({ r }: { r: RuleSet }) {
   const { size, columns, initialPeek } = r.hand;
   const seen = initialPeek.mode === 'fixed' ? initialPeek.slots : [];
+  // Drawn in a line unless this device lays hands out in a grid (game/hand.ts), like the table and the summary.
+  const cols = getSettings().hand === 'grid' ? columns : size;
   return (
     <div className="rc-row">
-      <div className="grid rc-hand" style={{ '--cols': columns } as CSSProperties}>
+      <div className="grid rc-hand" style={{ '--cols': cols } as CSSProperties}>
         {Array.from({ length: size }, (_, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: a fixed picture
           <Pic key={i} c={null} anim={seen.includes(i) ? 'peek' : undefined} badge={seen.includes(i) ? EYE : null} />
@@ -301,7 +304,10 @@ export function slidesFor(r: RuleSet): Slide[] {
 
 /** The cards, side by side, swiped with a soft spring (the "physique souple" chosen for the table), or stepped. */
 export function RulesCards({ rules }: { rules: RuleSet }) {
-  const slides = useMemo(() => slidesFor(rules), [rules]);
+  // The hand's slide follows this device's hand layout: drawn again when it changes.
+  const { hand } = useSettings();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: slidesFor reads the layout from the settings
+  const slides = useMemo(() => slidesFor(rules), [rules, hand]);
   const [index, setIndex] = useState(0);
   const [width, setWidth] = useState(0);
   const viewport = useRef<HTMLElement>(null);

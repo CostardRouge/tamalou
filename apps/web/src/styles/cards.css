@@ -153,6 +153,20 @@
   padding-top: 18%;
 }
 
+/* A small card turned round (an opponent's arc or fan, seen from across the table, app.css): the other corner, upright
+   once turned, carries the index. */
+.lay-across .card-sm .classic-face .corner.br {
+  display: grid;
+}
+
+.lay-across .card-sm .classic-face .corner.tl {
+  display: none;
+}
+
+.lay-across .card-sm .classic-face .pip {
+  padding: 0 0 18%;
+}
+
 .classic-back {
   position: absolute;
   inset: 0;

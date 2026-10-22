@@ -1,4 +1,5 @@
 import { DEFAULT_RULES, type Power, RANKS, type Rank, type RuleSet, STANDARD_RANKS, type Suit } from '@tamalou/shared';
+import { getSettings } from '../feedback/settings.ts';
 import { type Key, plural, rankName, t } from '../i18n/index.ts';
 
 // The active rules in plain French, short enough to read on a phone (docs/SPEC.md §3): shown under the game master's
@@ -65,7 +66,11 @@ function peek(r: RuleSet): string {
   const bottom = Array.from({ length: Math.min(cols, r.hand.size) }, (_, i) => (rows - 1) * cols + i).filter(
     (s) => s < r.hand.size,
   );
-  if (same([...slots].sort(), bottom)) return plural('sum_peekBottom', slots.length);
+  // Slots run row by row, so the grid's bottom row is the right-hand end of a row, an arc, a fan or a carousel: the
+  // sentence follows this device's hand layout (game/hand.ts).
+  if (same([...slots].sort(), bottom)) {
+    return plural(getSettings().hand === 'grid' ? 'sum_peekBottom' : 'sum_peekRight', slots.length);
+  }
   return t('sum_peekSlots', { slots: slots.map((s) => s + 1).join(', ') });
 }
 
@@ -122,8 +127,11 @@ export function summarize(r: RuleSet): SummarySection[] {
     {
       title: 'sec_hand',
       lines: [
+        // Rows only mean something where this device draws hands as a grid (game/hand.ts).
         line(
-          t('sum_hand', { n: r.hand.size, cols: r.hand.columns }),
+          getSettings().hand === 'grid'
+            ? t('sum_hand', { n: r.hand.size, cols: r.hand.columns })
+            : t('sum_handLine', { n: r.hand.size }),
           r.hand.size !== d.hand.size || r.hand.columns !== d.hand.columns,
         ),
         line(peek(r), !same(r.hand.initialPeek, d.hand.initialPeek)),
