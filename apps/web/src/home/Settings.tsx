@@ -1,8 +1,10 @@
 import { updateSettings, useSettings } from '../feedback/settings.ts';
+import { HandPicker } from '../game/HandPicker.tsx';
 import { currentLang, LANGS, type Lang, setLang, t } from '../i18n/index.ts';
 import { install, usePwa } from '../pwa.ts';
 
-// The home screen's last block: language, sounds, vibrations, and installing the game when the browser offers it.
+// The home screen's last block: language, sounds, vibrations, the hand's layout, and installing the game when the
+// browser offers it.
 
 const LANG_KEY = { fr: 'langFr', en: 'langEn' } as const;
 
@@ -40,6 +42,7 @@ export function Settings() {
           />
         </label>
       ) : null}
+      <HandPicker name="hand" />
       {canInstall ? (
         <div className="install">
           <button type="button" className="btn btn-secondary" onClick={() => void install()}>

@@ -49,10 +49,10 @@ describe('cues', () => {
 });
 
 describe('settings', () => {
-  it('start with sounds and vibrations on, and change one at a time', () => {
-    expect(getSettings()).toEqual({ sound: true, haptics: true });
+  it('start with sounds and vibrations on and the hand in a row, and change one at a time', () => {
+    expect(getSettings()).toEqual({ sound: true, haptics: true, hand: 'row', oppHand: true });
     updateSettings({ sound: false });
-    expect(getSettings()).toEqual({ sound: false, haptics: true });
+    expect(getSettings()).toEqual({ sound: false, haptics: true, hand: 'row', oppHand: true });
     updateSettings({ sound: true });
   });
 });

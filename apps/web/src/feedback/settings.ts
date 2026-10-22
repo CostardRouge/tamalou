@@ -1,15 +1,21 @@
 import { useSyncExternalStore } from 'react';
+import { DEFAULT_HAND, type HandLayout, isHandLayout } from '../game/hand.ts';
 
-// This device's comfort settings: sounds and vibrations, remembered in localStorage (a convenience: a private window
-// simply starts with both on). The language lives with the dictionaries (i18n/index.ts).
+// This device's comfort settings: sounds, vibrations and how hands are laid out (game/hand.ts), remembered in
+// localStorage (a convenience: a private window simply starts with the defaults). The language lives with the
+// dictionaries (i18n/index.ts).
 
 export interface Settings {
   sound: boolean;
   haptics: boolean;
+  /** My hand's layout. */
+  hand: HandLayout;
+  /** The opponents' seats follow it (game/hand.ts, opponentLayout). */
+  oppHand: boolean;
 }
 
 const KEY = 'tamalou-settings';
-const DEFAULTS: Settings = { sound: true, haptics: true };
+const DEFAULTS: Settings = { sound: true, haptics: true, hand: DEFAULT_HAND, oppHand: true };
 
 function load(): Settings {
   try {
@@ -18,6 +24,8 @@ function load(): Settings {
     return {
       sound: typeof data.sound === 'boolean' ? data.sound : DEFAULTS.sound,
       haptics: typeof data.haptics === 'boolean' ? data.haptics : DEFAULTS.haptics,
+      hand: isHandLayout(data.hand) ? data.hand : DEFAULTS.hand,
+      oppHand: typeof data.oppHand === 'boolean' ? data.oppHand : DEFAULTS.oppHand,
     };
   } catch {
     return DEFAULTS;

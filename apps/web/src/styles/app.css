@@ -444,8 +444,8 @@ html:has(.game) body {
   }
 }
 
-/* The narrowest phones: the header stays on one line too. */
-@media (max-width: 359px) {
+/* Narrow phones: the header stays on one line too (its Display button made it too wide under 400px). */
+@media (max-width: 399px) {
   .game-bar .ghost {
     padding: 0 6px;
     font-size: 0.9rem;
@@ -527,6 +527,226 @@ html:has(.game) body {
 
 .mine .grid {
   gap: 10px;
+}
+
+/* ------------------------------------------------------------ hands (game/hand.ts) */
+
+/* Six layouts, picked by the player for this device (the 2026-10-22 canvas). Each sizes its cards from what its place
+   allows: --base (the largest card wanted), --room (the width it may take), --gap and --min (below which a line
+   overlaps its cards instead of shrinking them); --n is the number of slots. The grid keeps the sizes above. */
+.hand {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+/* A line, an arc or a fan takes one row where the grid takes two: my cards may grow up to 1.8 units, as wide as the
+   room allows (--unit is sized for the grid's two rows). */
+.mine .hand {
+  --base: calc(var(--unit) * 1.8);
+  --room: calc(min(100vw, 640px) - 44px);
+  --gap: 8px;
+  --min: 48px;
+}
+
+.opponents .hand {
+  --base: clamp(18px, calc(var(--unit) * 0.44), 46px);
+  --room: calc((min(100vw, 640px) - 40px) / 3 - 24px);
+  --gap: 4px;
+  --min: 24px;
+}
+
+/* A tile of the layout picker: the same layouts, in small. Before the layouts so their --cw wins. */
+.hand-mini {
+  --cw: 15px;
+  --base: 15px;
+  --room: 76px;
+  --gap: 3px;
+  --min: 10px;
+}
+
+.game .hand:not(.lay-grid) .card,
+.hand-mini .card {
+  --w: var(--cw);
+}
+
+.hand .slot {
+  display: grid;
+}
+
+/* A line: the cards keep their gap while they fit, then overlap, the next one on top, so each top-left index stays
+   in sight. */
+.lay-row,
+.lay-flat {
+  --cw: max(var(--min), min(var(--base), calc((var(--room) - (var(--n) - 1) * var(--gap)) / var(--n))));
+  --stepx: min(calc(var(--cw) + var(--gap)), calc((var(--room) - var(--cw)) / max(var(--n) - 1, 1)));
+  display: flex;
+  justify-content: center;
+}
+
+.lay-row .slot + .slot,
+.lay-flat .slot + .slot {
+  margin-inline-start: calc(var(--stepx) - var(--cw));
+}
+
+/* Laid down on the table, seen from the chair; it stands up while a card is carried, so a drop is aimed at cards
+   facing the player. */
+.lay-flat {
+  transform: perspective(calc(var(--cw) * 6)) rotateX(36deg);
+  transform-origin: 50% 100%;
+  margin-top: calc(var(--cw) * -0.22);
+  transition: transform 0.25s;
+}
+
+.game.dragging .lay-flat {
+  transform: none;
+}
+
+/* An arc or a fan: every card in the same cell, turned about one pivot below the hand (hand.ts, curve). */
+.lay-arc,
+.lay-fan {
+  display: grid;
+  justify-items: center;
+  align-items: end;
+  inline-size: calc(var(--span) * var(--cw));
+  padding-block: 4px calc(var(--sag) * var(--cw));
+}
+
+.lay-arc,
+.lay-fan {
+  --cw: min(calc(var(--base) * 0.9), calc(var(--room) / var(--span)));
+}
+
+.lay-arc .slot,
+.lay-fan .slot {
+  grid-area: 1 / 1;
+  rotate: calc(var(--k) * var(--step) * 1deg);
+  transform-origin: 50% calc(100% + var(--pivot) * var(--cw));
+}
+
+.lay-arc .slot:has(.card-selected),
+.lay-fan .slot:has(.card-selected) {
+  z-index: 2;
+}
+
+/* In a fan the card touched rises out of the hand, along its own slant. */
+.lay-fan .card-selected {
+  transform: translateY(-16%) scale(1.06);
+}
+
+/* An opponent's arc or fan is seen from across the table: its pivot by their name, opening towards me. */
+.lay-across {
+  rotate: 180deg;
+}
+
+/* A carousel: large cards, slid sideways, one stop per card. The line scrolls in its own box (the page never moves). */
+.lay-carousel {
+  --cw: min(calc(var(--base) * 1.1), calc(var(--room) * 0.42));
+  display: flex;
+  gap: 12px;
+  box-sizing: border-box;
+  inline-size: var(--room);
+  padding: 10px 4px 10px;
+  overflow: auto hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 4px;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.lay-carousel .slot {
+  flex: none;
+  scroll-snap-align: start;
+}
+
+.hand-mini.lay-carousel {
+  --cw: 26px;
+  padding: 0;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.hand-mini.lay-grid {
+  gap: 3px;
+}
+
+.hand-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hand-choices label {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--field);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hand-choices label.on {
+  border-color: var(--a);
+  box-shadow: inset 0 0 0 1px var(--a);
+  color: var(--a);
+}
+
+.hand-choices input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hand-choices label:has(input:focus-visible) {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
+}
+
+.hand-choices small {
+  margin-top: -4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.hand-preview {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  max-inline-size: 88px;
+  block-size: 52px;
+  border-radius: 8px;
+  background: var(--felt);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hand-picker > small {
+  line-height: 1.4;
+}
+
+/* The table's Display panel opens over the opponents, so my hand stays in sight while it changes. */
+.overlay.overlay-top {
+  place-items: start center;
+  background: rgb(0 0 0 / 0.3);
+}
+
+.bar-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 .center {
