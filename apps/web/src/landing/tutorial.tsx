@@ -24,20 +24,31 @@ import {
 // plays its timed steps. Cards you can touch are real buttons with their label, like in the game.
 
 const BASE = 70;
-const MINE = [
-  [185, 340],
-  [265, 340],
-  [185, 448],
-  [265, 448],
-] as const;
-const THEIRS = [
-  [199, 44],
-  [265, 44],
-  [199, 132],
-  [265, 132],
-] as const;
-const DECK = { x: 120, y: 236, w: 64 };
-const DISC = { x: 336, y: 236, w: 64 };
+
+/**
+ * A hand on a curve halfway between the table's soft arc and its fan (game/hand.ts), the owner's pick on the
+ * 2026-10-22 canvas: every card turned about a pivot 5.25 card widths below its foot, neighbours 0.9 widths apart.
+ * Malo's hand is seen from across the table: turned round, its pivot by his name, his first card on my right.
+ * Returns each card's top-left corner and its turn, in board pixels, the middle of the hand at (cx, cy).
+ */
+function arcHand(n: number, w: number, cx: number, cy: number, across: boolean) {
+  const reach = (5.25 + 0.7) * w;
+  const step = Math.asin(0.905 / 5.95);
+  return Array.from({ length: n }, (_, i) => {
+    const th = (i - (n - 1) / 2) * step;
+    const dx = reach * Math.sin(th);
+    const dy = reach * (1 - Math.cos(th));
+    const x = across ? cx - dx : cx + dx;
+    const y = across ? cy - dy : cy + dy;
+    return { x: x - w / 2, y: y - w * 0.7, rot: (across ? 180 : 0) + (th * 180) / Math.PI };
+  });
+}
+
+// The board is 520×480: Malo's hand on top, the deck and the discard side by side in the middle, mine below.
+const MINE = arcHand(4, 80, 260, 356, false);
+const THEIRS = arcHand(4, 54, 260, 86, true);
+const DECK = { x: 188, y: 169, w: 64 };
+const DISC = { x: 268, y: 169, w: 64 };
 
 interface Spot {
   x: number;
@@ -57,15 +68,16 @@ function spots(s: Tut): Map<number, Spot> {
     m.set(c.id, { ...DISC, z: 31 + i, up: true, rot: ((i * 37) % 11) - 5 });
   });
   s.you.forEach((c, i) => {
-    const [x, y] = MINE[i] ?? [0, 0];
-    if (c) m.set(c.id, { x, y, w: BASE, z: 20, up: Boolean(s.peek[i]) || s.phase === 'end', rot: 0 });
+    const { x, y, rot } = MINE[i] ?? { x: 0, y: 0, rot: 0 };
+    if (c) m.set(c.id, { x, y, w: 80, z: 20 + i, up: Boolean(s.peek[i]) || s.phase === 'end', rot });
   });
   s.bot.forEach((c, i) => {
-    const [x, y] = THEIRS[i] ?? [0, 0];
-    m.set(c.id, { x, y, w: 56, z: 20, up: Boolean(s.botPeek[i]) || s.phase === 'end', rot: 0 });
+    const { x, y, rot } = THEIRS[i] ?? { x: 0, y: 0, rot: 0 };
+    m.set(c.id, { x, y, w: 54, z: 20 + i, up: Boolean(s.botPeek[i]) || s.phase === 'end', rot });
   });
-  if (s.held) m.set(s.held.id, { x: 228, y: 230, w: 64, z: 60, up: true, rot: 4 });
-  if (s.botHeld) m.set(s.botHeld.id, { x: 340, y: 88, w: 56, z: 60, up: false, rot: 6 });
+  // A card just drawn waits beside the discard, the middle of the table being the piles'.
+  if (s.held) m.set(s.held.id, { x: 360, y: 167, w: 64, z: 60, up: true, rot: 6 });
+  if (s.botHeld) m.set(s.botHeld.id, { x: 372, y: 44, w: 54, z: 60, up: false, rot: 8 });
   return m;
 }
 
@@ -210,16 +222,16 @@ export function Tutorial({ text: t, play }: { text: LandingText; play: string })
       </div>
       <div className="board-box">
         <div className="board">
-          <span className={`who${s.phase === 'bot' ? ' on' : ''}`} style={{ left: 195, top: 16 }}>
+          <span className={`who${s.phase === 'bot' ? ' on' : ''}`} style={{ left: 260, top: 12 }}>
             {t.bot}
           </span>
-          <span className={`who${s.phase === 'bot' || s.phase === 'end' ? '' : ' on'}`} style={{ left: 181, top: 312 }}>
+          <span className={`who${s.phase === 'bot' || s.phase === 'end' ? '' : ' on'}`} style={{ left: 260, top: 446 }}>
             {t.you}
           </span>
-          <span className="pile" style={{ left: DECK.x, top: 330 }}>
+          <span className="pile" style={{ left: DECK.x, top: 262 }}>
             {t.piles[0]}
           </span>
-          <span className="pile" style={{ left: DISC.x, top: 330 }}>
+          <span className="pile" style={{ left: DISC.x, top: 262 }}>
             {t.piles[1]}
           </span>
           {ALL.map((card) => {
@@ -236,7 +248,7 @@ export function Tutorial({ text: t, play }: { text: LandingText; play: string })
               slot >= 0
                 ? fill(t.yourSlot, { where: t.where[slot] ?? '' })
                 : theirs >= 0
-                  ? fill(t.botSlot, { where: t.where[theirs] ?? '' })
+                  ? fill(t.botSlot, { where: t.where[THEIRS.length - 1 - theirs] ?? '' })
                   : '';
             return (
               <motion.div
@@ -264,10 +276,10 @@ export function Tutorial({ text: t, play }: { text: LandingText; play: string })
           <AnimatePresence>
             {s.phase === 'end' ? (
               <motion.div key="scores" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <span className={`chip${won ? '' : ' win'}`} style={{ left: 334, top: 150 }}>
+                <span className={`chip${won ? '' : ' win'}`} style={{ left: 380, top: 74 }}>
                   {fill(t.points, { who: t.bot, n: total(s.bot) })}
                 </span>
-                <span className={`chip${won ? ' win' : ''}`} style={{ left: 40, top: 420 }}>
+                <span className={`chip${won ? ' win' : ''}`} style={{ left: 20, top: 280 }}>
                   {fill(t.points, { who: t.you, n: total(s.you) })}
                 </span>
               </motion.div>
