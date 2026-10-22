@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-22 — Levée
+
 ### Added
 
 - Choose how your hand is laid out on the table: in a row (now the default), the grid of before, laid down on the
