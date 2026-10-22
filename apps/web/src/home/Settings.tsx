@@ -3,20 +3,25 @@ import { HandPicker } from '../game/HandPicker.tsx';
 import { currentLang, LANGS, type Lang, setLang, t } from '../i18n/index.ts';
 import { install, usePwa } from '../pwa.ts';
 
-// The home screen's last block: language, sounds, vibrations, the hand's layout, and installing the game when the
-// browser offers it.
+// This device's settings, behind the launch screen's button: language, sounds, vibrations, the hand's layout, and
+// installing the game when the browser offers it.
 
 const LANG_KEY = { fr: 'langFr', en: 'langEn' } as const;
 
-export function Settings() {
+export function Settings({ onClose }: { onClose: () => void }) {
   const settings = useSettings();
   const { canInstall, installed, iosHint } = usePwa();
   const lang = currentLang();
   return (
     <section className="settings" aria-labelledby="settings-title">
-      <h2 id="settings-title" className="field-title">
-        {t('settings')}
-      </h2>
+      <div className="panel-head">
+        <h2 id="settings-title" className="field-title">
+          {t('settings')}
+        </h2>
+        <button type="button" className="ghost" onClick={onClose} ref={(el) => el?.focus()}>
+          {t('close')}
+        </button>
+      </div>
       <fieldset className="field">
         <legend>{t('settingsLang')}</legend>
         <div className="segmented two">
@@ -59,9 +64,6 @@ export function Settings() {
           <small className="muted">{t('installIos')}</small>
         </p>
       ) : null}
-      <p className="legal-link">
-        <a href={t('legalHref')}>{t('legalLink')}</a>
-      </p>
     </section>
   );
 }

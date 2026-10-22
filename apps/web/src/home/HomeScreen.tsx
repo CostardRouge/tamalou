@@ -1,18 +1,24 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
-import { normalizeRoomCode, PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
+import { type Card, PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
 import { useState } from 'react';
-import { trackEvent } from '../audience.ts';
-import { createRoom } from '../connection/remote.ts';
+import { CardView } from '../cards/CardView.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { VERSION } from '../version.ts';
+import { Deal } from './Deal.tsx';
 import { MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
 import { Settings } from './Settings.tsx';
+import { MODE_KEY, meOf, othersOf, SetupSheet, titleOf } from './Setup.tsx';
 
-// The setup: solo against bots, or several players sharing this device (pass-and-play, with bots or not); how strong
-// the bots are; which rules (a preset, and the game master's changes made in the rules editor, measured against the
-// mode's own defaults). The last choices are remembered on this device (a convenience only: a private window simply
-// starts from the defaults). Rules received by link replace the remembered ones.
+// The launch screen (the owner's pick on the 2026-10-22 canvas): the last game, ready to play again in one touch, then
+// the three ways to play, each opening a panel with the table to set (Setup.tsx); "Jouer" deals the cards (Deal.tsx)
+// before the game. The setup: solo against bots, or several players sharing this device (pass-and-play, with bots or
+// not); how strong the bots are; which rules (a preset, and the game master's changes made in the rules editor,
+// measured against the mode's own defaults). The last choices are remembered on this device (a convenience only: a
+// private window simply starts from the defaults). Rules received by link replace the remembered ones. This device's
+// settings (language, sounds, the hand's layout…) sit behind the button at the top.
+
+export { playerName } from './Setup.tsx';
 
 export interface GameChoice {
   mode: Mode;
@@ -45,6 +51,15 @@ function validOverrides(preset: string, overrides: unknown): RuleSetInput {
     return overrides as RuleSetInput;
   } catch {
     return {};
+  }
+}
+
+/** A setup was remembered: the launch screen offers it as the last game rather than as the first. */
+function hasChoice(): boolean {
+  try {
+    return Boolean(globalThis.localStorage?.getItem(KEY));
+  } catch {
+    return false;
   }
 }
 
@@ -90,12 +105,23 @@ function fit(c: GameChoice): GameChoice {
 /** The remembered setup, in the given mode (the icon's shortcuts, ADR-0020): solo keeps at least one bot. */
 export const choiceFor = (mode: Mode): GameChoice => fit({ ...loadChoice(), mode });
 
-/** A player's name as typed, or "Joueur n" when left empty. */
-export const playerName = (typed: string, i: number) => typed.trim() || t('playerN', { n: i + 1 });
-
-const LEVEL_KEY: Record<BotLevel, Key> = { easy: 'levelEasy', medium: 'levelMedium', hard: 'levelHard' };
 const MODES: Mode[] = ['solo', 'pass', 'online'];
-const MODE_KEY: Record<Mode, Key> = { solo: 'homeModeSolo', pass: 'homeModePass', online: 'homeModeOnline' };
+const MODE_TEXT: Record<Mode, Key> = {
+  solo: 'homeModeSoloText',
+  pass: 'homeModePassText',
+  online: 'homeModeOnlineText',
+};
+const MODE_ICON: Record<Mode, string> = {
+  solo: 'M12 3v3M8 6h8a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3zM9.5 11h.01M14.5 11h.01M9.5 15h5',
+  pass: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2',
+  online: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18',
+};
+const LEVEL_CHIP: Record<BotLevel, Key> = {
+  easy: 'levelChip_easy',
+  medium: 'levelChip_medium',
+  hard: 'levelChip_hard',
+};
+const KING: Card = { id: -2, rank: 'K', suit: 'H', deck: 0 };
 
 interface Props {
   onPlay: (c: GameChoice) => void;
@@ -105,26 +131,29 @@ interface Props {
   online?: boolean;
   /** Enter a room (made or typed here) under this name. */
   onRoom?: (code: string, name: string) => void;
-  /** Open on this mode rather than the remembered one (the icon's shortcuts). */
+  /** Open on this mode's panel rather than on the last game (the icon's shortcuts). */
   mode?: Mode;
 }
 
 export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Props) {
-  const [stored, setC] = useState<GameChoice>(() => {
-    const stored = mode ? choiceFor(mode) : loadChoice();
-    return linked ? { ...stored, preset: linked.preset, overrides: linked.overrides } : stored;
-  });
+  const withLink = (c: GameChoice) => (linked ? { ...c, preset: linked.preset, overrides: linked.overrides } : c);
+  // The last game, as remembered: what "Rejouer" plays. The panel edits a copy, kept when it is played.
+  const [saved, setSaved] = useState<GameChoice>(() => withLink(loadChoice()));
+  const [first] = useState(() => !hasChoice());
+  const [stored, setC] = useState<GameChoice>(() => withLink(mode ? choiceFor(mode) : loadChoice()));
   // A remembered online choice on a page without rooms (GitHub Pages) falls back to solo.
   const c = stored.mode === 'online' && !online ? { ...stored, mode: 'solo' as const } : stored;
+  // Rules received by link open the panel on them: the player came for that table.
+  const [sheet, setSheet] = useState(Boolean(mode || linked));
   const [editing, setEditing] = useState(false);
+  const [settings, setSettings] = useState(false);
+  const [dealing, setDealing] = useState<GameChoice | null>(null);
   const set = (patch: Partial<GameChoice>) => setC((prev) => fit({ ...prev, ...patch }));
-  const play = () => {
-    saveChoice(c);
-    onPlay(c);
+  const start = (choice: GameChoice) => {
+    saveChoice(choice);
+    setSaved(choice);
+    setDealing(choice);
   };
-  const changes = countChanges(c.overrides);
-  const minBots = c.mode === 'solo' ? 1 : 0;
-  const maxBots = c.mode === 'solo' ? MAX_SEATS - 1 : MAX_SEATS - c.players.length;
 
   if (editing) {
     return (
@@ -132,258 +161,119 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
         choice={{ preset: c.preset, overrides: c.overrides }}
         base={MODE_DEFAULTS[c.mode]}
         onChange={(r) => set({ preset: r.preset, overrides: r.overrides })}
-        onDone={() => {
-          saveChoice(c);
-          setEditing(false);
-        }}
+        onDone={() => setEditing(false)}
       />
     );
   }
 
+  if (dealing) {
+    return <Deal me={meOf(dealing)} others={othersOf(dealing)} onDone={() => onPlay(dealing)} />;
+  }
+
+  // An online game is not replayed from here: its rules and seats are the room's.
+  const last = saved.mode === 'online' ? null : saved;
+  const modes = online ? MODES : MODES.slice(0, 2);
   return (
     <main className="home">
-      <div className="brand">
+      <header className="home-bar">
         <h1>{t('appName')}</h1>
-        <p className="tagline">{t('tagline')}</p>
-        {/* The site's home page (ADR-0017): what the game is, a first round, the rules; in this language. */}
-        <p className="site-link">
-          <a href={t('siteHref')}>{t('siteLink')}</a>
-        </p>
-      </div>
-      <form
-        className="setup"
-        onSubmit={(e) => {
-          e.preventDefault();
-          play();
-        }}
-      >
-        <fieldset className="field">
-          <legend>{t('homeMode')}</legend>
-          <div className={`segmented ${online ? 'three' : 'two'}`}>
-            {(online ? MODES : MODES.slice(0, 2)).map((m) => (
-              <label key={m} className={c.mode === m ? 'on' : ''}>
-                <input type="radio" name="mode" checked={c.mode === m} onChange={() => set({ mode: m })} />
-                {t(MODE_KEY[m])}
-              </label>
-            ))}
-          </div>
-          {c.mode === 'pass' ? <small className="muted">{t('passHint')}</small> : null}
-          {c.mode === 'online' ? <small className="muted">{t('onlineHint')}</small> : null}
-        </fieldset>
+        <button type="button" className="icon-btn" aria-label={t('settings')} onClick={() => setSettings(true)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+            <circle cx="15" cy="7" r="2" />
+            <circle cx="9" cy="17" r="2" />
+          </svg>
+        </button>
+      </header>
 
-        {c.mode === 'online' ? (
-          <OnlineForm
-            name={c.name}
-            onName={(name) => set({ name })}
-            onRoom={(code, name) => {
-              saveChoice(c);
-              onRoom?.(code, name);
+      {last ? <LastGame c={last} first={first} onPlay={() => start(last)} /> : null}
+
+      <h2 className="home-more">{t(last ? 'homeOther' : 'homeChoose')}</h2>
+      <div className="mode-tiles">
+        {modes.map((m) => (
+          <button
+            key={m}
+            type="button"
+            className={`mode-tile mode-${m}`}
+            onClick={() => {
+              setC(fit({ ...withLink(saved), mode: m }));
+              setSheet(true);
             }}
-          />
-        ) : null}
+          >
+            <span className="mode-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={MODE_ICON[m]} />
+              </svg>
+            </span>
+            <span className="mode-words">
+              <b>{t(MODE_KEY[m])}</b>
+              <small>{t(MODE_TEXT[m])}</small>
+            </span>
+            <svg className="mode-go" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+        ))}
+      </div>
 
-        {c.mode === 'online' ? null : (
-          <>
-            {c.mode === 'solo' ? (
-              <label className="field">
-                <span>{t('homeName')}</span>
-                <input
-                  value={c.name}
-                  maxLength={20}
-                  placeholder={t('homeNameDefault')}
-                  autoComplete="nickname"
-                  onChange={(e) => set({ name: e.target.value })}
-                />
-              </label>
-            ) : (
-              <fieldset className="field">
-                <legend>{t('homePlayers')}</legend>
-                <div className="players">
-                  {c.players.map((p, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: a seat is its place in the list
-                    <div key={i} className="player-row">
-                      <input
-                        value={p}
-                        maxLength={20}
-                        placeholder={t('playerN', { n: i + 1 })}
-                        aria-label={t('playerN', { n: i + 1 })}
-                        onChange={(e) => set({ players: c.players.map((q, j) => (j === i ? e.target.value : q)) })}
-                      />
-                      {c.players.length > 2 ? (
-                        <button
-                          type="button"
-                          className="ghost"
-                          aria-label={t('removePlayer', { name: playerName(p, i) })}
-                          onClick={() => set({ players: c.players.filter((_, j) => j !== i) })}
-                        >
-                          ×
-                        </button>
-                      ) : null}
-                    </div>
-                  ))}
-                  {/* A new player takes a bot's seat when the table is full (fit). */}
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    disabled={c.players.length >= MAX_SEATS}
-                    onClick={() => set({ players: [...c.players, ''] })}
-                  >
-                    {t('addPlayer')}
-                  </button>
-                </div>
-              </fieldset>
-            )}
+      <footer className="home-foot">
+        {/* The site's home page (ADR-0017): what the game is, a first round, the rules; in this language. */}
+        <a href={t('siteHref')}>{t('siteLink')}</a>
+        <a href={t('legalHref')}>{t('legalLink')}</a>
+        <p className="version mono">v{VERSION}</p>
+      </footer>
 
-            <div className="field">
-              <span id="bots-label">{t(c.mode === 'solo' ? 'homeBots' : 'homeBotsExtra')}</span>
-              <fieldset className="stepper" aria-labelledby="bots-label">
-                <button
-                  type="button"
-                  aria-label={t('fewer')}
-                  disabled={c.bots <= minBots}
-                  onClick={() => set({ bots: c.bots - 1 })}
-                >
-                  −
-                </button>
-                <output className="mono" aria-live="polite">
-                  {c.bots}
-                </output>
-                <button
-                  type="button"
-                  aria-label={t('more')}
-                  disabled={c.bots >= maxBots}
-                  onClick={() => set({ bots: c.bots + 1 })}
-                >
-                  +
-                </button>
-              </fieldset>
-            </div>
+      {sheet ? (
+        <SetupSheet
+          c={c}
+          set={set}
+          linked={Boolean(linked)}
+          changes={countChanges(c.overrides)}
+          onClose={() => setSheet(false)}
+          onPlay={() => start(c)}
+          onEdit={() => setEditing(true)}
+          onRoom={(code, name) => {
+            saveChoice(c);
+            onRoom?.(code, name);
+          }}
+        />
+      ) : null}
 
-            {c.bots > 0 ? (
-              <fieldset className="field">
-                <legend>{t('homeLevel')}</legend>
-                <div className="segmented">
-                  {BOT_LEVELS.map((l) => (
-                    <label key={l} className={c.level === l ? 'on' : ''}>
-                      <input
-                        type="radio"
-                        name="level"
-                        value={l}
-                        checked={c.level === l}
-                        onChange={() => set({ level: l })}
-                      />
-                      {t(LEVEL_KEY[l])}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            ) : null}
-
-            <fieldset className="field">
-              <legend>{t('homePreset')}</legend>
-              <div className="presets">
-                {PRESETS.map((p) => (
-                  <label key={p.id} className={c.preset === p.id ? 'on' : ''}>
-                    <input
-                      type="radio"
-                      name="preset"
-                      value={p.id}
-                      checked={c.preset === p.id}
-                      onChange={() => set({ preset: p.id, overrides: {} })}
-                    />
-                    <b>{presetText(p.id, p).name}</b>
-                    <small>{presetText(p.id, p).description}</small>
-                  </label>
-                ))}
-              </div>
-              {linked ? <p className="notice">{t('editorFromLink')}</p> : null}
-              <button type="button" className="btn btn-secondary" onClick={() => setEditing(true)}>
-                {t('editorCustomize')}
-                {changes > 0 ? <span className="tag">{plural('editorModified', changes)}</span> : null}
-              </button>
-            </fieldset>
-
-            <button type="submit" className="btn btn-primary btn-big">
-              {t('homePlay')}
-            </button>
-          </>
-        )}
-      </form>
-      <Settings />
-      <p className="version mono">v{VERSION}</p>
+      {settings ? (
+        <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+          <div className="panel settings-panel">
+            <Settings onClose={() => setSettings(false)} />
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
 
-/** Online: a name, then a new room or the code of a friend's. */
-function OnlineForm({
-  name,
-  onName,
-  onRoom,
-}: {
-  name: string;
-  onName: (name: string) => void;
-  onRoom: (code: string, name: string) => void;
-}) {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState<Key | null>(null);
-  const [busy, setBusy] = useState(false);
-  const typed = name.trim();
-  const create = async () => {
-    setBusy(true);
-    setError(null);
-    const made = await createRoom();
-    setBusy(false);
-    if (made) {
-      trackEvent('room-created');
-      onRoom(made, typed);
-    } else setError('onlineCreateFailed');
-  };
-  const join = () => {
-    const normal = normalizeRoomCode(code);
-    if (normal) onRoom(normal, typed);
-    else setError('onlineCodeInvalid');
-  };
+/** The last game (or, on a first visit, the default one), ready to play again in one touch. */
+function LastGame({ c, first, onPlay }: { c: GameChoice; first: boolean; onPlay: () => void }) {
+  const changes = countChanges(c.overrides);
+  const preset = PRESETS.find((p) => p.id === c.preset);
   return (
-    <>
-      <label className="field">
-        <span>{t('homeName')}</span>
-        <input value={name} maxLength={20} autoComplete="nickname" onChange={(e) => onName(e.target.value)} />
-      </label>
-      <button type="button" className="btn btn-primary btn-big" disabled={!typed || busy} onClick={create}>
-        {t('onlineCreate')}
-      </button>
-      <p className="or muted">{t('onlineOr')}</p>
-      <div className="field">
-        <label htmlFor="room-code-input">{t('onlineCode')}</label>
-        <div className="join-row">
-          <input
-            id="room-code-input"
-            className="mono code-input"
-            value={code}
-            maxLength={7}
-            autoCapitalize="characters"
-            autoComplete="off"
-            spellCheck={false}
-            placeholder="ABCDE"
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (typed) join();
-              }
-            }}
-          />
-          <button type="button" className="btn btn-secondary" disabled={!typed || !code.trim()} onClick={join}>
-            {t('onlineJoin')}
-          </button>
-        </div>
+    <section className="last-game" aria-labelledby="last-title">
+      <div className="last-cards" aria-hidden="true">
+        <CardView card={null} label="" size="sm" />
+        <CardView card={null} label="" size="sm" />
+        <CardView card={KING} label="" size="sm" />
       </div>
-      {error ? (
-        <p className="notice" role="alert">
-          {t(error)}
-        </p>
-      ) : null}
-    </>
+      <p className="last-kicker">{t(first ? 'heroFirst' : 'heroLast')}</p>
+      <h2 id="last-title">{titleOf(c)}</h2>
+      <ul className="last-chips">
+        {c.bots > 0 ? <li>{t(LEVEL_CHIP[c.level])}</li> : null}
+        {preset ? <li>{presetText(preset.id, preset).name}</li> : null}
+        {changes > 0 ? <li>{plural('editorModified', changes)}</li> : null}
+      </ul>
+      <button type="button" className="last-play" onClick={onPlay}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 4.5v15l12-7.5z" />
+        </svg>
+        {t(first ? 'homePlay' : 'heroReplay')}
+      </button>
+    </section>
   );
 }

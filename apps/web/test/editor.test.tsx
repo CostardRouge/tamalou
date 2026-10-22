@@ -3,6 +3,7 @@ import { encodeRulesChoice } from '@tamalou/shared';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App.tsx';
+import { openMode, playFromPanel } from './launch.ts';
 
 afterEach(() => {
   cleanup();
@@ -12,6 +13,7 @@ beforeEach(() => localStorage.clear());
 
 const openEditor = () => {
   render(<App />);
+  openMode('Seul contre des bots');
   fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
 };
 
@@ -29,7 +31,7 @@ describe('the game master’s screen', () => {
     openEditor();
     fireEvent.click(screen.getByRole('switch', { name: 'Jokers' }));
     fireEvent.click(screen.getByRole('button', { name: 'Terminé' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+    playFromPanel();
     // 54 cards with the jokers, minus 3 × 4 dealt and the first discard (the pile is not playable yet: an image).
     expect(screen.getByRole('img', { name: 'Pioche, 41 cartes' })).toBeTruthy();
   });
@@ -56,8 +58,9 @@ describe('the game master’s screen', () => {
     const code = encodeRulesChoice({ preset: 'quick', overrides: { assist: { showKnownCards: true } } });
     history.replaceState(null, '', `/#rules=${code}`);
     render(<App />);
+    // The panel opens on them, and the big card counts them too.
     expect(screen.getByText('Règles reçues par lien.')).toBeTruthy();
-    expect(screen.getByText('1 réglage modifié')).toBeTruthy();
+    expect(screen.getAllByText('1 réglage modifié')).toHaveLength(2);
     expect((screen.getByRole('radio', { name: /Rapide/ }) as HTMLInputElement).checked).toBe(true);
     expect(location.hash).toBe('');
   });

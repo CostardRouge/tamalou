@@ -1,18 +1,21 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pkg from '../../../package.json' with { type: 'json' };
 import { App } from '../src/App.tsx';
 import { updateSettings } from '../src/feedback/settings.ts';
+import { openMode, playFromPanel, skipDeal } from './launch.ts';
 
 afterEach(cleanup);
+beforeEach(() => localStorage.clear());
 
 describe('the app', () => {
   it('starts a solo game from the home screen and shows the initial peek', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Tamalou' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Un adversaire de plus' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+    openMode('Seul contre des bots');
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter un bot' }));
+    playFromPanel();
     expect(screen.getByText('Mémorise tes 2 cartes, elles vont se retourner.')).toBeTruthy();
     // Three opponents, four cards each, all face down; two of mine face up.
     expect(screen.getAllByRole('img', { name: /Carte \d de .*Carte face cachée/ })).toHaveLength(12);
@@ -24,7 +27,9 @@ describe('the app', () => {
   it('lays my hand out as picked in the settings, the opponents’ fans seen from across the table', () => {
     const { container } = render(<App />);
     const mine = () => container.querySelector('.mine fieldset');
+    // A first visit: the default game, played from the big card in one touch.
     fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+    skipDeal();
     expect(mine()?.className).toBe('hand lay-row');
     fireEvent.click(screen.getByRole('button', { name: 'Affichage' }));
     fireEvent.click(screen.getByRole('radio', { name: /Éventail/ }));
