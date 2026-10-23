@@ -380,6 +380,7 @@ describe('service worker fetch', () => {
     // Not a page of the site: left to the browser.
     expect(await sw.fetchEvent('robots.txt', 'navigate')).toBeUndefined();
     expect(await sw.fetchEvent('nowhere/', 'navigate')).toBeUndefined();
+    expect(await sw.fetchEvent('play/nowhere/', 'navigate')).toBeUndefined();
   });
 
   it('leaves the rooms API, other origins, other methods and unknown files to the network', async () => {

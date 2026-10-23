@@ -85,7 +85,8 @@ self.addEventListener('fetch', (event) => {
   if (path.startsWith('api/')) return;
   if (req.mode === 'navigate') {
     // `play` without its slash is the address people type; a room or rules link is the same page with a fragment.
-    if (path === PLAY.slice(0, -1) || path.startsWith(PLAY)) event.respondWith(page(req));
+    // Only the folder itself: deeper (`play/x/`), the page's relative links would break; the network's 404 answers.
+    if (folderOf(path) === PLAY) event.respondWith(page(req));
     else {
       const stored = at(`./${folderOf(path)}`);
       if (PAGES.has(stored)) event.respondWith(fresh(req, stored));

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { NOT_FOUND_SCRIPT, notFoundHtml } from '../build/notfound.ts';
 import { pageHead } from '../build/pages.ts';
 import { precacheList } from '../build/pwa.ts';
+import { contentSecurityPolicy, scriptHash } from '../build/security.ts';
 import { GENERATED, generatedFiles, indexedPages, lastmod, llmsTxt, robotsTxt, sitemapXml } from '../build/seo.ts';
 import { PAGES, PLAY_PATH, SITE_URL, SOURCE_URL, toRoot } from '../build/site.ts';
+import { LANDING } from '../src/landing/text.ts';
 
 // Findability (COMMON-PROJECT-SPEC C17): what a crawler or an answer engine reads, written at build time from
 // build/site.ts and held here to the pages' own heads.
@@ -57,5 +60,42 @@ describe('findability', () => {
     expect(files['llms.txt']?.type).toBe('text/markdown; charset=utf-8');
     expect(precacheList(['robots.txt', 'index.html', 'sitemap.xml', 'llms.txt', '_headers'])).toEqual(['./']);
     expect(lastmod()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe('the 404 page', () => {
+  const html = notFoundHtml();
+
+  it('is written at the root and served by every host, never stored for offline', () => {
+    expect(generatedFiles(SITE_URL, '2026-10-23')['404.html']).toEqual({
+      body: html,
+      type: 'text/html; charset=utf-8',
+    });
+    expect(precacheList(['404.html', 'index.html'])).toEqual(['./']);
+  });
+
+  it('stands alone at any depth: no stylesheet, script or image to fetch, links from the root', () => {
+    expect(html).toContain('<meta name="robots" content="noindex" />');
+    expect(html).not.toMatch(/<link rel="stylesheet"|<script src=|<img /);
+    expect(html).not.toMatch(/(?:href|src)="\.{0,2}\/?(?:assets|icon)/);
+    expect(html).toContain('--bg: #eceef2');
+    expect(html).toContain('<svg class="mark"');
+    const hrefs = [...html.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1]);
+    expect(hrefs).toEqual([`/${PLAY_PATH}`, '/', `/${PLAY_PATH}`, '/en/']);
+    for (const m of html.matchAll(/<a [^>]*data-to="([^"]*)" href="([^"]*)"/g)) expect(m[2]).toBe(`/${m[1]}`);
+  });
+
+  it('speaks French first, then English, from the home page dictionary', () => {
+    expect(html).toContain('<html lang="fr">');
+    expect(html).toContain(`<title>${LANDING.fr.notFoundTitle}</title>`);
+    expect(html).toContain(LANDING.fr.notFoundHeading);
+    expect(html).toContain('<section class="other" lang="en">');
+    expect(html).toContain(LANDING.en.notFoundHeading);
+  });
+
+  it('names its one inline script in the content security policy', () => {
+    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1] ?? '');
+    expect(scripts).toEqual([NOT_FOUND_SCRIPT]);
+    expect(contentSecurityPolicy()).toContain(scriptHash(NOT_FOUND_SCRIPT));
   });
 });
