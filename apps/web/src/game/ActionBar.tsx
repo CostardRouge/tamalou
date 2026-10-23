@@ -14,6 +14,8 @@ export interface Act {
   tone?: 'primary' | 'secondary' | 'call' | 'good';
   /** Drawn as the wide button. The first such action wins; with none, the first action is if it has an icon. */
   main?: boolean;
+  /** Never the wide button, even alone: a second way to do something done by hand (the quick discard's bolt). */
+  minor?: boolean;
   /** An armed mode is on (the quick discard waiting for a card). */
   on?: boolean;
   onClick: () => void;
@@ -40,11 +42,13 @@ export function Icon({ name }: { name: ActIcon }) {
   );
 }
 
-export function ActionBar({ acts }: { acts: Act[] }) {
+/** `hint`: a short line beside the icons, when no wide button takes the room (how to do it by hand instead). */
+export function ActionBar({ acts, hint }: { acts: Act[]; hint?: string | null }) {
   const marked = acts.findIndex((a) => a.main);
-  const mainIndex = marked >= 0 ? marked : acts[0]?.icon ? 0 : -1;
+  const mainIndex = marked >= 0 ? marked : acts[0]?.icon && !acts[0].minor ? 0 : -1;
   return (
     <div className="bar">
+      {hint && mainIndex < 0 ? <p className="bar-hint">{hint}</p> : null}
       {acts.map((a, i) =>
         i === mainIndex || !a.icon ? (
           <button

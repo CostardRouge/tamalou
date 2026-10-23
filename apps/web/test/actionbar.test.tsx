@@ -41,4 +41,14 @@ describe('the action bar', () => {
     expect(screen.getByRole('button', { name: 'label ana' }).className).not.toContain('bar-main');
     expect(screen.getByRole('button', { name: 'label cancel' }).className).toContain('ibtn');
   });
+
+  it('keeps a minor action an icon even alone, with the hint beside it, and drops the hint for a wide button', () => {
+    const { rerender } = render(
+      <ActionBar acts={[act('quick', { icon: 'quick', caption: 'Rapide', minor: true })]} hint="Ou touche l’éclair" />,
+    );
+    expect(screen.getByRole('button', { name: 'label quick' }).className).toContain('ibtn');
+    expect(screen.getByText('Ou touche l’éclair')).toBeTruthy();
+    rerender(<ActionBar acts={[act('deck', { icon: 'draw', main: true })]} hint="Ou touche l’éclair" />);
+    expect(screen.queryByText('Ou touche l’éclair')).toBeNull();
+  });
 });

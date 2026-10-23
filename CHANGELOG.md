@@ -14,6 +14,9 @@ code, though the game speaks French first. Codenames are French card words, in a
   play opens a panel where you set the table — opponents seated round it, a seat to add one, your name at your place —
   before choosing the bots' level and the rules. The cards are then dealt round the table before the game begins. The
   language, sounds and the hand's layout moved behind the settings button at the top.
+- A quick discard is now made by hand: when the discard opens during someone else's turn, it glows and says "Throw
+  here", your cards lift, and you drag the matching one onto it ("Let go to discard" once you are over it). The wide
+  "Quick discard" button is gone; the small bolt beside the bar stays as a second way, tap it then your card.
 
 ## [0.12.0] - 2026-10-22 — Levée
 
