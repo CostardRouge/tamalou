@@ -12,7 +12,8 @@
 
 ## Decisions and traps (2026-10-16)
 
-- **Quick discard is an armed mode**: a "⚡ Défausse rapide" button, then a touch on the card. A tap on one's own card during the draw step would otherwise be ambiguous (and a mis-tap costs a penalty card).
+- **Quick discard is an armed mode**: the bolt, then a touch on the card. A tap on one's own card during the draw step would otherwise be ambiguous (and a mis-tap costs a penalty card).
+- 2026-10-22 — **Quick discard by hand first** (the owner's pick on a canvas: «l'action naturelle serait de faire un drag and drop»). Dragging one of my cards onto the open discard always worked (`drag.ts`), but `ActionBar` made a lone icon act the wide main button, so during others' turns a big green "Défausse rapide" read as the only way. Now the quick act is `minor` (never the wide button, never green) with a `hint` line beside it; `quickOpen` in `GameScreen.tsx` (window open, not my turn, my hand free, not a shared screen whose cards are not the holder's to drag) sets `.game.quick-open`: the discard glows, its label becomes a chip "Jette ici" / "Lâche pour défausser" (over it, z-index above the dragged card), my cards bob (CSS `translate`, never `transform`, which Motion owns; off with reduced motion), the prompt says to drag. Pass-and-play keeps its "who claims" flow.
 - **The log speaks to the player in the second person**: an event whose actor is me uses the key's `_you` variant (`logDrewDeck_you`: «Tu pioches.»). A shared «Tu» + third-person verb gave «Tu pioche». **How to apply**: a new log line about an actor gets both keys.
 - **Dispose a game when it is replaced, never in an effect cleanup**: StrictMode runs effects twice in development and the cleanup stopped the table on screen. `App.replace()` disposes the previous connection.
 - During a Jack, once my card is picked, "Passer le pouvoir" stays offered next to "Annuler" (a UI run got stuck there without it).

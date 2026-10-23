@@ -110,6 +110,10 @@ export const fr = {
   promptQuick: 'Défausse rapide : touche une carte de même valeur que la défausse.',
   promptQuickGive: 'Choisis la carte que tu lui donnes.',
   promptRoundEnding: 'Fin de la manche…',
+  promptQuickOpen: 'Défausse ouverte ! Même valeur que le dessus ? Glisse ta carte dessus.',
+  quickBarHint: 'Ou touche l’éclair, puis ta carte.',
+  dropHint: 'Jette ici',
+  dropHintHot: 'Lâche pour défausser',
   promptWaiting: 'Au tour de {name}.',
   turnBanner: 'À toi !',
   // A move staged when the game master asks to confirm every move (assist.confirmMoves).

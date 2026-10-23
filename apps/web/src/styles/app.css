@@ -2664,6 +2664,61 @@ html:has(.game) body {
   box-shadow: inset 0 0 0 3px var(--a);
 }
 
+/* The quick discard, by hand (GameScreen.tsx `quickOpen`): the open discard says where to throw, my cards say they can go. */
+/* In the discard label's place, under the card a dragged one covers; above the dragged card. */
+.pile-label.drop-hint {
+  position: relative;
+  z-index: 41;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--good-ink);
+  color: var(--on-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.game.quick-open .pile-discard .card-side {
+  box-shadow: 0 0 0 3px var(--good);
+}
+
+.bar-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .game.quick-open .pile-discard .card-side {
+    animation: discard-glow 1.6s ease-in-out infinite;
+  }
+
+  .game.quick-open:not(.dragging) .mine .draggable > * {
+    animation: card-bob 1.8s ease-in-out infinite;
+  }
+
+  .game.quick-open .mine .draggable:nth-child(2n) > * {
+    animation-delay: -0.9s;
+  }
+}
+
+@keyframes discard-glow {
+  50% {
+    box-shadow:
+      0 0 0 3px var(--good),
+      0 0 22px 4px color-mix(in srgb, var(--good) 55%, transparent);
+  }
+}
+
+@keyframes card-bob {
+  50% {
+    translate: 0 -5px;
+  }
+}
+
 .ask {
   position: fixed;
   z-index: 30;

@@ -240,13 +240,20 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   };
 
   const myTurn = view.current === view.me;
+  // The quick discard, by hand (the owner's pick, 2026-10-22): while another player's discard is open and one of my
+  // cards may go on it, the discard glows and says so, my cards lift to be taken, and the bolt is only a second way.
+  // A shared screen keeps its "who claims" button: the cards there are not the holder's to drag.
+  const quickOpen = view.phase === 'play' && view.quickDiscardOpen && !myTurn && ui.canQuick && handsFree && !claimers;
+  const throwing = !!drag?.drops.some((d) => d.place === 'discard' && d.send.type === 'quickDiscard');
   const prompt = staged
     ? staged.question
     : claim === 'who'
       ? t('promptQuickWho')
       : claim
         ? t('promptQuickAs', { name: nameOf(claim) })
-        : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
+        : quickOpen
+          ? t('promptQuickOpen')
+          : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
 
   // The spotlight (design B of "lisibilité du tour"): whose turn glows; while I choose, what I cannot touch fades.
   const choosing =
@@ -268,7 +275,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   return (
     // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -346,7 +353,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           )}
           <span className="pile-label mono">{view.deckSize}</span>
         </div>
-        <div className="pile">
+        <div className="pile pile-discard">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={view.discardTop?.id ?? 'empty'}
@@ -376,7 +383,13 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               )}
             </motion.div>
           </AnimatePresence>
-          <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
+          {quickOpen || throwing ? (
+            <span className="pile-label drop-hint" aria-hidden="true">
+              {t(drag?.hot.includes('discard') ? 'dropHintHot' : 'dropHint')}
+            </span>
+          ) : (
+            <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
+          )}
         </div>
         <AnimatePresence>
           {view.drawn ? (
@@ -454,6 +467,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                         : []),
                     ]
           }
+          hint={quickOpen ? t('quickBarHint') : null}
         />
       </footer>
 
@@ -611,12 +625,14 @@ const cancelAct = (onClick: () => void): Act => ({
   onClick,
 });
 
+// The bolt is the second way to a quick discard (the first is dragging a card onto the open discard): never the wide
+// button, even when it is the only thing to do while another player plays.
 const quickAct = (onClick: () => void, on: boolean): Act => ({
   key: 'quick',
   label: t('actQuick'),
   caption: t('barQuick'),
   icon: 'quick',
-  tone: 'good',
+  minor: true,
   on,
   onClick,
 });
