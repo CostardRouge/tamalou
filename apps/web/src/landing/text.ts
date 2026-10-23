@@ -140,6 +140,14 @@ const fr = {
   footAria: 'Pied de page',
   footSource: 'Code source',
   footLegal: 'Mentions légales',
+
+  notFoundTitle: 'Page introuvable — Tamalou',
+  notFoundEyebrow: 'Erreur 404',
+  notFoundHeading: 'Cette carte n’est pas dans le paquet.',
+  notFoundText:
+    'Cette adresse ne mène à aucune page de Tamalou : elle a peut-être changé, ou une lettre s’est glissée dedans.',
+  notFoundPlay: 'Jouer',
+  notFoundHome: 'Accueil',
 };
 
 export type LandingText = typeof fr;
@@ -272,6 +280,13 @@ const en: LandingText = {
   footAria: 'Footer',
   footSource: 'Source code',
   footLegal: 'Legal notice',
+
+  notFoundTitle: 'Page not found — Tamalou',
+  notFoundEyebrow: 'Error 404',
+  notFoundHeading: 'This card is not in the deck.',
+  notFoundText: 'This address leads to no page of Tamalou: it may have changed, or a letter slipped into it.',
+  notFoundPlay: 'Play',
+  notFoundHome: 'Home page',
 };
 
 export const LANDING: Record<'fr' | 'en', LandingText> = { fr, en };

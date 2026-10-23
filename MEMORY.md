@@ -83,6 +83,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-22 — Owner to judge the new launch screen on his phone: "Rejouer", a tile's panel (add and remove bots, names, rules), the deal, the settings behind the button; pass-and-play with five or six players.
 - 2026-10-22 — Owner to judge the quick discard by hand on his phone: during a bot's turn, the glowing discard, the lifted cards, a drag onto it; the small bolt as the second way.
 - 2026-10-22 — Owner to judge the six hand layouts on his phone (the row by default, a fan with penalty cards, the opponents' turned arcs, the carousel's slide, a drag onto the laid-down hand).
+- 2026-10-23 — Owner to open a wrong address once deployed (e.g. `/projects/`): the styled 404 page with a 404 status, «Jouer» and «Accueil» working — `site.md`, "The 404 page".
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.
 

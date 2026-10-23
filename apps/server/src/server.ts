@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { extname, join, normalize, resolve, sep } from 'node:path';
@@ -205,14 +205,15 @@ async function serveFile(root: string, path: string, req: IncomingMessage, res: 
     file = join(file, 'index.html');
     info = await stat(file).catch(() => null);
   }
-  // An address the app routes itself (no such file, no extension): the app's page.
-  if (!info && !extname(path)) {
-    file = join(root, 'index.html');
-    info = await stat(file).catch(() => null);
-  }
   if (!info?.isFile()) {
-    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
-    res.end('Not found');
+    // The build's 404 page, as Cloudflare and GitHub Pages answer (apps/web/build/notfound.ts); never the home page,
+    // whose relative links break at another depth.
+    const page = await readFile(join(root, '404.html')).catch(() => null);
+    res.writeHead(404, {
+      'content-type': page ? 'text/html; charset=utf-8' : 'text/plain; charset=utf-8',
+      'cache-control': 'no-cache',
+    });
+    res.end(req.method === 'HEAD' ? undefined : (page ?? 'Not found'));
     return;
   }
   // Built assets carry a hash in their name and never change; the page and the service worker must be fresh.

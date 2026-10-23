@@ -7,11 +7,12 @@
   "compatibility_date": "2026-09-20",
   "observability": { "enabled": true },
   // No routes on purpose: a custom domain is added in the dashboard, and deploys keep it.
-  // Files are served first; the Worker runs for /api/* and for addresses with no file (the app's index.html then).
+  // Files are served first; the Worker runs for /api/* only. An address with no file gets the build's 404.html with a
+  // 404 status (apps/web/build/notfound.ts): never the home page, whose relative links break at another depth.
   "assets": {
     "directory": "../web/dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
+    "not_found_handling": "404-page",
     "run_worker_first": ["/api/*"]
   },
   "durable_objects": {

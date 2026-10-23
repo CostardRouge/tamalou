@@ -123,6 +123,7 @@ describe('LAN server HTTP', () => {
     const dir = await mkdtemp(join(tmpdir(), 'tamalou-web-'));
     await mkdir(join(dir, 'assets'));
     await writeFile(join(dir, 'index.html'), '<!doctype html><title>Tamalou</title>');
+    await writeFile(join(dir, '404.html'), '<!doctype html><title>Page introuvable</title>');
     await writeFile(join(dir, 'assets', 'app-1234.js'), 'console.log(1)');
     const { url } = await serve({ staticDir: dir });
     const page = await fetch(`${url}/`);
@@ -131,9 +132,14 @@ describe('LAN server HTTP', () => {
     expect(await page.text()).toContain('Tamalou');
     const asset = await fetch(`${url}/assets/app-1234.js`);
     expect(asset.headers.get('cache-control')).toContain('immutable');
-    expect(await (await fetch(`${url}/salle/ABCDE`)).text()).toContain('Tamalou');
-    expect((await fetch(`${url}/missing.png`)).status).toBe(404);
-    expect(await (await fetch(`${url}/%2e%2e/%2e%2e/etc/passwd`)).text()).toContain('Tamalou');
+    // An unknown address gets the 404 page with its status, never the home page (its relative links would break).
+    for (const path of ['/projects/', '/salle/ABCDE', '/missing.png', '/%2e%2e/%2e%2e/etc/passwd']) {
+      const missing = await fetch(`${url}${path}`);
+      expect(missing.status, path).toBe(404);
+      expect(missing.headers.get('content-type'), path).toContain('text/html');
+      expect(await missing.text(), path).toContain('Page introuvable');
+    }
+    expect((await fetch(`${url}/projects/`, { method: 'HEAD' })).status).toBe(404);
     expect((await fetch(`${url}/..%2f..%2fetc%2fpasswd`)).status).toBe(403);
     expect((await fetch(`${url}/%E0%A4%A`)).status).toBe(403);
     expect((await fetch(`${url}/`, { method: 'POST' })).status).toBe(405);

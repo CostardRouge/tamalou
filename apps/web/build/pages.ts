@@ -5,6 +5,7 @@ import { LANDING } from '../src/landing/text.ts';
 import { legalBody } from '../src/legal/markup.ts';
 import { LEGAL } from '../src/legal/text.ts';
 import { type AnalyticsConfig, analyticsConfig, analyticsTag } from './analytics.ts';
+import { NOT_FOUND_SCRIPT } from './notfound.ts';
 import {
   APP,
   AUTHOR,
@@ -56,13 +57,16 @@ const movedScript = (to: string) => `location.replace(${JSON.stringify(to)}+loca
 const moved = (to: string) =>
   `<meta http-equiv="refresh" content="0; url=${to}" />\n    <script>${movedScript(to)}</script>`;
 
-/** Every inline script the pages write, as the policy's hashes must name them (build/security.ts). */
+/** Every inline script the pages write, the 404 page's included, as the policy's hashes must name them (build/security.ts). */
 export function inlineScripts(): string[] {
-  return PAGES.flatMap((page) => {
-    if (page.kind === 'home') return [redirectScript(link(page, PLAY_PATH))];
-    if (page.kind === 'moved') return [movedScript(link(page, PLAY_PATH))];
-    return [];
-  });
+  return [
+    ...PAGES.flatMap((page) => {
+      if (page.kind === 'home') return [redirectScript(link(page, PLAY_PATH))];
+      if (page.kind === 'moved') return [movedScript(link(page, PLAY_PATH))];
+      return [];
+    }),
+    NOT_FOUND_SCRIPT,
+  ];
 }
 
 const headText = (page: Page) => {

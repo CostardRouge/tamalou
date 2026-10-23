@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Fixed
+
+- A mistyped or outdated address now shows a real "page not found" page, in the site's colours, with a way to play or
+  to go back home, instead of a home page without its styles.
+
 ## [0.13.0] - 2026-10-23 — Manille
 
 ### Changed
