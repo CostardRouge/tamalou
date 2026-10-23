@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-23 — Manille
+
 ### Changed
 
 - A new screen to start a game: your last game waits at the top, ready to play again in one touch, and each way to
