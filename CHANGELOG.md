@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-24 — Nain jaune
+
 ### Changed
 
 - The cards are now dealt on the game's table itself, from the deck to every player's place, at the start of every
