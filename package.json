@@ -1,6 +1,6 @@
 {
   "name": "tamalou",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "private": true,
   "description": "Tamalou, the French card game, playable on the web: solo against bots, pass-and-play, LAN and online.",
   "license": "MIT",
