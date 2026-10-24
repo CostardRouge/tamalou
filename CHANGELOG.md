@@ -8,6 +8,13 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Changed
+
+- The cards are now dealt on the game's table itself, from the deck to every player's place, at the start of every
+  round: no separate screen before the game, and nothing to skip.
+- On a computer or a tablet held sideways, the table uses the whole width: the other players sit round it as at a real
+  table, the cards are larger, and the journal opens at the side instead of over the game.
+
 ### Fixed
 
 - A mistyped or outdated address now shows a real "page not found" page, in the site's colours, with a way to play or

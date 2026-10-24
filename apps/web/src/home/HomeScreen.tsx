@@ -5,14 +5,13 @@ import { CardView } from '../cards/CardView.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { VERSION } from '../version.ts';
-import { Deal } from './Deal.tsx';
 import { MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
 import { Settings } from './Settings.tsx';
-import { MODE_KEY, meOf, othersOf, SetupSheet, titleOf } from './Setup.tsx';
+import { MODE_KEY, SetupSheet, titleOf } from './Setup.tsx';
 
 // The launch screen (the owner's pick on the 2026-10-22 canvas): the last game, ready to play again in one touch, then
-// the three ways to play, each opening a panel with the table to set (Setup.tsx); "Jouer" deals the cards (Deal.tsx)
-// before the game. The setup: solo against bots, or several players sharing this device (pass-and-play, with bots or
+// the three ways to play, each opening a panel with the table to set (Setup.tsx); "Jouer" opens the table, where the cards
+// are dealt (flights.ts). The setup: solo against bots, or several players sharing this device (pass-and-play, with bots or
 // not); how strong the bots are; which rules (a preset, and the game master's changes made in the rules editor,
 // measured against the mode's own defaults). The last choices are remembered on this device (a convenience only: a
 // private window simply starts from the defaults). Rules received by link replace the remembered ones. This device's
@@ -147,12 +146,11 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
   const [sheet, setSheet] = useState(Boolean(mode || linked));
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState(false);
-  const [dealing, setDealing] = useState<GameChoice | null>(null);
   const set = (patch: Partial<GameChoice>) => setC((prev) => fit({ ...prev, ...patch }));
   const start = (choice: GameChoice) => {
     saveChoice(choice);
     setSaved(choice);
-    setDealing(choice);
+    onPlay(choice);
   };
 
   if (editing) {
@@ -164,10 +162,6 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
         onDone={() => setEditing(false)}
       />
     );
-  }
-
-  if (dealing) {
-    return <Deal me={meOf(dealing)} others={othersOf(dealing)} onDone={() => onPlay(dealing)} />;
   }
 
   // An online game is not replayed from here: its rules and seats are the room's.

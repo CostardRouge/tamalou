@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pkg from '../../../package.json' with { type: 'json' };
 import { App } from '../src/App.tsx';
 import { updateSettings } from '../src/feedback/settings.ts';
-import { openMode, playFromPanel, skipDeal } from './launch.ts';
+import { openMode, playFromPanel } from './launch.ts';
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -29,7 +29,6 @@ describe('the app', () => {
     const mine = () => container.querySelector('.mine fieldset');
     // A first visit: the default game, played from the big card in one touch.
     fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
-    skipDeal();
     expect(mine()?.className).toBe('hand lay-row');
     fireEvent.click(screen.getByRole('button', { name: 'Affichage' }));
     fireEvent.click(screen.getByRole('radio', { name: /Éventail/ }));

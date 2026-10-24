@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aroundTop, dealLength, dealOrder, dealSeats } from '../src/home/table.ts';
+import { aroundTop, tableSeats } from '../src/home/table.ts';
 
 describe('the setup table', () => {
   it('seats one opponent at the top, in the middle', () => {
@@ -15,24 +15,15 @@ describe('the setup table', () => {
     for (const s of five) expect(s.y).toBeLessThan(50);
   });
 
-  it('seats the deal on a taller ellipse, inside the felt', () => {
-    for (const s of dealSeats(5)) {
-      expect(s.x).toBeGreaterThan(15);
-      expect(s.x).toBeLessThan(85);
-      expect(s.y).toBeGreaterThan(10);
+  it('seats the game’s wide table round the top half, the side seats level with the piles once there are four', () => {
+    expect(tableSeats(1)).toEqual([{ x: 50, y: 14 }]);
+    const four = tableSeats(4);
+    expect(four[0]).toEqual({ x: 12, y: 58 });
+    expect(four[3]).toEqual({ x: 88, y: 58 });
+    for (const s of tableSeats(5)) {
+      expect(s.x).toBeGreaterThanOrEqual(12);
+      expect(s.x).toBeLessThanOrEqual(88);
+      expect(s.y).toBeLessThanOrEqual(58);
     }
-  });
-
-  it('deals one card at a time round the table, the player first, four times', () => {
-    const order = dealOrder(3);
-    expect(order).toHaveLength(12);
-    expect(order.slice(0, 4).map((c) => [c.seat, c.slot])).toEqual([
-      [0, 0],
-      [1, 0],
-      [2, 0],
-      [0, 1],
-    ]);
-    expect(order.at(-1)).toEqual({ seat: 2, slot: 3, delay: 0.495 });
-    expect(dealLength(3)).toBeGreaterThan((order.at(-1)?.delay ?? 0) * 1000 + 500);
   });
 });

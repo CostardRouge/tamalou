@@ -18,6 +18,8 @@ export interface Flight {
   turnsOver?: boolean;
   /** A quick discard is thrown: a stiffer, faster spring. */
   thrown?: boolean;
+  /** Dealt at the start of a round: a quick, soft glide, one card after the other. */
+  dealt?: boolean;
   /**
    * Its beat in the batch: moves that arrive together (a bot draws and swaps at once) play one after the other, and a
    * swap reads as "in, then out".
@@ -25,7 +27,18 @@ export interface Flight {
   beat: number;
 }
 
-export function flightsOf(events: readonly GameEvent[], me: PlayerId): Flight[] {
+/** The gap between two dealt cards, in beats: a round of four hands for four players takes about a second and a half. */
+export const DEAL_STEP = 0.25;
+
+/**
+ * `handOf` says how many cards each player is dealt (the round's hands, read from the view: the event does not carry
+ * it).
+ */
+export function flightsOf(
+  events: readonly GameEvent[],
+  me: PlayerId,
+  handOf: (player: PlayerId) => number = () => 4,
+): Flight[] {
   const out: Flight[] = [];
   // The card I just drew is known to me through a private event that comes with the public one.
   const mine = new Map<PlayerId, Card>();
@@ -38,6 +51,24 @@ export function flightsOf(events: readonly GameEvent[], me: PlayerId): Flight[] 
     const before = out.length;
     let span = 1;
     switch (e.type) {
+      case 'roundStarted': {
+        // Dealt as at a real table: one card at a time round the table from the starter, then the discard's first
+        // card turned over. The flights land on the hands already drawn, so the game is on screen from the start.
+        const at = Math.max(0, e.players.indexOf(e.starter));
+        const order = [...e.players.slice(at), ...e.players.slice(0, at)];
+        const most = Math.max(0, ...order.map(handOf));
+        let k = 0;
+        for (let slot = 0; slot < most; slot++) {
+          for (const player of order) {
+            if (slot >= handOf(player)) continue;
+            fly({ from: 'deck', to: slotPlace({ player, slot }), card: null, dealt: true }, k * DEAL_STEP);
+            k++;
+          }
+        }
+        fly({ from: 'deck', to: 'discard', card: e.discardTop, turnsOver: true, dealt: true }, k * DEAL_STEP + 0.5);
+        span = Math.ceil(k * DEAL_STEP) + 2;
+        break;
+      }
       case 'drew':
         fly({ from: e.from, to: 'drawn', card: e.card ?? (e.player === me ? (mine.get(me) ?? null) : null) });
         break;
@@ -72,6 +103,18 @@ export function flightsOf(events: readonly GameEvent[], me: PlayerId): Flight[] 
     if (out.length > before) beat += span;
   }
   return out;
+}
+
+/**
+ * Where a table opening now should start playing from: the round's deal, when nothing but the initial peek happened
+ * since (the game was just started, or a shared screen shows a player their hand for the first time); otherwise
+ * nothing, and only what comes next moves.
+ */
+export function dealToReplay(events: readonly GameEvent[]): number | undefined {
+  const at = events.findLastIndex((e) => e.type === 'roundStarted');
+  if (at < 0) return undefined;
+  const quiet = events.slice(at + 1).every((e) => e.type === 'initialPeek' || e.type === 'playerReady');
+  return quiet ? at : undefined;
 }
 
 /** What another player says while playing, one short line per move worth a word. */
