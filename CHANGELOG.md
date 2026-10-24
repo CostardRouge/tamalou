@@ -8,11 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
-## [0.14.0] - 2026-10-24 — Nain jaune
-
 ### Changed
 
 - On a computer, the table's oval now goes round your own hand too, as at a real table.
+
+## [0.14.0] - 2026-10-24 — Nain jaune
 
 ### Changed
 
