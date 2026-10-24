@@ -1,6 +1,6 @@
-// Where everyone sits on the setup's table (the owner's pick on the 2026-10-22 canvas): the others spread over the top
-// of an ellipse, left to right, the player alone at the bottom. Positions are percentages of the box, so the same
-// seats fit a phone and a desktop. Pure, so the seating is tested.
+// Where everyone sits on the setup's table and, on a wide screen, at the game's table (the owner's pick on the
+// 2026-10-22 canvas): the others spread over the top of an ellipse, left to right, the player alone at the bottom.
+// Positions are percentages of the box, so the same seats fit any size. Pure, so the seating is tested.
 
 export interface Spot {
   /** Percent of the box's width. */
@@ -22,3 +22,9 @@ export function aroundTop(k: number, spread = 148, rx = 38, ry = 38, cy = 50): S
     return { x: round(50 + rx * Math.cos(a)), y: round(cy + ry * Math.sin(a)) };
   });
 }
+
+/**
+ * The game's seats on a wide screen (app.css, the wide table): the others round the top half of the table, the first
+ * and last at its sides once there are four or more, so the width of a desktop holds them all.
+ */
+export const tableSeats = (k: number) => aroundTop(k, Math.min(180, 60 + 30 * k), 38, 44, 58);
