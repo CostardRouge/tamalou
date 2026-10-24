@@ -68,8 +68,17 @@ export interface FlightLayer {
   layer: ReactNode;
 }
 
-export function useFlights(events: readonly GameEvent[], me: PlayerId, motionOn: boolean): FlightLayer {
-  const seen = useRef(events.length);
+/**
+ * `replayFrom`: on the first render, the events to play from (the round's deal, when the table opens on a round that
+ * has just been dealt); later events play as they come. `handOf`: how many cards each player is dealt.
+ */
+export function useFlights(
+  events: readonly GameEvent[],
+  me: PlayerId,
+  motionOn: boolean,
+  { replayFrom, handOf }: { replayFrom?: number; handOf?: (player: PlayerId) => number } = {},
+): FlightLayer {
+  const seen = useRef(replayFrom ?? events.length);
   const places = useRef(new Map<Place, Box>());
   const nextId = useRef(1);
   const [active, setActive] = useState<Active[]>([]);
@@ -94,7 +103,7 @@ export function useFlights(events: readonly GameEvent[], me: PlayerId, motionOn:
       const find = (place: Place, first: Map<Place, Box>, then: Map<Place, Box>) =>
         first.get(place) ?? then.get(place) ?? (place === 'drawn' ? stand : null);
       const list: Active[] = [];
-      for (const flight of flightsOf(fresh, me)) {
+      for (const flight of flightsOf(fresh, me, handOf)) {
         const from = takeDrop(flight.from) ?? find(flight.from, before, now);
         const to = find(flight.to, now, before);
         if (from && to) list.push({ id: nextId.current++, flight, from, to });
@@ -184,14 +193,23 @@ function FlyingCard({ a, onDone }: { a: Active; onDone: () => void }) {
   const lean = Math.max(-14, Math.min(14, (to.x - from.x) * 0.05));
   const spring = flight.thrown
     ? { type: 'spring' as const, stiffness: 520, damping: 26, delay }
-    : { type: 'spring' as const, stiffness: 260, damping: 18, delay };
+    : flight.dealt
+      ? { type: 'spring' as const, stiffness: 300, damping: 28, delay }
+      : { type: 'spring' as const, stiffness: 260, damping: 18, delay };
   return (
     <motion.div
       className="flight"
       style={{ width: to.w, '--w': `${to.w}px` } as CSSProperties}
-      initial={{ x: from.x, y: from.y, scale: from.w / to.w, rotate: 0 }}
-      animate={{ x: to.x, y: to.y, scale: 1, rotate: [0, lean, 0] }}
-      transition={{ x: spring, y: spring, scale: spring, rotate: { duration: 0.7, delay, ease: 'easeOut' } }}
+      // A dealt card waits unseen until it leaves: the deck stays one card, not a pile of shadows.
+      initial={{ x: from.x, y: from.y, scale: from.w / to.w, rotate: 0, opacity: flight.dealt ? 0 : 1 }}
+      animate={{ x: to.x, y: to.y, scale: 1, rotate: [0, lean, 0], opacity: 1 }}
+      transition={{
+        x: spring,
+        y: spring,
+        scale: spring,
+        rotate: { duration: 0.7, delay, ease: 'easeOut' },
+        opacity: { duration: 0.01, delay },
+      }}
       onAnimationComplete={() => finish.current()}
     >
       <CardView card={face} label="" size="md" />

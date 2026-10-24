@@ -1,10 +1,37 @@
 import type { Card, GameEvent } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { bubblesOf, flightsOf } from '../src/game/flights.ts';
+import { bubblesOf, DEAL_STEP, dealToReplay, flightsOf } from '../src/game/flights.ts';
 
 const c = (rank: Card['rank'], suit: Card['suit'] = 'S', id = 1): Card => ({ id, rank, suit, deck: 0 });
 
 describe('the flights of a move', () => {
+  it('deals one card at a time round the table from the starter, then turns the discard’s first card over', () => {
+    const start: GameEvent = {
+      type: 'roundStarted',
+      round: 1,
+      starter: 'ada',
+      players: ['me', 'ada'],
+      discardTop: c('K'),
+    };
+    const deal = flightsOf([start], 'me', (p) => (p === 'me' ? 4 : 3));
+    expect(deal.slice(0, 3).map((f) => [f.to, f.beat])).toEqual([
+      ['slot:ada:0', 0],
+      ['slot:me:0', DEAL_STEP],
+      ['slot:ada:1', 2 * DEAL_STEP],
+    ]);
+    expect(deal.filter((f) => f.to.startsWith('slot:'))).toHaveLength(7);
+    expect(deal.every((f) => f.from === 'deck' && f.dealt)).toBe(true);
+    expect(deal.at(-1)).toMatchObject({ to: 'discard', card: c('K'), turnsOver: true });
+  });
+
+  it('replays the deal when a table opens on a round nobody has played yet, and only then', () => {
+    const start: GameEvent = { type: 'roundStarted', round: 1, starter: 'me', players: ['me'], discardTop: c('K') };
+    const peek: GameEvent = { type: 'initialPeek', to: 'me', cards: [] };
+    expect(dealToReplay([start, peek, { type: 'playerReady', player: 'me' }])).toBe(0);
+    expect(dealToReplay([start, { type: 'playStarted', current: 'me' }])).toBeUndefined();
+    expect(dealToReplay([])).toBeUndefined();
+  });
+
   it('flies a swap in, then the old card out to the discard, turning over on the way', () => {
     const events: GameEvent[] = [
       { type: 'drew', player: 'ada', from: 'deck' },

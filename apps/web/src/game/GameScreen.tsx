@@ -12,7 +12,7 @@ import { confirmQuestion } from './confirm.ts';
 import { Draggable, measurePlaces } from './Draggable.tsx';
 import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
 import { noteDrop, useFlights } from './FlightLayer.tsx';
-import { type Place, slotPlace } from './flights.ts';
+import { dealToReplay, type Place, slotPlace } from './flights.ts';
 import { HandPicker } from './HandPicker.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
@@ -43,7 +43,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const events = conn.events();
   const feedback = useFeedback(events, view.me);
   const reduced = useReducedMotion();
-  const fly = useFlights(events, view.me, !reduced);
+  // The cards are dealt on this table, from the deck to every hand: the game is already there when the deal ends.
+  const [replayFrom] = useState(() => dealToReplay(events));
+  const fly = useFlights(events, view.me, !reduced, {
+    replayFrom,
+    handOf: (id) => view.players.find((p) => p.id === id)?.slots.length ?? 4,
+  });
   const settings = useSettings();
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
