@@ -1,9 +1,10 @@
 import { useSyncExternalStore } from 'react';
+import { DEFAULT_DRAW_VIEW, type DrawView, isDrawView } from '../game/front.ts';
 import { DEFAULT_HAND, type HandLayout, isHandLayout } from '../game/hand.ts';
 import { type CardSpeed, isCardSpeed, isPace, type Pace } from '../game/pace.ts';
 
 // This device's comfort settings: sounds, vibrations, how hands are laid out (game/hand.ts), and how the others are
-// watched (the bots' pace, their hands, the cards' speed: game/pace.ts), remembered in localStorage (a convenience: a
+// watched (the bots' pace, their hands, the cards' speed: game/pace.ts), how my drawn card shows (game/front.ts), remembered in localStorage (a convenience: a
 // private window simply starts with the defaults). The language lives with the dictionaries (i18n/index.ts).
 
 export interface Settings {
@@ -19,6 +20,8 @@ export interface Settings {
   showHands: boolean;
   /** How fast cards fly and hands move. */
   cardSpeed: CardSpeed;
+  /** My drawn card: held just above my hand, or large in the middle of the table. */
+  drawView: DrawView;
 }
 
 const KEY = 'tamalou-settings';
@@ -30,6 +33,7 @@ const DEFAULTS: Settings = {
   botPace: 'normal',
   showHands: true,
   cardSpeed: 'normal',
+  drawView: DEFAULT_DRAW_VIEW,
 };
 
 function load(): Settings {
@@ -44,6 +48,7 @@ function load(): Settings {
       botPace: isPace(data.botPace) ? data.botPace : DEFAULTS.botPace,
       showHands: typeof data.showHands === 'boolean' ? data.showHands : DEFAULTS.showHands,
       cardSpeed: isCardSpeed(data.cardSpeed) ? data.cardSpeed : DEFAULTS.cardSpeed,
+      drawView: isDrawView(data.drawView) ? data.drawView : DEFAULTS.drawView,
     };
   } catch {
     return DEFAULTS;

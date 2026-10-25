@@ -180,3 +180,8 @@
   font-weight: 800;
   font-size: calc(var(--w) * 0.4);
 }
+
+/* The mark turns towards the card's owner when the table says so (--back-turn: another player's cards). */
+.classic-back span {
+  rotate: var(--back-turn, 0deg);
+}

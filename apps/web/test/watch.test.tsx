@@ -7,7 +7,7 @@ import { handKind, PACE_FACTOR, SPEED_FACTOR } from '../src/game/pace.ts';
 
 afterEach(() => {
   cleanup();
-  updateSettings({ botPace: 'normal', showHands: true, cardSpeed: 'normal' });
+  updateSettings({ botPace: 'normal', showHands: true, cardSpeed: 'normal', drawView: 'held' });
 });
 
 describe('watching the others', () => {
@@ -21,6 +21,15 @@ describe('watching the others', () => {
     expect(getSettings().showHands).toBe(false);
     fireEvent.click(screen.getByRole('radio', { name: 'Douce' }));
     expect(getSettings().cardSpeed).toBe('soft');
+  });
+
+  it('shows my drawn card held above my hand, or large on the table', () => {
+    render(<HandWatch name="w" />);
+    expect(screen.getByRole('radio', { name: 'En main' })).toHaveProperty('checked', true);
+    expect(screen.getByText('Tenue juste au-dessus de tes cartes : tu gardes la table en vue.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: 'En grand' }));
+    expect(getSettings().drawView).toBe('big');
+    expect(screen.getByText('En grand au milieu, la table assombrie : tu te concentres sur elle.')).toBeTruthy();
   });
 
   it('slows the bots and the cards down, or speeds them up, around the level’s own pace', () => {

@@ -1,10 +1,11 @@
 import { updateSettings, useSettings } from '../feedback/settings.ts';
 import { t } from '../i18n/index.ts';
+import { DRAW_VIEWS, type DrawView } from './front.ts';
 import { CARD_SPEEDS, type CardSpeed, handKind, PACES, type Pace } from './pace.ts';
 
-// How the others are watched (the owner's picks on the 2026-10-24 canvas), on the home screen's settings and behind
-// the table's "Affichage" button: the bots' pace, their hands, and how fast the cards go. Settings of this device:
-// a room's bots keep their own pace.
+// How the table is watched (the owner's picks on the 2026-10-24 and 2026-10-25 canvases), on the home screen's
+// settings and behind the table's "Affichage" button: how my drawn card shows, the bots' pace, their hands, and how
+// fast the cards go. Settings of this device: a room's bots keep their own pace.
 
 const PACE_LABEL = { fast: 'paceFast', normal: 'paceNormal', slow: 'paceSlow' } as const satisfies Record<Pace, string>;
 const PACE_HINT = {
@@ -17,11 +18,30 @@ const SPEED_LABEL = {
   normal: 'speedNormal',
   soft: 'speedSoft',
 } as const satisfies Record<CardSpeed, string>;
+const DRAW_LABEL = { held: 'drawViewHeld', big: 'drawViewBig' } as const satisfies Record<DrawView, string>;
+const DRAW_HINT = { held: 'drawViewHeldHint', big: 'drawViewBigHint' } as const satisfies Record<DrawView, string>;
 
 export function HandWatch({ name }: { name: string }) {
   const settings = useSettings();
   return (
     <>
+      <fieldset className="field">
+        <legend>{t('drawView')}</legend>
+        <div className="segmented">
+          {DRAW_VIEWS.map((view) => (
+            <label key={view} className={settings.drawView === view ? 'on' : ''}>
+              <input
+                type="radio"
+                name={`${name}-draw`}
+                checked={settings.drawView === view}
+                onChange={() => updateSettings({ drawView: view })}
+              />
+              {t(DRAW_LABEL[view])}
+            </label>
+          ))}
+        </div>
+        <small className="muted">{t(DRAW_HINT[settings.drawView])}</small>
+      </fieldset>
       <fieldset className="field">
         <legend>{t('botPace')}</legend>
         <div className="segmented">

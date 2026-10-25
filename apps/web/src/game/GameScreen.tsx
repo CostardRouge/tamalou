@@ -1,6 +1,15 @@
-import type { Action, PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
+import type { Action, Card, PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { getSettings, updateSettings, useSettings } from '../feedback/settings.ts';
@@ -11,9 +20,12 @@ import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { type Act, ActionBar } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
 import { Draggable, measurePlaces } from './Draggable.tsx';
+import { DrawStage } from './DrawStage.tsx';
 import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
 import { noteDrop, useFlights } from './FlightLayer.tsx';
+import { FrontCard } from './FrontCard.tsx';
 import { dealToReplay, type Place, slotPlace } from './flights.ts';
+import { facing } from './front.ts';
 import { HandPicker } from './HandPicker.tsx';
 import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
@@ -55,6 +67,15 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   currentRef.current = view.current;
   // The others' moves played by their hand (game/pace.ts): a named cursor with a mouse, a fingertip on a touch screen.
   const [handKindHere] = useState(handKind);
+  const colorOf = (id: PlayerId) =>
+    `var(--seat-${
+      (Math.max(
+        0,
+        view.players.filter((p) => p.id !== view.me).findIndex((p) => p.id === id),
+      ) %
+        5) +
+      1
+    })`;
   const fly = useFlights(events, view.me, !reduced, {
     replayFrom,
     handOf: (id) => view.players.find((p) => p.id === id)?.slots.length ?? 4,
@@ -62,15 +83,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       ? {
           kind: handKindHere,
           name: (id) => view.players.find((p) => p.id === id)?.name ?? id,
-          color: (id) =>
-            `var(--seat-${
-              (Math.max(
-                0,
-                view.players.filter((p) => p.id !== view.me).findIndex((p) => p.id === id),
-              ) %
-                5) +
-              1
-            })`,
+          color: colorOf,
           current: () => currentRef.current,
         }
       : null,
@@ -80,6 +93,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   // The bots this device hosts follow its pace, changed mid-game too (from their next move).
   useEffect(() => conn.setBotPace?.(PACE_FACTOR[settings.botPace]), [conn, settings.botPace]);
   const [pending, setPending] = useState<Pending>(NONE);
+  const lastDrawn = useRef<{ holder: PlayerId; card: Card | null } | null>(null);
   const [showLog, setShowLog] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showDisplay, setShowDisplay] = useState(false);
@@ -104,13 +118,15 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   // A selection that no longer applies (the turn moved on, the top card changed, the device changed hands) is dropped.
   const stepKey = `${view.me}:${view.phase}:${view.step}:${view.current}:${view.discardTop?.id}`;
   // The discard shows the top from before the cards still on their way to it (another player's hand has not put them
-  // down yet): the tops it had, newest last, read back by how many are inbound.
+  // down yet): the tops it had, newest last, read back by how many are inbound. A round starts on an empty pile: the
+  // deal's last card lays its first card (the owner, 2026-10-25), so the pile stays empty until that card lands.
   const discardTops = useRef<{ round: number; tops: (typeof view.discardTop)[] }>({ round: 0, tops: [] });
   if (discardTops.current.round !== view.round) discardTops.current = { round: view.round, tops: [null] };
   if (discardTops.current.tops.at(-1)?.id !== view.discardTop?.id) {
     discardTops.current.tops = [...discardTops.current.tops.slice(-8), view.discardTop];
   }
-  const shownDiscard = discardTops.current.tops.at(-1 - fly.inbound('discard')) ?? view.discardTop;
+  const tops = discardTops.current.tops;
+  const shownDiscard = tops[Math.max(0, tops.length - 1 - fly.inbound('discard'))] ?? null;
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset on step change only
   useEffect(() => {
     setPending(NONE);
@@ -118,6 +134,22 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     setStaged(null);
     setAsk(null);
   }, [stepKey]);
+
+  // The others' card backs face them (game/front.ts): each seat says which way, from where it sits now.
+  useLayoutEffect(() => {
+    const turn = () => {
+      const middle = document.querySelector('.center')?.getBoundingClientRect();
+      if (!middle) return;
+      const m = { x: middle.left, y: middle.top, w: middle.width, h: middle.height };
+      for (const el of document.querySelectorAll<HTMLElement>('.opponents .seat')) {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty('--facing', `${facing({ x: r.left, y: r.top, w: r.width, h: r.height }, m)}deg`);
+      }
+    };
+    turn();
+    window.addEventListener('resize', turn);
+    return () => window.removeEventListener('resize', turn);
+  });
 
   // The spotlight: "À toi !" for a moment when my turn starts.
   const myTurnNow = view.phase === 'play' && view.current === view.me && !handoff;
@@ -286,8 +318,15 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const myTurn = view.current === view.me;
   // The quick discard, by hand (the owner's pick, 2026-10-22): while another player's discard is open and one of my
   // cards may go on it, the discard glows and says so, my cards lift to be taken, and the bolt is only a second way.
-  // A shared screen keeps its "who claims" button: the cards there are not the holder's to drag.
-  const quickOpen = view.phase === 'play' && view.quickDiscardOpen && !myTurn && ui.canQuick && handsFree && !claimers;
+  // On my own turn too, until I draw (my draw closes it: 2026-10-25, the owner had missed it there). A shared screen
+  // keeps its "who claims" button: the cards there are not the holder's to drag.
+  const quickOpen =
+    view.phase === 'play' &&
+    view.quickDiscardOpen &&
+    (!myTurn || view.step === 'draw') &&
+    ui.canQuick &&
+    handsFree &&
+    !claimers;
   const throwing = !!drag?.drops.some((d) => d.place === 'discard' && d.send.type === 'quickDiscard');
   const prompt = staged
     ? staged.question
@@ -295,7 +334,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       ? t('promptQuickWho')
       : claim
         ? t('promptQuickAs', { name: nameOf(claim) })
-        : quickOpen
+        : quickOpen && !myTurn
           ? t('promptQuickOpen')
           : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
 
@@ -310,6 +349,31 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     pending.kind !== 'none' ||
     (myTurn && view.phase === 'play' && (view.step === 'draw' || view.step === 'place' || view.step === 'power'));
   const spot = view.phase === 'play' ? (myTurn ? ' turn-mine' : ' turn-other') : '';
+  // The drawn card (game/front.ts): in front of whoever drew it, mine held above my hand or large on the table.
+  const holder = view.drawn ? view.current : null;
+  const holdingMine = !!holder && holder === view.me && !!me;
+  // Another player's card stays in front of them until their hand has taken it on, the state may have moved on.
+  if (view.drawn && holder) lastDrawn.current = { holder, card: view.drawn.card };
+  const front =
+    holder && !holdingMine && view.drawn
+      ? { holder, card: view.drawn.card }
+      : !holder && lastDrawn.current && lastDrawn.current.holder !== view.me && fly.waiting('drawn')
+        ? lastDrawn.current
+        : null;
+  const big = holdingMine && settings.drawView === 'big';
+  const drawnCard = view.drawn
+    ? carry(
+        { kind: 'drawn' },
+        'drawn',
+        <CardView
+          card={view.drawn.card}
+          place="drawn"
+          ghost={fly.landing.has('drawn')}
+          label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
+          size="lg"
+        />,
+      )
+    : null;
 
   if (handoff) {
     return (
@@ -324,7 +388,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   return (
     // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -441,29 +505,6 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
           )}
         </div>
-        <AnimatePresence>
-          {view.drawn ? (
-            <motion.div
-              className="pile drawn"
-              initial={{ scale: 0.6, opacity: 0, x: -40 }}
-              animate={{ scale: 1, opacity: 1, x: 0 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-            >
-              {carry(
-                { kind: 'drawn' },
-                'drawn',
-                <CardView
-                  card={view.drawn.card}
-                  place="drawn"
-                  ghost={fly.landing.has('drawn')}
-                  label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
-                  size="lg"
-                />,
-              )}
-              <span className="pile-label">{myTurn ? t('drawn') : nameOf(view.current ?? '')}</span>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
       </section>
 
       {me ? (
@@ -479,6 +520,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <span className="mono seat-total">{plural('points', me.total)}</span>
           </div>
           {seat(me, 'lg')}
+          {holdingMine && !big ? (
+            <div className="held drawn">
+              {drawnCard}
+              <span className="held-label">{t('drawnHeld')}</span>
+            </div>
+          ) : null}
         </section>
       ) : (
         // A shared screen between two players: the whole table, every hand face down, in the opponents' row above.
@@ -517,7 +564,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                         : []),
                     ]
           }
-          hint={quickOpen ? t('quickBarHint') : null}
+          hint={quickOpen && !myTurn ? t('quickBarHint') : null}
         />
       </footer>
 
@@ -599,6 +646,22 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               : t('slotOf', { n: looking.target.slot + 1, name: nameOf(looking.target.player) })
           }
         />
+      ) : null}
+      {front ? (
+        <FrontCard
+          holder={front.holder}
+          name={nameOf(front.holder)}
+          named={!settings.showHands}
+          color={colorOf(front.holder)}
+          card={front.card}
+          label={`${t('drawnBy', { name: nameOf(front.holder) })}${front.card ? ` : ${cardName(front.card)}` : ''}`}
+          ghost={fly.landing.has('drawn')}
+        />
+      ) : null}
+      {big && view.drawn ? (
+        <DrawStage caption={view.drawn.card ? t('drawnCaption', { card: cardName(view.drawn.card) }) : t('drawn')}>
+          {drawnCard}
+        </DrawStage>
       ) : null}
       {fly.layer}
 
