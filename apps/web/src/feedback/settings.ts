@@ -1,9 +1,10 @@
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_HAND, type HandLayout, isHandLayout } from '../game/hand.ts';
+import { type CardSpeed, isCardSpeed, isPace, type Pace } from '../game/pace.ts';
 
-// This device's comfort settings: sounds, vibrations and how hands are laid out (game/hand.ts), remembered in
-// localStorage (a convenience: a private window simply starts with the defaults). The language lives with the
-// dictionaries (i18n/index.ts).
+// This device's comfort settings: sounds, vibrations, how hands are laid out (game/hand.ts), and how the others are
+// watched (the bots' pace, their hands, the cards' speed: game/pace.ts), remembered in localStorage (a convenience: a
+// private window simply starts with the defaults). The language lives with the dictionaries (i18n/index.ts).
 
 export interface Settings {
   sound: boolean;
@@ -12,10 +13,24 @@ export interface Settings {
   hand: HandLayout;
   /** The opponents' seats follow it (game/hand.ts, opponentLayout). */
   oppHand: boolean;
+  /** How long the bots take between two moves. */
+  botPace: Pace;
+  /** The others' moves are played by a hand: a named cursor, or a fingertip on a touch screen. */
+  showHands: boolean;
+  /** How fast cards fly and hands move. */
+  cardSpeed: CardSpeed;
 }
 
 const KEY = 'tamalou-settings';
-const DEFAULTS: Settings = { sound: true, haptics: true, hand: DEFAULT_HAND, oppHand: true };
+const DEFAULTS: Settings = {
+  sound: true,
+  haptics: true,
+  hand: DEFAULT_HAND,
+  oppHand: true,
+  botPace: 'normal',
+  showHands: true,
+  cardSpeed: 'normal',
+};
 
 function load(): Settings {
   try {
@@ -26,6 +41,9 @@ function load(): Settings {
       haptics: typeof data.haptics === 'boolean' ? data.haptics : DEFAULTS.haptics,
       hand: isHandLayout(data.hand) ? data.hand : DEFAULTS.hand,
       oppHand: typeof data.oppHand === 'boolean' ? data.oppHand : DEFAULTS.oppHand,
+      botPace: isPace(data.botPace) ? data.botPace : DEFAULTS.botPace,
+      showHands: typeof data.showHands === 'boolean' ? data.showHands : DEFAULTS.showHands,
+      cardSpeed: isCardSpeed(data.cardSpeed) ? data.cardSpeed : DEFAULTS.cardSpeed,
     };
   } catch {
     return DEFAULTS;

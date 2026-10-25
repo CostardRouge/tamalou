@@ -22,6 +22,9 @@ export interface GameConnection {
   subscribe(listener: () => void): () => void;
   dispose(): void;
 
+  /** This device's pace for the bots it hosts (game/pace.ts); absent in a room, whose bots keep their own. */
+  setBotPace?(factor: number): void;
+
   // Pass-and-play only (one device, several players): absent on a single player's connection.
   /** The player the device must be handed to before anything private is shown, if any. */
   handoff?(): { id: PlayerId; name: string } | null;

@@ -21,6 +21,17 @@ export interface Flight {
   /** Dealt at the start of a round: a quick, soft glide, one card after the other. */
   dealt?: boolean;
   /**
+   * Whose hand moves it, when the screen shows the others' hands (FlightLayer): absent for the deal and for penalty
+   * cards, which the deck gives.
+   */
+  by?: PlayerId;
+  /** With a hand: no card moves, the hand only touches `from` (a power's target: a card looked at, or chosen). */
+  tap?: boolean;
+  /** With a hand: it leaves as soon as the hand picks up the move before it (the other half of an exchange). */
+  alongside?: boolean;
+  /** With a hand: a place it rests over first, weighing it up, before going for the card (a swap's choice). */
+  hover?: Place;
+  /**
    * Its beat in the batch: moves that arrive together (a bot draws and swaps at once) play one after the other, and a
    * swap reads as "in, then out".
    */
@@ -47,6 +58,8 @@ export function flightsOf(
   }
   let beat = 0;
   const fly = (f: Omit<Flight, 'beat'>, after = 0) => out.push({ ...f, beat: beat + after });
+  // Taps are only played by a hand: they take no beat from the cards flying on their own.
+  let taps = 0;
   for (const e of events) {
     const before = out.length;
     let span = 1;
@@ -70,27 +83,51 @@ export function flightsOf(
         break;
       }
       case 'drew':
-        fly({ from: e.from, to: 'drawn', card: e.card ?? (e.player === me ? (mine.get(me) ?? null) : null) });
+        fly({
+          from: e.from,
+          to: 'drawn',
+          card: e.card ?? (e.player === me ? (mine.get(me) ?? null) : null),
+          by: e.player,
+        });
         break;
-      case 'swapped':
-        fly({ from: 'drawn', to: slotPlace({ player: e.player, slot: e.slot }), card: null });
+      case 'swapped': {
+        // The hand weighs up a neighbouring card before going for the one it swaps.
+        const n = handOf(e.player);
+        const hover = n > 1 ? slotPlace({ player: e.player, slot: (e.slot + 1) % n }) : undefined;
+        fly({ from: 'drawn', to: slotPlace({ player: e.player, slot: e.slot }), card: null, by: e.player, hover });
         fly(
-          { from: slotPlace({ player: e.player, slot: e.slot }), to: 'discard', card: e.discarded, turnsOver: true },
+          {
+            from: slotPlace({ player: e.player, slot: e.slot }),
+            to: 'discard',
+            card: e.discarded,
+            turnsOver: true,
+            by: e.player,
+          },
           1,
         );
         span = 2;
         break;
+      }
       case 'discarded':
-        fly({ from: 'drawn', to: 'discard', card: e.card });
+        fly({ from: 'drawn', to: 'discard', card: e.card, by: e.player });
+        break;
+      case 'powerUsed':
+        for (const target of e.targets) {
+          out.push({ from: slotPlace(target), to: slotPlace(target), card: null, by: e.player, tap: true, beat });
+          taps++;
+        }
         break;
       case 'cardsSwapped':
-        fly({ from: slotPlace(e.a), to: slotPlace(e.b), card: null });
-        fly({ from: slotPlace(e.b), to: slotPlace(e.a), card: null });
+        fly({ from: slotPlace(e.a), to: slotPlace(e.b), card: null, by: e.player });
+        fly({ from: slotPlace(e.b), to: slotPlace(e.a), card: null, by: e.player, alongside: true });
         break;
       case 'quickDiscard':
-        fly({ from: slotPlace(e.target), to: 'discard', card: e.card, turnsOver: true, thrown: true });
+        fly({ from: slotPlace(e.target), to: 'discard', card: e.card, turnsOver: true, thrown: true, by: e.player });
         if (e.give !== undefined) {
-          fly({ from: slotPlace({ player: e.player, slot: e.give }), to: slotPlace(e.target), card: null }, 1);
+          fly(
+            { from: slotPlace({ player: e.player, slot: e.give }), to: slotPlace(e.target), card: null, by: e.player },
+            1,
+          );
           span = 2;
         }
         break;
@@ -100,7 +137,8 @@ export function flightsOf(
       default:
         break;
     }
-    if (out.length > before) beat += span;
+    if (out.length - taps > before) beat += span;
+    taps = 0;
   }
   return out;
 }

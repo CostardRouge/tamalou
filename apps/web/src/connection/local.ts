@@ -12,6 +12,8 @@ export interface LocalSetup {
   bots: { name: string; level: BotLevel }[];
   rules: RuleSet;
   seed?: number;
+  /** The bots' pace from the first move (Table.setBotPace). */
+  botPace?: number;
 }
 
 /** The solo player's seat id (kept stable for tests and the log's "Tu"). */
@@ -42,6 +44,7 @@ export class LocalConnection implements GameConnection {
       rules: setup.rules,
       scheduler,
       seats,
+      botPace: setup.botPace,
     });
   }
 
@@ -69,6 +72,9 @@ export class LocalConnection implements GameConnection {
   }
   drawPending() {
     return this.table.drawPending();
+  }
+  setBotPace(factor: number) {
+    this.table.setBotPace(factor);
   }
   subscribe(listener: () => void) {
     this.listeners.add(listener);
