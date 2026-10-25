@@ -64,7 +64,7 @@ The owner moved `packageManager` to pnpm 12.14.0 (his corepack fetched the lates
 
 `gh release create` with the job's `GITHUB_TOKEN` gets `HTTP 403: Resource not accessible by integration` for a tag on a commit whose `.github/workflows/` differs from `main`'s (the token lacks the `workflows` permission). `release.yml` now skips such a backfill with a warning and ships the rest (`CLAUDE.md` rule 4); the refused ones go through `second-brain`'s "Backfill releases" workflow, run by the owner. State on 2026-10-17: v0.7.0, v0.8.0 and v0.9.0 are published; v0.1.0–v0.6.0 wait on that workflow. **Trap**: v0.8.0's tag sits on `5f97b9d` (the merge that taught the workflow to skip, which tagged the then-current release on its own commit), not on the `2b824cc` its later `<!-- commit: -->` marker names; the workflow never moves an existing tag, so leave both as they are.
 
-2026-10-24 — **The shared workflows** (`.github/workflows/registry.yml`, `release.yml`, `.github/release.mjs`) are copied byte for byte from `second-brain/system/meta/common-project-spec/shared/`, never from another repo; their `check` jobs run on `vars.CI_RUNNER || 'ubuntu-24.04'` (never set here: the repo is public), the writing jobs stay on hosted runners.
+2026-10-24 (rev. 2026-10-25) — **The shared workflows** (`.github/workflows/registry.yml`, `release.yml`, `.github/release.mjs`) are copied byte for byte from `second-brain/system/meta/common-project-spec/shared/`, never from another repo; their `check` jobs, and since 2026-10-25 (option C) the writing `send` and `publish` jobs too, run on `vars.CI_RUNNER || 'ubuntu-24.04'`, which only the private repos set; this repo is public, so every job stays hosted.
 
 ## Dependabot (C20)
 
