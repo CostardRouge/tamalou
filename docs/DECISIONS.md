@@ -29,7 +29,8 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 ## ADR-0005 — Quick discard window (2026-10-16)
 
 - **Context**: the brief allows a quick discard "at any time" but needs a closing point for an authoritative server and for bots, and flagged pass-and-play as hard on one screen.
-- **Decision**: the window opens when a card lands face up on the discard and closes when the next player draws, never before `quickDiscard.minWindowMs` (default 2000 ms). Off by default in pass-and-play, can be turned on. First claim processed by the authority wins; others are cancelled without penalty. The owner's pick.
+- **Decision**: the window opens when a card lands face up on the discard and closes when the next player draws, never before `quickDiscard.minWindowMs` (default 2000 ms, **3000 ms since 2026-10-25**: the owner found 2 s left no time to read the table). Off by default in pass-and-play, can be turned on. First claim processed by the authority wins; others are cancelled without penalty. The owner's pick.
+- **Amended 2026-10-25**: on a screen that shows the moves (solo, pass-and-play), the minimum counts from when the screen has put the card down (`Table.setShowing`), not from the move; and a draw is held back only while someone else may still claim (another human, or a bot set to), since the minimum is there for the others.
 - **Rejected**: a fixed N-second window after every discard (slows every turn even when nobody holds a match); a dedicated claim phase after each turn in pass-and-play (one more screen per turn on a passed phone).
 
 ## ADR-0006 — Defaults for points the brief leaves open (2026-10-16)

@@ -1,6 +1,6 @@
 import type { Card, GameEvent, PlayerId } from '@tamalou/shared';
 import { AnimatePresence, animate, type MotionValue, motion, useMotionValue } from 'motion/react';
-import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import { cardName, t } from '../i18n/index.ts';
 import { type Bubble, bubblesOf, type Flight, flightsOf, type Place } from './flights.ts';
@@ -47,6 +47,8 @@ interface Active {
   lifted?: boolean;
   /** Played by a hand: when it may start, and what it tells its lane. */
   lane?: { start: Promise<void>; picked: () => void; done: () => void };
+  /** The event it plays, as an index in the whole list of events. */
+  event: number;
 }
 
 interface Said {
@@ -136,6 +138,14 @@ export interface FlightLayer {
   inbound: (place: Place) => number;
   /** A hand has yet to pick up the card lying there (another player's drawn card stays in front of them till then). */
   waiting: (place: Place) => boolean;
+  /** How many events the screen has played: the journal stops before a move whose gesture has not started. */
+  played: number;
+  /** Cards are still flying or hands still moving. */
+  showing: boolean;
+  /** The round's deal is still on screen. */
+  dealing: boolean;
+  /** How many cards are still to leave a place (the deck counts down as it deals). */
+  leaving: (place: Place) => number;
   layer: ReactNode;
 }
 
@@ -167,7 +177,12 @@ export function useFlights(
   const look = useRef(new Map<PlayerId, number>());
   const [active, setActive] = useState<Active[]>([]);
   const [said, setSaid] = useState<Said[]>([]);
+  // Redraws once a batch is turned into flights: what this render counted as coming is then settled, even when no
+  // card could fly (a place not on screen).
+  const [, settled] = useReducer((x: number) => x + 1, 0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  /** Bubbles waiting for the gesture that plays their move, by its flight. */
+  const toSay = useRef(new Map<number, Bubble>());
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   // After every render, before the screen paints: what the new events move, measured from where things were.
@@ -178,11 +193,13 @@ export function useFlights(
       lanes.current.clear();
       busy.current.clear();
     }
-    const fresh = events.slice(seen.current);
+    const base = seen.current;
+    const fresh = events.slice(base);
     seen.current = events.length;
     const before = places.current;
     places.current = now;
     if (fresh.length === 0) return;
+    settled();
 
     if (motionOn) {
       // A drawn card that came and went within one batch has no place on screen: where it would have been stands in,
@@ -204,31 +221,47 @@ export function useFlights(
         const from = takeDrop(flight.from) ?? find(flight.from, before, now, flight.by);
         const to = flight.tap ? from : find(flight.to, now, before, flight.by);
         if (!from || !to) continue;
-        const item: Active = { id: nextId.current++, flight, from, to, at: performance.now() };
+        const item: Active = {
+          id: nextId.current++,
+          flight,
+          from,
+          to,
+          at: performance.now(),
+          event: base + flight.event,
+        };
         if (by) item.lane = enqueue(by, flight.alongside === true);
         list.push(item);
       }
       if (list.length > 0) setActive((a) => [...a, ...list]);
-    }
-
-    const bubbles = bubblesOf(fresh, me);
-    if (bubbles.length > 0) {
-      const added: Said[] = [];
-      for (const bubble of bubbles) {
-        const seat = boxOf(`[data-seat="${CSS.escape(bubble.player)}"]`);
-        if (!seat) continue;
-        // Under the card they hold up, when it sits under their seat.
-        const front = boxOf(`[data-front-of="${CSS.escape(bubble.player)}"]`);
-        const below = front && front.y > seat.y + seat.h - 12 ? front.y + front.h + 6 : undefined;
-        added.push({ id: nextId.current++, bubble, at: seat, ...(below === undefined ? {} : { below }) });
+      // What a player says is said as their hand plays the move (the owner: «il l'a déjà annoncé avant même de
+      // laisser la carte»), not when the move arrives.
+      const direct: Bubble[] = [];
+      for (const bubble of bubblesOf(fresh, me)) {
+        const gesture = list.find((x) => x.lane && x.flight.by === bubble.player && x.event === base + bubble.event);
+        if (gesture) toSay.current.set(gesture.id, bubble);
+        else direct.push(bubble);
       }
-      const ids = new Set(added.map((s) => s.bubble.player));
-      setSaid((s) => [...s.filter((x) => !ids.has(x.bubble.player)), ...added]);
-      for (const s of added) {
-        timers.current.push(setTimeout(() => setSaid((list) => list.filter((x) => x.id !== s.id)), 1900));
-      }
-    }
+      say(direct);
+    } else say(bubblesOf(fresh, me));
   });
+
+  /** Bubbles by their seats, under the card a player holds up when it sits under their seat. */
+  function say(bubbles: Bubble[]) {
+    if (bubbles.length === 0) return;
+    const added: Said[] = [];
+    for (const bubble of bubbles) {
+      const seat = boxOf(`[data-seat="${CSS.escape(bubble.player)}"]`);
+      if (!seat) continue;
+      const front = boxOf(`[data-front-of="${CSS.escape(bubble.player)}"]`);
+      const below = front && front.y > seat.y + seat.h - 12 ? front.y + front.h + 6 : undefined;
+      added.push({ id: nextId.current++, bubble, at: seat, ...(below === undefined ? {} : { below }) });
+    }
+    const ids = new Set(added.map((s) => s.bubble.player));
+    setSaid((s) => [...s.filter((x) => !ids.has(x.bubble.player)), ...added]);
+    for (const s of added) {
+      timers.current.push(setTimeout(() => setSaid((list) => list.filter((x) => x.id !== s.id)), 1900));
+    }
+  }
 
   /** A gesture's place in its player's lane: after the last one, or as soon as its card is picked up (alongside). */
   function enqueue(by: PlayerId, alongside: boolean): NonNullable<Active['lane']> {
@@ -258,7 +291,12 @@ export function useFlights(
 
   const remove = (id: number) => setActive((a) => a.filter((x) => x.id !== id));
   const land = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, landed: true } : x)));
-  const lift = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, lifted: true } : x)));
+  const lift = (id: number) => {
+    setActive((a) => a.map((x) => (x.id === id ? { ...x, lifted: true } : x)));
+    const bubble = toSay.current.get(id);
+    toSay.current.delete(id);
+    if (bubble) say([bubble]);
+  };
   // The table shows the state before a move until its gesture has played it: a destination hides from the moment the
   // move arrives (the copy waiting at its source covers what the state already changed there) until the copy lands.
   const flying = active.filter((a) => !a.landed && !a.flight.tap);
@@ -269,6 +307,21 @@ export function useFlights(
       ? flightsOf(events.slice(seen.current), me, handOf).filter((f) => !f.tap)
       : [];
   const landing = new Set([...flying.map((a) => a.flight.to), ...coming.map((f) => f.to)]);
+  // The journal goes as far as the moves played: not past a gesture that has not picked its card up yet.
+  const unplayed = [
+    ...active.filter((a) => a.lane && !a.lifted && !a.landed).map((a) => a.event),
+    ...(motionOn && hands && events.length > seen.current
+      ? flightsOf(events.slice(seen.current), me, handOf)
+          .filter((f) => f.by !== undefined && f.by !== me)
+          .map((f) => seen.current + f.event)
+      : []),
+  ];
+  const played = unplayed.length > 0 ? Math.min(...unplayed) : events.length;
+  // The screen is still showing moves: the host holds the bots meanwhile (Table.setShowing).
+  const showing = active.length > 0 || coming.length > 0;
+  const dealing = flying.some((a) => a.flight.dealt) || coming.some((f) => f.dealt);
+  const leaving = (place: Place) =>
+    flying.filter((a) => a.flight.from === place).length + coming.filter((f) => f.from === place).length;
   const inbound = (place: Place) =>
     flying.filter((a) => a.flight.to === place).length + coming.filter((f) => f.to === place).length;
   const waiting = (place: Place) =>
@@ -314,7 +367,7 @@ export function useFlights(
       </AnimatePresence>
     </div>
   );
-  return { landing, inbound, waiting, layer };
+  return { landing, inbound, waiting, played, showing, dealing, leaving, layer };
 }
 
 /**

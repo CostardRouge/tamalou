@@ -59,18 +59,75 @@ describe('table host', () => {
     expect(t.submit({ type: 'draw', by: 'h0', from: 'deck' })).toEqual({ ok: false, error: 'wrongPhase' });
   });
 
-  it('holds a draw back until the quick-discard window has run its minimum', () => {
+  it('holds a draw back until the quick-discard window has run its minimum, while someone else may claim', () => {
+    // Two humans: the other one may still claim, so the window's minimum holds the draw back.
+    const { t, clock } = table(seats('human', 'human'));
+    t.submit({ type: 'ready', by: 'h0' });
+    t.submit({ type: 'ready', by: 'h1' });
+    const current = t.view('h0').current as string;
+    // Play just started: the first face-up card opened the window.
+    const r = t.submit({ type: 'draw', by: current, from: 'deck' });
+    expect(r).toEqual({ ok: true, deferred: true });
+    expect(t.drawPending()).toBe(true);
+    expect(t.view(current).step).toBe('draw');
+    clock.advance(t.windowRemaining());
+    expect(t.view(current).step).toBe('place');
+    expect(t.drawPending()).toBe(false);
+  });
+
+  it('lets a held draw go as soon as the last one who could claim has claimed', () => {
+    // Search a seed where a bot claims the round's first card while the human's draw is held back.
+    for (let seed = 1; seed < 200; seed++) {
+      const { t, clock } = table(seats('human', 'hard', 'hard'), {}, seed);
+      t.submit({ type: 'ready', by: 'h0' });
+      for (let i = 0; i < 60 && t.view('h0').phase !== 'play'; i++) clock.advance(100);
+      if (t.view('h0').current !== 'h0' || t.view('h0').step !== 'draw') continue;
+      if (t.submit({ type: 'draw', by: 'h0', from: 'deck' }).ok !== true || !t.drawPending()) continue;
+      for (let i = 0; i < 40 && t.drawPending(); i++) clock.advance(100);
+      if (!t.events('h0').some((e) => e.type === 'quickDiscard')) continue;
+      // The claim went through and nobody else had one planned: the draw went with it, before the window's end.
+      expect(t.drawPending()).toBe(false);
+      expect(t.view('h0').step).toBe('place');
+      return;
+    }
+    throw new Error('no seed has a bot claim while the human waits');
+  });
+
+  it('lets a draw go at once when nobody else may claim', () => {
+    // Alone with a bot that has no claim planned: the minimum is there for the others, so there is nothing to wait for.
     const { t, clock } = table(seats('human', 'medium'));
     clock.advance(5000);
     t.submit({ type: 'ready', by: 'h0' });
-    // Play just started: the first face-up card opened the window.
-    const r = t.submit({ type: 'draw', by: 'h0', from: 'deck' });
-    expect(r).toEqual({ ok: true, deferred: true });
-    expect(t.drawPending()).toBe(true);
-    expect(t.view('h0').step).toBe('draw');
-    clock.advance(t.windowRemaining());
+    expect(t.windowRemaining()).toBeGreaterThan(0);
+    expect(t.submit({ type: 'draw', by: 'h0', from: 'deck' })).toEqual({ ok: true });
     expect(t.view('h0').step).toBe('place');
-    expect(t.drawPending()).toBe(false);
+  });
+
+  it('holds the bots while the screen shows the last moves, and counts the window from then', () => {
+    const { t, clock } = table(seats('medium', 'medium'));
+    clock.advance(1200);
+    expect(t.view('b0').phase).toBe('play');
+    // The deal's discard card opened the window; the screen is still dealing.
+    t.setShowing(true);
+    const before = t.events('b0').length;
+    clock.advance(4000);
+    expect(t.events('b0').length).toBe(before);
+    t.setShowing(false);
+    // The window runs its whole minimum from here before the first draw.
+    expect(t.windowRemaining()).toBe(t.rules.quickDiscard.minWindowMs);
+    clock.advance(t.rules.quickDiscard.minWindowMs - 1);
+    expect(t.events('b0').length).toBe(before);
+    clock.advance(1);
+    expect(t.events('b0').length).toBeGreaterThan(before);
+  });
+
+  it('never waits on a screen that does not say it is done', () => {
+    const { t, clock } = table(seats('medium', 'medium'));
+    clock.advance(1200);
+    t.setShowing(true);
+    const before = t.events('b0').length;
+    clock.advance(20_000);
+    expect(t.events('b0').length).toBeGreaterThan(before);
   });
 
   it('waits for no window when quick discard is off', () => {

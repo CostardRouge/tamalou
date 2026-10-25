@@ -38,10 +38,19 @@ describe('the flights of a move', () => {
       { type: 'swapped', player: 'ada', slot: 2, discarded: c('Q', 'C') },
     ];
     expect(flightsOf(events, 'me')).toEqual([
-      { from: 'deck', to: 'drawn', card: null, by: 'ada', beat: 0 },
+      { from: 'deck', to: 'drawn', card: null, by: 'ada', beat: 0, event: 0 },
       // Her hand weighs up her next card before it goes for the third.
-      { from: 'drawn', to: 'slot:ada:2', card: null, by: 'ada', hover: 'slot:ada:3', beat: 1 },
-      { from: 'slot:ada:2', to: 'discard', card: c('Q', 'C'), turnsOver: true, by: 'ada', alongside: true, beat: 2 },
+      { from: 'drawn', to: 'slot:ada:2', card: null, by: 'ada', hover: 'slot:ada:3', beat: 1, event: 1 },
+      {
+        from: 'slot:ada:2',
+        to: 'discard',
+        card: c('Q', 'C'),
+        turnsOver: true,
+        by: 'ada',
+        alongside: true,
+        beat: 2,
+        event: 1,
+      },
     ]);
   });
 
@@ -60,7 +69,16 @@ describe('the flights of a move', () => {
       'me',
     );
     expect(quick).toEqual([
-      { from: 'slot:ada:1', to: 'discard', card: c('6', 'H'), turnsOver: true, thrown: true, by: 'ada', beat: 0 },
+      {
+        from: 'slot:ada:1',
+        to: 'discard',
+        card: c('6', 'H'),
+        turnsOver: true,
+        thrown: true,
+        by: 'ada',
+        beat: 0,
+        event: 0,
+      },
     ]);
     const swap = flightsOf(
       [
@@ -125,8 +143,8 @@ describe('what the others say', () => {
       'me',
     );
     expect(said).toEqual([
-      { player: 'ada', key: 'bubbleThrow', card: c('7', 'D') },
-      { player: 'bob', key: 'bubblePeekYou' },
+      { player: 'ada', key: 'bubbleThrow', card: c('7', 'D'), event: 1 },
+      { player: 'bob', key: 'bubblePeekYou', event: 3 },
     ]);
   });
 });

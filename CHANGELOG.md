@@ -10,6 +10,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- During your own power, drag one of your cards onto the discard (or use the bolt) to let the power go and make a
+  quick discard.
 - Watch the others play: their moves are now played by their hand, a cursor with their name on a computer and a
   fingertip on a phone or a tablet. It reaches for a card, weighs one up before a swap, touches the cards a power looks
   at, and carries each card where it goes. It can be turned off in the settings or the table's Display button.
@@ -23,6 +25,12 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The quick-discard window now lasts at least 3 seconds (it was 2), counted from when the card is down on the screen;
+  it can still be changed in the rules.
+- The bots wait for each move to finish on the screen before playing on, and "À toi !" comes once the others are done.
+- What the others say, in their bubble and in the line at the top, now comes as their hand plays the move, not
+  before.
+- Your draw no longer waits for the quick-discard window when nobody else could claim it.
 - A card a power lets you look at now comes up large in front of you and turns over, with whose card it is, instead
   of turning in place where it could be tiny or half hidden.
 - On a computer, the oval drawn round the table is gone.
@@ -33,6 +41,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Fixed
 
+- The deal: the deck counts down as it deals, your two cards to remember turn over together once it is done, and
+  the discard's first card no longer flickers as it lands.
 - On a phone, the screen behind an open panel (Display, settings, rules, a mode's panel) no longer scrolls under your
   finger.
 - The others' hands now set out from their seat instead of sweeping in from off the screen, keep up with the bots

@@ -133,7 +133,7 @@ export const RuleSetSchema = z
          * The engine has no clock: the host (LocalConnection, the room) holds a draw back until this long after the
          * window opened.
          */
-        minWindowMs: z.number().int().min(0).max(30_000).default(2000),
+        minWindowMs: z.number().int().min(0).max(30_000).default(3000),
       })
       .prefault({}),
 

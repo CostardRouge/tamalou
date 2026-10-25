@@ -66,6 +66,13 @@ export function dropsFor(source: DragSource, ui: Interaction, view: PlayerView):
           a.type === 'quickDiscard' && a.target.player === me && a.target.slot === ref.slot && a.give === undefined,
       );
       if (quick) out.push({ place: 'discard', send: quick, label: { key: 'dropQuick', n: ref.slot + 1 } });
+      else {
+        // During my own power: let it go, then the quick discard.
+        const through = ui.quickThrough(ref.slot);
+        if (through) {
+          out.push({ place: 'discard', ...through, label: { key: 'dropQuick', n: ref.slot + 1 } });
+        }
+      }
       for (const a of ui.legal) {
         if (a.type !== 'usePower') continue;
         const [own, other] = a.targets;

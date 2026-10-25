@@ -36,6 +36,8 @@ export interface Flight {
    * swap reads as "in, then out".
    */
   beat: number;
+  /** The index of the event it plays, in the list given: the journal and the bubbles wait for it to be played. */
+  event: number;
 }
 
 /** The gap between two dealt cards, in beats: a round of four hands for four players takes about a second and a half. */
@@ -57,10 +59,12 @@ export function flightsOf(
     if (e.type === 'drewCard') mine.set(e.to, e.card);
   }
   let beat = 0;
-  const fly = (f: Omit<Flight, 'beat'>, after = 0) => out.push({ ...f, beat: beat + after });
+  let event = 0;
+  const fly = (f: Omit<Flight, 'beat' | 'event'>, after = 0) => out.push({ ...f, beat: beat + after, event });
   // Taps are only played by a hand: they take no beat from the cards flying on their own.
   let taps = 0;
-  for (const e of events) {
+  for (const [i, e] of events.entries()) {
+    event = i;
     const before = out.length;
     let span = 1;
     switch (e.type) {
@@ -115,7 +119,15 @@ export function flightsOf(
         break;
       case 'powerUsed':
         for (const target of e.targets) {
-          out.push({ from: slotPlace(target), to: slotPlace(target), card: null, by: e.player, tap: true, beat });
+          out.push({
+            from: slotPlace(target),
+            to: slotPlace(target),
+            card: null,
+            by: e.player,
+            tap: true,
+            beat,
+            event,
+          });
           taps++;
         }
         break;
@@ -174,14 +186,18 @@ export interface Bubble {
     | 'bubbleMissed';
   /** For a line naming a card: "Je jette le 7." */
   card?: Card;
+  /** The index of the move it tells, in the list given: it is said as that move is played. */
+  event: number;
 }
 
 export function bubblesOf(events: readonly GameEvent[], me: PlayerId): Bubble[] {
   const said = new Map<PlayerId, Bubble>();
-  const say = (b: Bubble) => {
-    if (b.player !== me) said.set(b.player, b);
+  let event = 0;
+  const say = (b: Omit<Bubble, 'event'>) => {
+    if (b.player !== me) said.set(b.player, { ...b, event });
   };
-  for (const e of events) {
+  for (const [i, e] of events.entries()) {
+    event = i;
     switch (e.type) {
       case 'drew':
         say({ player: e.player, key: e.from === 'deck' ? 'bubbleDraw' : 'bubbleTake' });

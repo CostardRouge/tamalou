@@ -24,6 +24,8 @@ export interface GameConnection {
 
   /** This device's pace for the bots it hosts (game/pace.ts); absent in a room, whose bots keep their own. */
   setBotPace?(factor: number): void;
+  /** The screen is still showing moves: the bots this device hosts wait for it (Table.setShowing); absent in a room. */
+  setShowing?(on: boolean): void;
 
   // Pass-and-play only (one device, several players): absent on a single player's connection.
   /** The player the device must be handed to before anything private is shown, if any. */
