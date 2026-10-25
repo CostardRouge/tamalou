@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import { createRoom } from '../connection/remote.ts';
+import { Overlay } from '../game/Overlay.tsx';
 import { currentLang, type Key, plural, presetText, t } from '../i18n/index.ts';
 import type { GameChoice } from './HomeScreen.tsx';
 import { MAX_SEATS, type Mode } from './modes.ts';
@@ -62,7 +63,7 @@ interface Props {
 export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, onRoom }: Props) {
   const preset = PRESETS.find((p) => p.id === c.preset);
   return (
-    <div className="overlay sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <Overlay className="sheet-overlay" labelledBy="setup-title" onClose={onClose}>
       <div className="sheet">
         <div className="panel-head">
           <h2 id="setup-title">{t(MODE_KEY[c.mode])}</h2>
@@ -139,7 +140,7 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
           </form>
         )}
       </div>
-    </div>
+    </Overlay>
   );
 }
 

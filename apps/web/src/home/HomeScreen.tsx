@@ -2,6 +2,7 @@ import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
 import { type Card, PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
 import { useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
+import { Overlay } from '../game/Overlay.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { VERSION } from '../version.ts';
@@ -234,11 +235,11 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
       ) : null}
 
       {settings ? (
-        <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <Overlay labelledBy="settings-title" onClose={() => setSettings(false)}>
           <div className="panel settings-panel">
             <Settings onClose={() => setSettings(false)} />
           </div>
-        </div>
+        </Overlay>
       ) : null}
     </main>
   );

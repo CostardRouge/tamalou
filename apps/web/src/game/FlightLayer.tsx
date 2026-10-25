@@ -88,6 +88,8 @@ export interface HandsOptions {
   name: (player: PlayerId) => string;
   /** A CSS colour for the player's hand (their seat's colour). */
   color: (player: PlayerId) => string;
+  /** Whose turn it is now: a hand whose player's turn is over goes back to their seat. */
+  current: () => PlayerId | null;
 }
 
 export interface FlightOptions {
@@ -105,6 +107,8 @@ export interface FlightOptions {
 export interface FlightLayer {
   /** Places a card is flying to: drawn hidden until it lands. */
   landing: ReadonlySet<Place>;
+  /** How many cards are on their way to a place (the discard shows the top from before them). */
+  inbound: (place: Place) => number;
   layer: ReactNode;
 }
 
@@ -210,7 +214,11 @@ export function useFlights(
 
   const remove = (id: number) => setActive((a) => a.filter((x) => x.id !== id));
   const land = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, landed: true } : x)));
-  const landing = new Set(active.filter((a) => !a.landed && !a.flight.tap).map((a) => a.flight.to));
+  // The table shows the state before a move until its gesture has played it: a destination hides from the moment the
+  // move arrives (the copy waiting at its source covers what the state already changed there) until the copy lands.
+  const flying = active.filter((a) => !a.landed && !a.flight.tap);
+  const landing = new Set(flying.map((a) => a.flight.to));
+  const inbound = (place: Place) => flying.filter((a) => a.flight.to === place).length;
   const room: HandRoom | null = hands ? { ...hands, speed, pace, at: handAt.current, busy: busy.current } : null;
   const layer = (
     <div className="flights" aria-hidden="true">
@@ -242,7 +250,7 @@ export function useFlights(
       </AnimatePresence>
     </div>
   );
-  return { landing, layer };
+  return { landing, inbound, layer };
 }
 
 /**
@@ -351,7 +359,11 @@ const grip = (b: Box) => ({ x: b.x + b.w * 0.55, y: b.y + b.h * 0.45 });
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-/** A move played by another player's hand: it reaches, presses, carries the card (or only touches, for a tap). */
+/**
+ * A move played by another player's hand: it reaches, presses, carries the card (or only touches, for a tap). The
+ * card's copy sits at its source from the moment the move arrives, so the table reads as before the move until the
+ * hand takes it.
+ */
 function CarriedCard({
   a,
   room,
@@ -386,13 +398,20 @@ function CarriedCard({
     const s = r.speed;
     // Quick enough to fit between two of a bot's moves, quicker still when the bots are brisk.
     const stiffness = (420 * s * s) / Math.min(1, r.pace);
+    // Critically damped and done within a pixel: a spring's long tail kept each gesture waiting for over a second.
     const move = (x: number, y: number, stiffer = 1) => {
       const k = stiffness * stiffer;
-      const spring = { type: 'spring' as const, stiffness: k, damping: 2 * 0.85 * Math.sqrt(k) };
+      const spring = { type: 'spring' as const, stiffness: k, damping: 2 * Math.sqrt(k), restDelta: 1, restSpeed: 40 };
       return Promise.all([animate(hx, x, spring), animate(hy, y, spring)]).then(() => {});
     };
     const settle = (mv: MotionValue<number>, v: number) =>
-      animate(mv, v, { type: 'spring', stiffness: 400 * s * s, damping: 2 * 0.9 * Math.sqrt(400 * s * s) });
+      animate(mv, v, {
+        type: 'spring',
+        stiffness: 400 * s * s,
+        damping: 2 * Math.sqrt(400 * s * s),
+        restDelta: 0.5,
+        restSpeed: 20,
+      });
     const finishLanding = (byHand = true) => {
       if (landed) return;
       landed = true;
@@ -417,7 +436,7 @@ function CarriedCard({
         if (!flight.tap) {
           const k = 700 * s * s;
           const quick = { type: 'spring' as const, stiffness: k, damping: 2 * 0.9 * Math.sqrt(k) };
-          if (flight.turnsOver) setTimeout(() => alive && setFace(flight.card), 80 / s);
+          if (flight.turnsOver) setFace(flight.card);
           await Promise.all([animate(cx, to.x, quick), animate(cy, to.y, quick), animate(scale, 1, quick)]);
         }
         finishLanding(false);
@@ -466,7 +485,8 @@ function CarriedCard({
         const follow = [hx.on('change', (v) => cx.set(v - off.x)), hy.on('change', (v) => cy.set(v - off.y))];
         void settle(scale, 1);
         void settle(rot, Math.max(-8, Math.min(8, (to.x - from.x) * 0.03)));
-        if (flight.turnsOver) setTimeout(() => alive && setFace(flight.card), 150 / s);
+        // It turns over as it is lifted, so the face is up by the time it lands.
+        if (flight.turnsOver) setFace(flight.card);
         await move(to.x + off.x, to.y + off.y, flight.thrown ? 2 : 1);
         for (const stop of follow) stop();
         if (!alive) return;
@@ -475,6 +495,18 @@ function CarriedCard({
       }
       await sleep(220);
       if (!alive) return;
+      // The player's turn is over (nothing more in their lane): the hand goes back to their seat before it fades, as a
+      // player sits back, rather than resting on the last card it touched.
+      if ((r.busy.get(by) ?? 0) === 0 && r.current() !== by) {
+        const home = boxOf(`[data-seat="${CSS.escape(by)}"]`);
+        if (home) {
+          const x = home.x + home.w / 2;
+          const y = home.y + home.h - 10;
+          await move(x, y);
+          r.at.set(by, { x, y, t: performance.now() });
+          if (!alive) return;
+        }
+      }
       setHandOn(false);
       await sleep(200);
       clearTimeout(safety);
