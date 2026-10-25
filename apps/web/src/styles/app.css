@@ -1204,11 +1204,26 @@ html:has(.game) body {
   stroke-linecap: round;
 }
 
+/* The deck and the discard sit in the middle whatever else is on the table; the drawn card takes the right flank, so
+   nothing moves when it comes and goes (a flight measured before it appeared used to land 50px off, on the deck). */
 .center {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto minmax(0, 1fr);
   align-items: center;
-  gap: 18px;
+  column-gap: 18px;
+}
+
+.center > .pile:first-child {
+  grid-column: 2;
+}
+
+.center > .pile-discard {
+  grid-column: 3;
+}
+
+.center > .drawn {
+  grid-column: 4;
+  justify-self: start;
 }
 
 .pile {
@@ -1438,7 +1453,7 @@ html:has(.game) body {
     grid-column: 1;
     align-self: center;
     margin-top: 14dvh;
-    gap: 28px;
+    column-gap: 28px;
   }
 
   .game .mine {

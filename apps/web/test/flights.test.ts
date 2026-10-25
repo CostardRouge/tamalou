@@ -41,7 +41,7 @@ describe('the flights of a move', () => {
       { from: 'deck', to: 'drawn', card: null, by: 'ada', beat: 0 },
       // Her hand weighs up her next card before it goes for the third.
       { from: 'drawn', to: 'slot:ada:2', card: null, by: 'ada', hover: 'slot:ada:3', beat: 1 },
-      { from: 'slot:ada:2', to: 'discard', card: c('Q', 'C'), turnsOver: true, by: 'ada', beat: 2 },
+      { from: 'slot:ada:2', to: 'discard', card: c('Q', 'C'), turnsOver: true, by: 'ada', alongside: true, beat: 2 },
     ]);
   });
 

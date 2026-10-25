@@ -36,6 +36,8 @@ interface Active {
   flight: Flight;
   from: Box;
   to: Box;
+  /** When the move arrived (performance.now()): a hand that falls too far behind lets the card fly on its own. */
+  at: number;
   /** Landed: the card is gone and its destination shows, while the hand that carried it lingers. */
   landed?: boolean;
   /** Played by a hand: when it may start, and what it tells its lane. */
@@ -158,7 +160,7 @@ export function useFlights(
         const from = takeDrop(flight.from) ?? find(flight.from, before, now);
         const to = flight.tap ? from : find(flight.to, now, before);
         if (!from || !to) continue;
-        const item: Active = { id: nextId.current++, flight, from, to };
+        const item: Active = { id: nextId.current++, flight, from, to, at: performance.now() };
         if (by) item.lane = enqueue(by, flight.alongside === true);
         list.push(item);
       }
@@ -214,7 +216,11 @@ export function useFlights(
     <div className="flights" aria-hidden="true">
       {active.map((a) =>
         a.lane && room ? (
-          <CarriedCard key={a.id} a={a} room={room} onLand={() => land(a.id)} onDone={() => remove(a.id)} />
+          a.flight.alongside ? (
+            <AlongsideCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
+          ) : (
+            <CarriedCard key={a.id} a={a} room={room} onLand={() => land(a.id)} onDone={() => remove(a.id)} />
+          )
         ) : (
           <FlyingCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
         ),
@@ -304,6 +310,42 @@ function FlyingCard({ a, speed, onDone }: { a: Active; speed: number; onDone: ()
   );
 }
 
+/** The other half of an exchange: it flies on its own the moment the hand picks the first card up. */
+function AlongsideCard({ a, speed, onDone }: { a: Active; speed: number; onDone: () => void }) {
+  const [go, setGo] = useState(false);
+  const lane = useRef(a.lane);
+  const ended = useRef(false);
+  useEffect(() => {
+    let alive = true;
+    void lane.current?.start.then(() => {
+      if (!alive) return;
+      lane.current?.picked();
+      setGo(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  if (!go) return null;
+  return (
+    <FlyingCard
+      a={{ ...a, flight: { ...a.flight, beat: 0 } }}
+      speed={speed}
+      onDone={() => {
+        if (!ended.current) lane.current?.done();
+        ended.current = true;
+        onDone();
+      }}
+    />
+  );
+}
+
+/**
+ * A gesture that would start later than this after its move (ms, at normal speed) is not played by the hand: the card
+ * flies straight to its place, so the hands never trail the game by more than a gesture.
+ */
+const LAG_MAX = 1100;
+
 /** Where a hand presses a card: a little right of and above its middle, as a finger or an arrow's tip would. */
 const grip = (b: Box) => ({ x: b.x + b.w * 0.55, y: b.y + b.h * 0.45 });
 
@@ -342,7 +384,8 @@ function CarriedCard({
     let landed = false;
     const { room: r, lane } = latest.current;
     const s = r.speed;
-    const stiffness = 170 * s * s;
+    // Quick enough to fit between two of a bot's moves, quicker still when the bots are brisk.
+    const stiffness = (420 * s * s) / Math.min(1, r.pace);
     const move = (x: number, y: number, stiffer = 1) => {
       const k = stiffness * stiffer;
       const spring = { type: 'spring' as const, stiffness: k, damping: 2 * 0.85 * Math.sqrt(k) };
@@ -350,11 +393,11 @@ function CarriedCard({
     };
     const settle = (mv: MotionValue<number>, v: number) =>
       animate(mv, v, { type: 'spring', stiffness: 400 * s * s, damping: 2 * 0.9 * Math.sqrt(400 * s * s) });
-    const finishLanding = () => {
+    const finishLanding = (byHand = true) => {
       if (landed) return;
       landed = true;
       // The next gesture in this lane starts from here.
-      r.at.set(by, { x: hx.get(), y: hy.get(), t: performance.now() });
+      if (byHand) r.at.set(by, { x: hx.get(), y: hy.get(), t: performance.now() });
       lane?.picked();
       lane?.done();
       latest.current.onLand();
@@ -363,11 +406,25 @@ function CarriedCard({
     const safety = setTimeout(() => {
       finishLanding();
       latest.current.onDone();
-    }, 12_000);
+    }, 8000);
 
     void (async () => {
       await lane?.start;
       if (!alive) return;
+      const lag = performance.now() - a.at;
+      if (lag > LAG_MAX / s) {
+        // Too late for a gesture: the card goes straight to its place, the hand stays where it was.
+        if (!flight.tap) {
+          const k = 700 * s * s;
+          const quick = { type: 'spring' as const, stiffness: k, damping: 2 * 0.9 * Math.sqrt(k) };
+          if (flight.turnsOver) setTimeout(() => alive && setFace(flight.card), 80 / s);
+          await Promise.all([animate(cx, to.x, quick), animate(cy, to.y, quick), animate(scale, 1, quick)]);
+        }
+        finishLanding(false);
+        clearTimeout(safety);
+        latest.current.onDone();
+        return;
+      }
       const hurry = (r.busy.get(by) ?? 0) > 1;
       // From where this player's hand last was, else from their seat.
       const last = r.at.get(by);
@@ -378,15 +435,17 @@ function CarriedCard({
           : seat
             ? { x: seat.x + seat.w / 2, y: seat.y + seat.h - 10 }
             : grip(from);
-      hx.set(start.x);
-      hy.set(start.y);
+      // Jumped, not set: a set hands the spring the speed of the leap, which flung the hand off the screen.
+      hx.jump(start.x);
+      hy.jump(start.y);
       setHandOn(true);
-      if (flight.hover && !hurry) {
+      // It weighs a card up only when it has the time: a lane already behind goes straight for the card.
+      if (flight.hover && !hurry && lag < 350 / s) {
         const over = boxOf(`[data-place="${CSS.escape(flight.hover)}"]`);
         if (over) {
           const g = grip(over);
           await move(g.x, g.y);
-          await sleep((300 * r.pace) / s);
+          await sleep((220 * r.pace) / s);
           if (!alive) return;
         }
       }
@@ -394,11 +453,11 @@ function CarriedCard({
       await move(g.x, g.y, hurry ? 1.6 : 1);
       if (!alive) return;
       setPress(true);
-      await sleep(110 / s);
+      await sleep(80 / s);
       setPress(false);
       if (flight.tap) {
         // Only a touch: the card is looked at, or chosen, where it lies.
-        await sleep((280 * r.pace) / s);
+        await sleep((240 * r.pace) / s);
         finishLanding();
       } else {
         lane?.picked();
@@ -414,10 +473,10 @@ function CarriedCard({
         await Promise.all([settle(cx, to.x), settle(cy, to.y), settle(rot, 0)]);
         finishLanding();
       }
-      await sleep(350);
+      await sleep(220);
       if (!alive) return;
       setHandOn(false);
-      await sleep(300);
+      await sleep(200);
       clearTimeout(safety);
       latest.current.onDone();
     })();
