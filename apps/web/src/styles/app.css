@@ -1490,6 +1490,23 @@ html:has(.game) body {
   background: rgb(0 0 0 / 0.45);
   z-index: 10;
   padding: 12px;
+  /* Nothing behind an open panel moves under a finger (the owner's report, 2026-10-25): a drag on the backdrop does
+     nothing, a panel scrolled to its end does not hand the scroll on, and the page under it is locked below. */
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+/* Only the panel itself scrolls (its own scroll container, so the backdrop's touch-action stops at it). */
+.overlay .panel,
+.overlay .sheet {
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
+}
+
+html:has(.overlay),
+html:has(.overlay) body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .panel {

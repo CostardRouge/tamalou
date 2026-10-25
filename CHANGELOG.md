@@ -20,6 +20,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 - On a computer, the table's oval now goes round your own hand too, as at a real table.
 
+### Fixed
+
+- On a phone, the screen behind an open panel (Display, settings, rules, a mode's panel) no longer scrolls under your
+  finger.
+
 ## [0.14.0] - 2026-10-24 — Nain jaune
 
 ### Changed
