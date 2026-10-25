@@ -80,7 +80,7 @@ describe('pass-and-play', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     expect(screen.getAllByText(/Pas de défausse rapide\./).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));
-    expect(screen.getByText(/Au moins 2 s pour réagir\./)).toBeTruthy();
+    expect(screen.getByText(/Au moins 3 s pour réagir\./)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Terminé' }));
     expect(screen.getByText('1 réglage modifié')).toBeTruthy();
   });

@@ -37,8 +37,8 @@ class Clock implements Scheduler {
   }
 }
 
-/** A game where I start, draw a 7 and throw it: its power shows me one of my cards. */
-function lookingAtMyCard() {
+/** A game where I start, draw a 7 and throw it: its power waits for me (`look`: I used it, it shows me a card). */
+function lookingAtMyCard(look = true) {
   const rules = rulesFromPreset('classic');
   for (let seed = 1; seed < 500; seed++) {
     const clock = new Clock();
@@ -51,6 +51,7 @@ function lookingAtMyCard() {
     conn.send({ type: 'draw', by: HUMAN_ID, from: 'deck' });
     if (conn.view().drawn?.card?.rank !== '7') continue;
     conn.send({ type: 'discardDrawn', by: HUMAN_ID });
+    if (!look) return conn;
     view = conn.view();
     const peek = legalActions(view, rules).find((a) => a.type === 'usePower');
     if (!peek) continue;
@@ -75,5 +76,17 @@ describe('a tap on nothing', () => {
     render(<GameScreen conn={conn} onQuit={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Journal' }));
     expect(conn.view().step).toBe('reveal');
+  });
+
+  it('lets my power go when I throw a card on the one I just threw', () => {
+    const conn = lookingAtMyCard(false);
+    expect(conn.view().step).toBe('power');
+    render(<GameScreen conn={conn} onQuit={() => {}} />);
+    // The bolt, then one of my cards: the power is let go, then the quick discard is made.
+    fireEvent.click(screen.getByRole('button', { name: /Défausse rapide/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Ta carte 1/ }));
+    const types = conn.events().map((e) => e.type);
+    expect(types).toContain('powerSkipped');
+    expect(types.some((t) => t === 'quickDiscard' || t === 'quickDiscardFailed')).toBe(true);
   });
 });

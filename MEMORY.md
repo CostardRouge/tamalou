@@ -36,7 +36,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - pnpm monorepo, packages ship TS sources, one typecheck, Biome + Vitest — ADR-0002, `architecture.md`.
 - Front: React 19 + Vite + Motion — ADR-0003.
 - Servers: a Node `ws` server for LAN (Docker on the homelab) AND a Cloudflare Worker + Durable Objects for online, both thin adapters over the pure `packages/room` — ADR-0004, `architecture.md`.
-- Quick discard window: open from a card landing on the discard until the next player draws (2 s minimum); off by default in pass-and-play — ADR-0005, `rules.md`.
+- Quick discard window: open from a card landing on the discard until the next player draws (3 s minimum since 2026-10-25, counted from when the screen has put the card down; a draw held only while someone else may claim); off by default in pass-and-play — ADR-0005, `rules.md`.
 - Defaults for the brief's unspecified rule points — ADR-0006, `rules.md`.
 - Visual identity reused from Versus; card faces behind a theme — ADR-0007, `design.md`.
 - The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.
@@ -84,6 +84,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-17 — Once deployed, check the first views and events in Umami (Tamalou's site on insight.steevepommier.com): both hosts, clean paths, no room code — ADR-0018.
 - 2026-10-22 — Owner to judge the new launch screen on his phone: "Rejouer", a tile's panel (add and remove bots, names, rules), the deal, the settings behind the button; pass-and-play with five or six players.
 - 2026-10-24 — Owner to judge the deal on the table (phone and desktop) and the wide table on his computer: four and six players, the journal at the side.
+- 2026-10-25 — Owner to judge the pacing on a phone: the 3 s quick-discard window from the card landing (Règles → Défausse rapide to tune it), the bots waiting for each move to finish, «À toi !» after the others, the bubbles and the journal line as the hand plays, a quick discard during one's own power (drag or bolt), the deal ending clean.
 - 2026-10-25 — Owner to judge the drawn card on a phone and a computer: a bot's card in front of it, raised its way; "En main" and "En grand" in "Affichage", dragging the card onto one's own cards and the discard; the turned backs; the deal ending on the discard.
 - 2026-10-25 — Owner to judge the others' hands on his phone (the fingertip) and his computer (the cursor), and the three paces and card speeds in "Affichage".
 - 2026-10-22 — Owner to judge the quick discard by hand on his phone: during a bot's turn, the glowing discard, the lifted cards, a drag onto it; the small bolt as the second way.

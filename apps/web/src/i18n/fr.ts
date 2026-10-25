@@ -91,6 +91,7 @@ export const fr = {
   promptChoosePeek_one: 'Choisis {n} carte à regarder.',
   promptChoosePeek_other: 'Choisis {n} cartes à regarder.',
   promptWaitOthers: 'Les autres mémorisent leurs cartes…',
+  promptDealing: 'Distribution des cartes…',
   promptDraw: 'Pioche une carte, ou prends celle de la défausse.',
   promptDrawWaiting: 'Un instant : défausse rapide possible…',
   promptPlace: 'Échange-la avec une de tes cartes, ou défausse-la.',

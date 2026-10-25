@@ -29,7 +29,7 @@ describe('RuleSet defaults', () => {
     });
     expect(r.powers.activation).toBe('drawPile');
     expect(r.discardPickup.mustSwap).toBe(true);
-    expect(r.quickDiscard).toEqual({ enabled: true, penaltyCards: 1, allowOpponentCards: false, minWindowMs: 2000 });
+    expect(r.quickDiscard).toEqual({ enabled: true, penaltyCards: 1, allowOpponentCards: false, minWindowMs: 3000 });
     expect(r.tamalou).toEqual({
       timing: 'startOfTurn',
       lockCallerCards: true,

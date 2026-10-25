@@ -87,6 +87,7 @@ export const en: Messages = {
   promptChoosePeek_one: 'Pick {n} card to look at.',
   promptChoosePeek_other: 'Pick {n} cards to look at.',
   promptWaitOthers: 'The others are remembering their cards…',
+  promptDealing: 'Dealing the cards…',
   promptDraw: 'Draw a card, or take the one on the discard.',
   promptDrawWaiting: 'One moment: quick discards are open…',
   promptPlace: 'Swap it with one of your cards, or discard it.',

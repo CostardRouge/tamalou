@@ -76,6 +76,9 @@ export class LocalConnection implements GameConnection {
   setBotPace(factor: number) {
     this.table.setBotPace(factor);
   }
+  setShowing(on: boolean) {
+    this.table.setShowing(on);
+  }
   subscribe(listener: () => void) {
     this.listeners.add(listener);
     const off = this.table.subscribe(listener);

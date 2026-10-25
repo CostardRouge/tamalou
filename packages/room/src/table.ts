@@ -15,7 +15,10 @@ import {
 //
 // What the host does that the engine cannot:
 // - bots: each one decides from its own view, and its move is played after the delay its level asks for;
-// - the quick-discard window's minimum (quickDiscard.minWindowMs): a draw that comes earlier is held back until then;
+// - the quick-discard window's minimum (quickDiscard.minWindowMs): a draw that comes earlier is held back until then,
+//   when anyone else may still claim;
+// - a screen still showing the last moves (setShowing, solo and pass-and-play): the bots wait for it, and the window
+//   is counted from when it is done;
 // - the host actions: score a finished round once its window has run, deal the next one when every human is ready;
 // - the turn timer (pace.turnTimerSeconds): a human who runs out of time has their turn played by a bot;
 // - absent humans (setAway, a lost connection online): their stand-in bot plays their moves, never their claims, and
@@ -50,10 +53,17 @@ export type SubmitResult = { ok: true; deferred?: boolean } | { ok: false; error
 const BOT_ROUND_PAUSE_MS = 2500;
 /** The level that plays a human's turn when their timer runs out. */
 const STAND_IN_LEVEL: BotLevel = 'medium';
+/** A screen that says it is showing moves holds the game this long at most (a tab in the background never says). */
+const SHOW_CAP_MS = 5000;
+/** The beat between the end of what the screen shows and the bot moves it held. */
+const AFTER_SHOW_MS = 250;
 
 interface Plan {
   action: Action;
   handle: unknown;
+  /** Its timer ran while the screen was still showing: it goes on when the screen is done. */
+  parked?: boolean;
+  fire: () => void;
 }
 
 export class Table {
@@ -79,6 +89,8 @@ export class Table {
   private disposed = false;
   /** What the bots' turn delays are multiplied by (setBotPace). */
   private botPace = 1;
+  private showing = false;
+  private showTimer: unknown = null;
 
   constructor({ seed, rules, seats, scheduler, botPace }: TableOptions) {
     this.rules = rules;
@@ -164,6 +176,7 @@ export class Table {
     if (this.deferredDraw) this.scheduler.clearTimeout(this.deferredDraw.handle);
     if (this.hostTimer !== null) this.scheduler.clearTimeout(this.hostTimer);
     if (this.turnTimer) this.scheduler.clearTimeout(this.turnTimer.handle);
+    if (this.showTimer !== null) this.scheduler.clearTimeout(this.showTimer);
     this.listeners.clear();
   }
 
@@ -175,16 +188,23 @@ export class Table {
     if (action.by === 'host' || !this.isHuman(action.by)) return { ok: false, error: 'notYourSeat' };
     if (action.type === 'draw') {
       if (this.deferredDraw) return { ok: false, error: 'alreadyDrawing' };
-      const wait = this.windowRemaining();
+      // The window's minimum is there for the others: when nobody else may claim, the draw goes at once.
+      const wait = this.othersMayClaim(action.by) ? this.windowRemaining() : 0;
       if (wait > 0) {
         if (!legalActions(this.view(action.by), this.rules).some((a) => same(a, action))) {
           return { ok: false, error: 'illegal' };
         }
-        const handle = this.scheduler.setTimeout(() => {
+        const fire = () => {
+          // The window may have been counted again since (the screen showed a move meanwhile).
+          const rest = this.othersMayClaim(action.by) ? this.windowRemaining() : 0;
+          if (rest > 0 && this.deferredDraw) {
+            this.deferredDraw.handle = this.scheduler.setTimeout(fire, rest);
+            return;
+          }
           this.deferredDraw = null;
           this.play(action);
-        }, wait);
-        this.deferredDraw = { action, handle };
+        };
+        this.deferredDraw = { action, handle: this.scheduler.setTimeout(fire, wait) };
         this.notify();
         return { ok: true, deferred: true };
       }
@@ -223,6 +243,43 @@ export class Table {
   /** Whether a human's draw is waiting for the window to run out. */
   drawPending(): boolean {
     return this.deferredDraw !== null;
+  }
+
+  /**
+   * The screen is still showing moves (the browser's flying cards and the others' hands: solo and pass-and-play).
+   * Meanwhile no bot moves, and a window open on the discard is counted from when the screen is done, so a card is
+   * down in sight before anyone may be beaten to it (the owner, 2026-10-25: «on n'a pas le temps de lire le jeu»).
+   * A server, which cannot see its players' screens, never calls it. Capped, so a screen that never says it is done
+   * holds nothing for long.
+   */
+  setShowing(on: boolean): void {
+    if (this.disposed || on === this.showing) return;
+    this.showing = on;
+    if (this.showTimer !== null) this.scheduler.clearTimeout(this.showTimer);
+    this.showTimer = null;
+    if (on) {
+      this.showTimer = this.scheduler.setTimeout(() => {
+        this.showTimer = null;
+        this.setShowing(false);
+      }, SHOW_CAP_MS);
+      return;
+    }
+    if (this.state.window && this.windowSince !== null) {
+      this.windowSince = Math.max(this.windowSince, this.scheduler.now());
+    }
+    for (const plan of this.plans.values()) {
+      if (!plan.parked) continue;
+      plan.parked = false;
+      plan.handle = this.scheduler.setTimeout(plan.fire, AFTER_SHOW_MS);
+    }
+  }
+
+  /** Whether anyone but this seat may still claim the open discard: another human here, or a bot set to. */
+  private othersMayClaim(seat: PlayerId): boolean {
+    if (!this.rules.quickDiscard.enabled || !this.state.window) return false;
+    const live = (id: PlayerId) => !this.state.players.find((p) => p.id === id)?.eliminated;
+    if (this.humans().some((h) => h !== seat && !this.away.has(h) && live(h))) return true;
+    return [...this.plans].some(([id, plan]) => id !== seat && plan.action.type === 'quickDiscard');
   }
 
   // ------------------------------------------------------------ core
@@ -272,6 +329,13 @@ export class Table {
     this.planBots();
     this.planHost();
     this.planTurnTimer();
+    // A held draw goes as soon as nobody else may claim any more (a bot made its claim, or let it go).
+    const held = this.deferredDraw;
+    if (held && !this.othersMayClaim(held.action.by)) {
+      this.scheduler.clearTimeout(held.handle);
+      this.deferredDraw = null;
+      if (this.play(held.action) === null) return;
+    }
     this.notify();
   }
 
@@ -305,12 +369,29 @@ export class Table {
           ? this.delay(profile.delays.quickDiscard)
           : Math.round(this.delay(profile.delays.turn) * this.botPace);
       if (action.type === 'draw') wait = Math.max(wait, this.windowRemaining());
-      const handle = this.scheduler.setTimeout(() => {
-        this.plans.delete(id);
-        // Refused only when something else happened first (a stale claim): the next plan decides again.
-        if (this.play(action) !== null) this.after();
-      }, wait);
-      this.plans.set(id, { action, handle });
+      const next: Plan = {
+        action,
+        handle: null,
+        fire: () => {
+          if (this.plans.get(id) !== next) return;
+          // The screen is still showing the last moves: this one waits for it (setShowing).
+          if (this.showing) {
+            next.parked = true;
+            return;
+          }
+          // A draw waits out a window counted again since it was planned.
+          const rest = action.type === 'draw' ? this.windowRemaining() : 0;
+          if (rest > 0) {
+            next.handle = this.scheduler.setTimeout(next.fire, rest);
+            return;
+          }
+          this.plans.delete(id);
+          // Refused only when something else happened first (a stale claim): the next plan decides again.
+          if (this.play(action) !== null) this.after();
+        },
+      };
+      next.handle = this.scheduler.setTimeout(next.fire, wait);
+      this.plans.set(id, next);
     }
   }
 
@@ -325,10 +406,17 @@ export class Table {
       if (humans.length > 0 && !humans.every((h) => this.continued.has(h))) return;
       if (humans.length === 0) wait = BOT_ROUND_PAUSE_MS;
     }
-    this.hostTimer = this.scheduler.setTimeout(() => {
+    const fire = () => {
+      // The end of a round waits out a window counted again since (the screen showed a move meanwhile).
+      const rest = owed.type === 'endRound' ? this.windowRemaining() : 0;
+      if (rest > 0 || (owed.type === 'endRound' && this.showing)) {
+        this.hostTimer = this.scheduler.setTimeout(fire, Math.max(rest, AFTER_SHOW_MS));
+        return;
+      }
       this.hostTimer = null;
       this.play(owed);
-    }, wait);
+    };
+    this.hostTimer = this.scheduler.setTimeout(fire, wait);
   }
 
   private planTurnTimer(): void {

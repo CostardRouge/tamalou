@@ -91,4 +91,40 @@ describe('where a release lands', () => {
     ]);
     expect(resolveDrop(drops, boxes, { x: 330, y: 120 }, still)).toEqual([]);
   });
+
+  it('lets my own power go to throw one of my cards on the card I just threw', () => {
+    // A game where I start and draw a card with a power: thrown, its power waits for me, and the window is shut.
+    for (let seed = 1; seed < 300; seed++) {
+      let s = createGame({
+        seed,
+        players: [
+          { id: 'me', name: 'Moi' },
+          { id: 'bot', name: 'Ada' },
+        ],
+        rules,
+      }).state;
+      if (s.current !== 'me') continue;
+      s = act(s, { type: 'draw', by: 'me', from: 'deck' });
+      const drawn = viewFor(s, 'me', rules).drawn?.card;
+      if (!drawn || !['7', '8', '9', '10'].includes(drawn.rank)) continue;
+      s = act(s, { type: 'discardDrawn', by: 'me' });
+      const { view, ui } = uiOf(s);
+      expect(view.step).toBe('power');
+      expect(ui.canQuick).toBe(false);
+      const [drop] = dropsFor({ kind: 'slot', ref: { player: 'me', slot: 1 } }, ui, view);
+      expect(drop?.place).toBe('discard');
+      expect(drop?.send).toEqual({ type: 'skipPower', by: 'me' });
+      expect(drop?.followUp).toEqual({
+        type: 'quickDiscard',
+        by: 'me',
+        target: { player: 'me', slot: 1 },
+        expectTop: drawn.id,
+      });
+      // Once the power is let go, the window opens on that card and the quick discard is a legal move.
+      const after = uiOf(act(s, drop?.send as Action));
+      expect(after.ui.legal).toContainEqual(drop?.followUp);
+      return;
+    }
+    throw new Error('no seed draws me a power card');
+  });
 });

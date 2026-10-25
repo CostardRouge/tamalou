@@ -151,15 +151,30 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     return () => window.removeEventListener('resize', turn);
   });
 
-  // The spotlight: "À toi !" for a moment when my turn starts.
+  // The spotlight: "À toi !" for a moment when my turn starts, once the last player's moves have played out on
+  // screen (the owner: one player after the other, «un cloisonnement»).
   const myTurnNow = view.phase === 'play' && view.current === view.me && !handoff;
   const [hello, setHello] = useState(false);
+  const helloOwed = useRef(false);
   useEffect(() => {
-    setHello(myTurnNow);
-    if (!myTurnNow) return;
+    if (!myTurnNow) {
+      helloOwed.current = false;
+      setHello(false);
+      return;
+    }
+    if (!helloOwed.current) helloOwed.current = true;
+  }, [myTurnNow]);
+  useEffect(() => {
+    if (!myTurnNow || !helloOwed.current || fly.showing) return;
+    helloOwed.current = false;
+    setHello(true);
     const id = window.setTimeout(() => setHello(false), 1400);
     return () => window.clearTimeout(id);
-  }, [myTurnNow]);
+  }, [myTurnNow, fly.showing]);
+
+  // The bots this device hosts wait for what the screen still shows (Table.setShowing).
+  useEffect(() => conn.setShowing?.(fly.showing), [conn, fly.showing]);
+  useEffect(() => () => conn.setShowing?.(false), [conn]);
 
   // On a shared screen, a quick discard is claimed for a named player, from that player's own legal moves; their
   // cards stay face down on screen (their view is only used to know what they may claim).
@@ -207,6 +222,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     const a = ui.slot(ref);
     if (!a) return;
     if (a.next) setPending(a.next);
+    if (a.followUp) setQueued(a.followUp);
     if (a.send) go(a.send, ref, () => setPending(NONE));
   };
   const send = (a: Parameters<GameConnection['send']>[0] | undefined) => {
@@ -214,7 +230,11 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     go(a, null, () => setPending(NONE));
   };
 
-  const lines = events.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
+  // The journal tells a move once the screen plays it, not before its gesture has started.
+  const lines = events
+    .slice(0, fly.played)
+    .map((e) => describeEvent(e, nameOf, view.me))
+    .filter((l): l is string => l !== null);
 
   // By hand (design D): a card picked up shows where it may land; let go, it plays that move, or asks when the drop
   // could mean two things; dropped nowhere, it springs back.
@@ -225,6 +245,18 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: checked after every render, like the queue it serves
   useEffect(() => {
+    if (queued?.type === 'quickDiscard') {
+      // A quick discard made through my own power: it goes as soon as the power is let go and the window open.
+      const claim = ui.find(
+        'quickDiscard',
+        (a) => a.target.slot === queued.target.slot && a.target.player === view.me && a.give === undefined,
+      );
+      if (claim && claim.expectTop === queued.expectTop) {
+        setQueued(null);
+        go(claim, null);
+      } else if (!ui.letGo && (!view.quickDiscardOpen || view.discardTop?.id !== queued.expectTop)) setQueued(null);
+      return;
+    }
     if (queued?.type !== 'swap') return;
     const swap = ui.find('swap', (a) => a.slot === queued.slot);
     if (swap) {
@@ -258,8 +290,9 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           buzz(15);
           perform(only);
           // A drop that only starts a move (drawing onto one of my cards) lets the card spring back to the deck: the
-          // drawn card then flies from there. Any other move goes on from where the card was let go.
-          if (only.followUp) return false;
+          // drawn card then flies from there. Any other move goes on from where the card was let go, a quick discard
+          // made through my power too.
+          if (only.followUp && only.followUp.type !== 'quickDiscard') return false;
           noteDrop(place, box);
           return true;
         }}
@@ -282,10 +315,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           const ref = { player: p.id, slot: s.slot };
           const claimAction = claimUi && p.id === claim ? claimUi.slot(ref) : null;
           const action = claim ? (claimAction?.send ? claimAction : null) : ui.slot(ref);
+          // The cards I memorise turn over once the deal is done, together, not each as it lands.
+          const face = mine && fly.dealing ? null : s.card;
           const label = !s.filled
             ? t('slotEmpty')
             : `${mine ? t('slotMine', { n: s.slot + 1 }) : t('slotOf', { n: s.slot + 1, name: p.name })}, ${
-                s.card ? cardName(s.card) : t('cardHidden')
+                face ? cardName(face) : t('cardHidden')
               }${s.locked ? `, ${t('locked')}` : ''}`;
           const place = slotPlace(ref);
           return (
@@ -297,7 +332,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                   place={place}
                   mark={mark(place)}
                   ghost={fly.landing.has(place)}
-                  card={s.card}
+                  card={face}
                   label={label}
                   size={size}
                   empty={!s.filled}
@@ -328,15 +363,17 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     handsFree &&
     !claimers;
   const throwing = !!drag?.drops.some((d) => d.place === 'discard' && d.send.type === 'quickDiscard');
-  const prompt = staged
-    ? staged.question
-    : claim === 'who'
-      ? t('promptQuickWho')
-      : claim
-        ? t('promptQuickAs', { name: nameOf(claim) })
-        : quickOpen && !myTurn
-          ? t('promptQuickOpen')
-          : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
+  const prompt = fly.dealing
+    ? t('promptDealing')
+    : staged
+      ? staged.question
+      : claim === 'who'
+        ? t('promptQuickWho')
+        : claim
+          ? t('promptQuickAs', { name: nameOf(claim) })
+          : quickOpen && !myTurn
+            ? t('promptQuickOpen')
+            : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
 
   // The spotlight (design B of "lisibilité du tour"): whose turn glows; while I choose, what I cannot touch fades.
   // A card a power lets me look at, shown large in front of me (RevealStage).
@@ -484,7 +521,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <CardView
               card={null}
               place="deck"
-              label={plural('deckCount', view.deckSize)}
+              label={plural('deckCount', view.deckSize + fly.leaving('deck'))}
               size="md"
               hint={!!ui.find('draw', (a) => a.from === 'deck')}
               onSelect={
@@ -494,38 +531,33 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               }
             />,
           )}
-          <span className="pile-label mono">{view.deckSize}</span>
+          {/* It counts down as the cards leave it, not all at once when the round is dealt. */}
+          <span className="pile-label mono">{view.deckSize + fly.leaving('deck')}</span>
         </div>
         <div className="pile pile-discard">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div
-              key={shownDiscard?.id ?? 'empty'}
-              initial={{ y: -24, opacity: 0, rotate: -6 }}
-              animate={{ y: 0, opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-            >
-              {carry(
-                { kind: 'discard' },
-                'discard',
-                <CardView
-                  card={shownDiscard}
-                  place="discard"
-                  mark={mark('discard')}
-                  // Not ghosted: the top from before stays in sight until the inbound card lands on it.
-                  empty={!shownDiscard}
-                  label={shownDiscard ? `${t('discard')} : ${cardName(shownDiscard)}` : t('discardEmpty')}
-                  size="md"
-                  hint={!!ui.find('draw', (a) => a.from === 'discard')}
-                  onSelect={
-                    ui.find('draw', (a) => a.from === 'discard')
-                      ? () => send(ui.find('draw', (a) => a.from === 'discard'))
-                      : undefined
-                  }
-                />,
-              )}
-            </motion.div>
-          </AnimatePresence>
+          {/* No entrance of its own: the card that lands here flies in (FlightLayer), and a second drop after it
+              read as a flicker (the owner, 2026-10-25). */}
+          <div key={shownDiscard?.id ?? 'empty'}>
+            {carry(
+              { kind: 'discard' },
+              'discard',
+              <CardView
+                card={shownDiscard}
+                place="discard"
+                mark={mark('discard')}
+                // Not ghosted: the top from before stays in sight until the inbound card lands on it.
+                empty={!shownDiscard}
+                label={shownDiscard ? `${t('discard')} : ${cardName(shownDiscard)}` : t('discardEmpty')}
+                size="md"
+                hint={!!ui.find('draw', (a) => a.from === 'discard')}
+                onSelect={
+                  ui.find('draw', (a) => a.from === 'discard')
+                    ? () => send(ui.find('draw', (a) => a.from === 'discard'))
+                    : undefined
+                }
+              />,
+            )}
+          </div>
           {quickOpen || throwing ? (
             <span className="pile-label drop-hint" aria-hidden="true">
               {t(drag?.hot.includes('discard') ? 'dropHintHot' : 'dropHint')}
@@ -567,31 +599,33 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         </p>
         <ActionBar
           acts={
-            staged
-              ? [
-                  {
-                    key: 'confirm',
-                    label: t('actConfirm'),
-                    icon: 'keep',
-                    tone: staged.action.type === 'callTamalou' ? 'call' : 'primary',
-                    main: true,
-                    onClick: confirmStaged,
-                  },
-                  cancelAct(() => setStaged(null)),
-                ]
-              : claim === 'who'
+            fly.dealing
+              ? []
+              : staged
                 ? [
-                    ...whoCanClaim.map((id): Act => ({ key: id, label: nameOf(id), onClick: () => setClaim(id) })),
-                    cancelAct(() => setClaim(null)),
+                    {
+                      key: 'confirm',
+                      label: t('actConfirm'),
+                      icon: 'keep',
+                      tone: staged.action.type === 'callTamalou' ? 'call' : 'primary',
+                      main: true,
+                      onClick: confirmStaged,
+                    },
+                    cancelAct(() => setStaged(null)),
                   ]
-                : claim
-                  ? [cancelAct(() => setClaim(null))]
-                  : [
-                      ...actsFor(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers),
-                      ...(pending.kind === 'none' && whoCanClaim.length > 0
-                        ? [quickAct(() => setClaim('who'), false)]
-                        : []),
+                : claim === 'who'
+                  ? [
+                      ...whoCanClaim.map((id): Act => ({ key: id, label: nameOf(id), onClick: () => setClaim(id) })),
+                      cancelAct(() => setClaim(null)),
                     ]
+                  : claim
+                    ? [cancelAct(() => setClaim(null))]
+                    : [
+                        ...actsFor(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers),
+                        ...(pending.kind === 'none' && whoCanClaim.length > 0
+                          ? [quickAct(() => setClaim('who'), false)]
+                          : []),
+                      ]
           }
           hint={quickOpen && !myTurn ? t('quickBarHint') : null}
         />
@@ -885,7 +919,7 @@ function actsFor(
       tone: 'call',
       onClick: () => send(call),
     });
-  if (ui.canQuick && !shared) out.push(quickAct(() => setPending({ kind: 'quick' }), false));
+  if ((ui.canQuick || ui.letGo) && !shared) out.push(quickAct(() => setPending({ kind: 'quick' }), false));
   return out;
 }
 
