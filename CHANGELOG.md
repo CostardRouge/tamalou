@@ -24,6 +24,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 - On a phone, the screen behind an open panel (Display, settings, rules, a mode's panel) no longer scrolls under your
   finger.
+- The others' hands now set out from their seat instead of sweeping in from off the screen, keep up with the bots
+  (a swap is one gesture, and a hand that falls behind lets the card fly on its own), and the deck and the discard no
+  longer shift when a drawn card appears, which made cards land on the deck.
 
 ## [0.14.0] - 2026-10-24 — Nain jaune
 

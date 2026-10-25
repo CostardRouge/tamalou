@@ -95,6 +95,7 @@ export function flightsOf(
         const n = handOf(e.player);
         const hover = n > 1 ? slotPlace({ player: e.player, slot: (e.slot + 1) % n }) : undefined;
         fly({ from: 'drawn', to: slotPlace({ player: e.player, slot: e.slot }), card: null, by: e.player, hover });
+        // The old card leaves for the discard as the new one is put down: one gesture for the hand, not two.
         fly(
           {
             from: slotPlace({ player: e.player, slot: e.slot }),
@@ -102,6 +103,7 @@ export function flightsOf(
             card: e.discarded,
             turnsOver: true,
             by: e.player,
+            alongside: true,
           },
           1,
         );
