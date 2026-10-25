@@ -27,6 +27,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 - The others' hands now set out from their seat instead of sweeping in from off the screen, keep up with the bots
   (a swap is one gesture, and a hand that falls behind lets the card fly on its own), and the deck and the discard no
   longer shift when a drawn card appears, which made cards land on the deck.
+- A card no longer vanishes from its place while another player's hand is still on its way to it, and a card carried
+  to the discard turns over in the hand rather than after landing.
+- In the "Posée" layout, the cards at both ends no longer look turned: the hand is laid flat without perspective.
+- Every panel (Affichage, the settings, the rules, a mode's panel) closes on a tap beside it or with Escape, not only
+  with "Fermer".
 
 ## [0.14.0] - 2026-10-24 — Nain jaune
 

@@ -19,6 +19,7 @@ import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
+import { Overlay } from './Overlay.tsx';
 import { handKind, PACE_FACTOR, SPEED_FACTOR } from './pace.ts';
 import { RoundOver } from './RoundOver.tsx';
 
@@ -521,7 +522,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
       {showDisplay ? (
         // At the top, over the opponents: my hand stays in sight and changes as the player picks.
-        <div className="overlay overlay-top" role="dialog" aria-modal="true" aria-labelledby="display-title">
+        <Overlay className="overlay-top" labelledBy="display-title" onClose={() => setShowDisplay(false)}>
           <div className="panel">
             <div className="panel-head">
               <h2 id="display-title">{t('display')}</h2>
@@ -532,7 +533,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <HandPicker name="hand-table" />
             <HandWatch name="watch-table" />
           </div>
-        </div>
+        </Overlay>
       ) : null}
 
       <AnimatePresence>

@@ -38,6 +38,8 @@ interface Active {
   to: Box;
   /** When the move arrived (performance.now()): a hand that falls too far behind lets the card fly on its own. */
   at: number;
+  /** In the air: its destination hides until it lands (a queued gesture's does not, or the slot looked emptied). */
+  started?: boolean;
   /** Landed: the card is gone and its destination shows, while the hand that carried it lingers. */
   landed?: boolean;
   /** Played by a hand: when it may start, and what it tells its lane. */
@@ -160,7 +162,7 @@ export function useFlights(
         const from = takeDrop(flight.from) ?? find(flight.from, before, now);
         const to = flight.tap ? from : find(flight.to, now, before);
         if (!from || !to) continue;
-        const item: Active = { id: nextId.current++, flight, from, to, at: performance.now() };
+        const item: Active = { id: nextId.current++, flight, from, to, at: performance.now(), started: !by };
         if (by) item.lane = enqueue(by, flight.alongside === true);
         list.push(item);
       }
@@ -209,17 +211,25 @@ export function useFlights(
   }
 
   const remove = (id: number) => setActive((a) => a.filter((x) => x.id !== id));
+  const begin = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, started: true } : x)));
   const land = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, landed: true } : x)));
-  const landing = new Set(active.filter((a) => !a.landed && !a.flight.tap).map((a) => a.flight.to));
+  const landing = new Set(active.filter((a) => a.started && !a.landed && !a.flight.tap).map((a) => a.flight.to));
   const room: HandRoom | null = hands ? { ...hands, speed, pace, at: handAt.current, busy: busy.current } : null;
   const layer = (
     <div className="flights" aria-hidden="true">
       {active.map((a) =>
         a.lane && room ? (
           a.flight.alongside ? (
-            <AlongsideCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
+            <AlongsideCard key={a.id} a={a} speed={speed} onBegin={() => begin(a.id)} onDone={() => remove(a.id)} />
           ) : (
-            <CarriedCard key={a.id} a={a} room={room} onLand={() => land(a.id)} onDone={() => remove(a.id)} />
+            <CarriedCard
+              key={a.id}
+              a={a}
+              room={room}
+              onBegin={() => begin(a.id)}
+              onLand={() => land(a.id)}
+              onDone={() => remove(a.id)}
+            />
           )
         ) : (
           <FlyingCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
@@ -311,15 +321,28 @@ function FlyingCard({ a, speed, onDone }: { a: Active; speed: number; onDone: ()
 }
 
 /** The other half of an exchange: it flies on its own the moment the hand picks the first card up. */
-function AlongsideCard({ a, speed, onDone }: { a: Active; speed: number; onDone: () => void }) {
+function AlongsideCard({
+  a,
+  speed,
+  onBegin,
+  onDone,
+}: {
+  a: Active;
+  speed: number;
+  onBegin: () => void;
+  onDone: () => void;
+}) {
   const [go, setGo] = useState(false);
   const lane = useRef(a.lane);
   const ended = useRef(false);
+  const latest = useRef(onBegin);
+  latest.current = onBegin;
   useEffect(() => {
     let alive = true;
     void lane.current?.start.then(() => {
       if (!alive) return;
       lane.current?.picked();
+      latest.current();
       setGo(true);
     });
     return () => {
@@ -355,11 +378,13 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 function CarriedCard({
   a,
   room,
+  onBegin,
   onLand,
   onDone,
 }: {
   a: Active;
   room: HandRoom;
+  onBegin: () => void;
   onLand: () => void;
   onDone: () => void;
 }) {
@@ -375,8 +400,8 @@ function CarriedCard({
   const [handOn, setHandOn] = useState(false);
   const [press, setPress] = useState(false);
   const [face, setFace] = useState<Card | null>(flight.turnsOver ? null : flight.card);
-  const latest = useRef({ room, onLand, onDone, lane: a.lane });
-  latest.current = { room, onLand, onDone, lane: a.lane };
+  const latest = useRef({ room, onBegin, onLand, onDone, lane: a.lane });
+  latest.current = { room, onBegin, onLand, onDone, lane: a.lane };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: one gesture per mount, read from the latest props
   useEffect(() => {
@@ -415,9 +440,10 @@ function CarriedCard({
       if (lag > LAG_MAX / s) {
         // Too late for a gesture: the card goes straight to its place, the hand stays where it was.
         if (!flight.tap) {
+          latest.current.onBegin();
           const k = 700 * s * s;
           const quick = { type: 'spring' as const, stiffness: k, damping: 2 * 0.9 * Math.sqrt(k) };
-          if (flight.turnsOver) setTimeout(() => alive && setFace(flight.card), 80 / s);
+          if (flight.turnsOver) setFace(flight.card);
           await Promise.all([animate(cx, to.x, quick), animate(cy, to.y, quick), animate(scale, 1, quick)]);
         }
         finishLanding(false);
@@ -461,12 +487,14 @@ function CarriedCard({
         finishLanding();
       } else {
         lane?.picked();
+        latest.current.onBegin();
         // The card hangs from the hand: under the arrow's tip, or centred under the finger.
         const off = { x: to.w / 2, y: to.h * (finger ? 0.5 : 0.35) };
         const follow = [hx.on('change', (v) => cx.set(v - off.x)), hy.on('change', (v) => cy.set(v - off.y))];
         void settle(scale, 1);
         void settle(rot, Math.max(-8, Math.min(8, (to.x - from.x) * 0.03)));
-        if (flight.turnsOver) setTimeout(() => alive && setFace(flight.card), 150 / s);
+        // It turns over as it is lifted, so the face is up by the time it lands.
+        if (flight.turnsOver) setFace(flight.card);
         await move(to.x + off.x, to.y + off.y, flight.thrown ? 2 : 1);
         for (const stop of follow) stop();
         if (!alive) return;

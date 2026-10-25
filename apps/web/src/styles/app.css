@@ -1046,9 +1046,10 @@ html:has(.game) body {
 }
 
 /* Laid down on the table, seen from the chair; it stands up while a card is carried, so a drop is aimed at cards
-   facing the player. */
+   facing the player. Foreshortened without perspective: with one, the outer cards skewed into trapezoids and read as
+   turned (the owner, 2026-10-25). */
 .lay-flat {
-  transform: perspective(calc(var(--cw) * 6)) rotateX(36deg);
+  transform: rotateX(36deg);
   transform-origin: 50% 100%;
   margin-top: calc(var(--cw) * -0.22);
   transition: transform 0.25s;
@@ -1209,7 +1210,8 @@ html:has(.game) body {
 .center {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto minmax(0, 1fr);
-  align-items: center;
+  /* The three labels on one line, the taller drawn card rising above the piles. */
+  align-items: end;
   column-gap: 18px;
 }
 
