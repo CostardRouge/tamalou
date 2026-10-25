@@ -28,13 +28,12 @@ export function towards(seat: Rect, middle: Rect): { dx: number; dy: number } {
 
 /**
  * Which way a player's cards face (the owner, 2026-10-25: the T on the back of the others' cards turned their way),
- * in degrees clockwise from mine: the top of their card points from their seat to the middle, as mine points from me
- * to it. Rounded to the eighth of a turn, so a row of seats across a phone all read as across (180).
+ * in degrees clockwise from mine: turned round for a seat beyond the middle of the table, as mine for one on my side.
+ * Never a quarter turn: the owner found a T lying on its side wrong even at the ends of a wide table, whose seats sit
+ * beyond the middle too.
  */
 export function facing(seat: Rect, middle: Rect): number {
-  const { dx, dy } = towards(seat, middle);
-  const deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
-  return (((Math.round(deg / 45) * 45) % 360) + 360) % 360;
+  return towards(seat, middle).dy > 0 ? 180 : 0;
 }
 
 /**

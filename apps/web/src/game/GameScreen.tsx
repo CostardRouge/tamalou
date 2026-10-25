@@ -344,6 +344,35 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     view.step === 'reveal' && view.current === view.me && view.reveal?.player === view.me && view.reveal.card
       ? { target: view.reveal.target, card: view.reveal.card }
       : null;
+  // A tap on nothing (the felt, a seat's free space, the dimmed table round a card a power shows me) closes what is
+  // open, as on the panels (the owner, 2026-10-25): a question, a move to confirm, a choice under way, the card I look
+  // at (the Queen's look keeps my card, as "Garder" does). Escape does the same.
+  const dismiss = () => {
+    if (ask) setAsk(null);
+    else if (staged) setStaged(null);
+    else if (claim) setClaim(null);
+    else if (pending.kind !== 'none') setPending(NONE);
+    else if (looking) send(ui.find('endReveal') ?? ui.find('queenDecide', (a) => a.swapWith === null));
+  };
+  const panelOpen = showDisplay || showRules;
+  const toDismiss = useRef({ dismiss, panelOpen });
+  toDismiss.current = { dismiss, panelOpen };
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const el = e.target instanceof Element ? e.target : null;
+      if (!el?.closest('.game') || el.closest(INTERACTIVE) || toDismiss.current.panelOpen) return;
+      toDismiss.current.dismiss();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !toDismiss.current.panelOpen) toDismiss.current.dismiss();
+    };
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, []);
   const choosing =
     !!staged ||
     pending.kind !== 'none' ||
@@ -685,6 +714,9 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     </div>
   );
 }
+
+/** What a tap on the table may land on without it being a tap on nothing. */
+const INTERACTIVE = 'button, a, input, select, textarea, label, [role="dialog"], .draggable, .journal';
 
 const sameRef = (a: SlotRef, b: SlotRef) => a.player === b.player && a.slot === b.slot;
 

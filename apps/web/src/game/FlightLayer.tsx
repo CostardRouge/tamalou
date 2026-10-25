@@ -4,7 +4,7 @@ import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useRef,
 import { CardView } from '../cards/CardView.tsx';
 import { cardName, t } from '../i18n/index.ts';
 import { type Bubble, bubblesOf, type Flight, flightsOf, type Place } from './flights.ts';
-import { frontOf } from './front.ts';
+import { facing, frontOf } from './front.ts';
 import type { HandKind } from './pace.ts';
 
 // Cards fly between the places of the table on a soft spring when a move happens, mine or another player's, and the
@@ -24,6 +24,8 @@ export interface Box {
   y: number;
   w: number;
   h: number;
+  /** Which way a card's back faces there (degrees, the others' turned round: game/front.ts, `facing`). */
+  turn?: number;
 }
 
 /** A player's lane: when its last gesture is done, and when its last card was picked up. */
@@ -75,9 +77,27 @@ function measure(): Map<Place, Box> {
   const out = new Map<Place, Box>();
   for (const el of document.querySelectorAll<HTMLElement>('[data-place]')) {
     const r = el.getBoundingClientRect();
-    if (r.width > 0) out.set(el.dataset.place as Place, { x: r.left, y: r.top, w: r.width, h: r.height });
+    if (r.width > 0)
+      out.set(el.dataset.place as Place, { x: r.left, y: r.top, w: r.width, h: r.height, turn: turnOf(el) });
   }
   return out;
+}
+
+/** How far a card's back is turned where it lies: its theme's `--back-turn`, plus a hand turned round as a whole. */
+function turnOf(el: Element): number {
+  const back = Number.parseFloat(getComputedStyle(el).getPropertyValue('--back-turn')) || 0;
+  return (back + (el.closest('.lay-across') ? 180 : 0)) % 360;
+}
+
+/**
+ * The turn a face-down copy makes on its way, so a card drawn towards a player across the table comes round as it
+ * travels instead of flipping when it lands (the owner, 2026-10-25): 0 or ±180, the way it leans.
+ */
+function turnOnTheWay(flight: Flight, from: Box, to: Box): number {
+  if (flight.card) return 0;
+  const d = ((((to.turn ?? 0) - (from.turn ?? 0)) % 360) + 360) % 360;
+  if (d === 0) return 0;
+  return to.x >= from.x ? d : d - 360;
 }
 
 function boxOf(selector: string): Box | null {
@@ -173,7 +193,7 @@ export function useFlights(
         const seat = by && by !== me ? boxOf(`[data-seat="${CSS.escape(by)}"]`) : null;
         if (!seat) return { x: middle.x + middle.w / 2 - 30, y: middle.y + middle.h / 2 - 42, w: 60, h: 84 };
         const at = frontOf(seat, middle, { w: 60, h: 84 }, { w: window.innerWidth, h: window.innerHeight });
-        return { ...at, w: 60, h: 84 };
+        return { ...at, w: 60, h: 84, turn: facing(seat, middle) };
       };
       const find = (place: Place, first: Map<Place, Box>, then: Map<Place, Box>, by?: PlayerId) =>
         first.get(place) ?? then.get(place) ?? (place === 'drawn' ? stand(by) : null);
@@ -335,6 +355,7 @@ function FlyingCard({ a, speed, onDone }: { a: Active; speed: number; onDone: ()
     return () => clearTimeout(id);
   }, [delay]);
   const lean = Math.max(-14, Math.min(14, (to.x - from.x) * 0.05));
+  const turn = turnOnTheWay(flight, from, to);
   const k = speed * speed;
   const spring = flight.thrown
     ? { type: 'spring' as const, stiffness: 520 * k, damping: 26 * speed, delay }
@@ -344,7 +365,8 @@ function FlyingCard({ a, speed, onDone }: { a: Active; speed: number; onDone: ()
   return (
     <motion.div
       className="flight"
-      style={{ width: to.w, '--w': `${to.w}px` } as CSSProperties}
+      data-flight={`${flight.from}>${flight.to}`}
+      style={{ width: to.w, '--w': `${to.w}px`, '--back-turn': `${from.turn ?? 0}deg` } as CSSProperties}
       // A dealt card waits unseen until it leaves: the deck stays one card, not a pile of shadows.
       initial={{ x: from.x, y: from.y, scale: from.w / to.w, rotate: 0, opacity: flight.dealt ? 0 : 1 }}
       animate={{ x: to.x, y: to.y, scale: 1, rotate: [0, lean, 0], opacity: 1 }}
@@ -357,7 +379,15 @@ function FlyingCard({ a, speed, onDone }: { a: Active; speed: number; onDone: ()
       }}
       onAnimationComplete={() => finish.current()}
     >
-      <CardView card={face} label="" size="md" />
+      {/* The turn about the card's middle: the copy itself scales from its corner. */}
+      <motion.div
+        className="flight-turn"
+        initial={{ rotate: 0 }}
+        animate={{ rotate: turn }}
+        transition={{ duration: 0.8 / speed, delay, ease: 'easeInOut' }}
+      >
+        <CardView card={face} label="" size="md" />
+      </motion.div>
     </motion.div>
   );
 }
@@ -424,10 +454,12 @@ function CarriedCard({
   const { flight, from, to } = a;
   const by = flight.by as PlayerId;
   const finger = room.kind === 'finger';
+  const turn = turnOnTheWay(flight, from, to);
   const cx = useMotionValue(from.x);
   const cy = useMotionValue(from.y);
   const scale = useMotionValue(from.w / to.w);
   const rot = useMotionValue(0);
+  const spin = useMotionValue(0);
   const hx = useMotionValue(0);
   const hy = useMotionValue(0);
   const [handOn, setHandOn] = useState(false);
@@ -487,7 +519,12 @@ function CarriedCard({
           const quick = { type: 'spring' as const, stiffness: k, damping: 2 * 0.9 * Math.sqrt(k) };
           if (flight.turnsOver) setFace(flight.card);
           latest.current.onLift();
-          await Promise.all([animate(cx, to.x, quick), animate(cy, to.y, quick), animate(scale, 1, quick)]);
+          await Promise.all([
+            animate(cx, to.x, quick),
+            animate(cy, to.y, quick),
+            animate(scale, 1, quick),
+            animate(spin, turn, quick),
+          ]);
         }
         finishLanding(false);
         clearTimeout(safety);
@@ -542,12 +579,14 @@ function CarriedCard({
         const follow = [hx.on('change', (v) => cx.set(v - off.x)), hy.on('change', (v) => cy.set(v - off.y))];
         void settle(scale, 1);
         void settle(rot, Math.max(-8, Math.min(8, (to.x - from.x) * 0.03)));
+        // It comes round in the hand when it goes to a player across the table.
+        if (turn) void animate(spin, turn, { duration: 0.6 / s, ease: 'easeInOut' });
         // It turns over as it is lifted, so the face is up by the time it lands.
         if (flight.turnsOver) setFace(flight.card);
         await move(to.x + off.x, to.y + off.y, flight.thrown ? 2 : 1);
         for (const stop of follow) stop();
         if (!alive) return;
-        await Promise.all([settle(cx, to.x), settle(cy, to.y), settle(rot, 0)]);
+        await Promise.all([settle(cx, to.x), settle(cy, to.y), settle(rot, 0), settle(spin, turn)]);
         finishLanding();
       }
       await sleep(220);
@@ -580,6 +619,7 @@ function CarriedCard({
       {flight.tap || a.landed ? null : (
         <motion.div
           className="flight"
+          data-flight={`${flight.from}>${flight.to}`}
           style={
             {
               x: cx,
@@ -588,12 +628,15 @@ function CarriedCard({
               rotate: rot,
               width: to.w,
               '--w': `${to.w}px`,
+              '--back-turn': `${from.turn ?? 0}deg`,
               // Another player's drawn card still lies in front of them (FrontCard) until the hand takes it.
               visibility: flight.from === 'drawn' && !a.lifted ? 'hidden' : 'visible',
             } as unknown as CSSProperties
           }
         >
-          <CardView card={face} label="" size="md" />
+          <motion.div className="flight-turn" style={{ rotate: spin }}>
+            <CardView card={face} label="" size="md" />
+          </motion.div>
         </motion.div>
       )}
       <motion.div

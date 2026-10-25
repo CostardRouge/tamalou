@@ -15,6 +15,8 @@ code, though the game speaks French first. Codenames are French card words, in a
   at, and carries each card where it goes. It can be turned off in the settings or the table's Display button.
 - Choose the bots' pace (brisk, normal or unhurried) and how fast cards fly (fast, normal or gentle), in the settings
   or the table's Display button. The pace never changes how quickly a bot claims a quick discard.
+- Tap anywhere on the table to close what is open: a card a power shows you, a choice under way, a move waiting
+  to be confirmed. Escape does the same.
 - Choose how the card you draw shows: held just above your cards (the default, the table stays in sight) or large in
   the middle of the table, in the settings or the table's Display button. Either way, drag it onto one of your cards
   to swap it, or onto the discard to throw it; tapping still works.
@@ -26,8 +28,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 - On a computer, the oval drawn round the table is gone.
 - The card another player draws now comes in front of them, face down for you, raised on their side as they look at
   it, with an eye; they swap it or throw it from there, instead of it waiting beside the discard.
-- The backs of the other players' cards face them: turned round for those across the table, a quarter turn for those
-  at the ends of a wide table.
+- The backs of the other players' cards face them, turned round, and a card on its way to them comes round as it
+  travels (dealt, drawn, given) instead of flipping when it lands.
 
 ### Fixed
 

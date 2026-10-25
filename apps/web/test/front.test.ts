@@ -65,12 +65,12 @@ describe('my drawn card shown large', () => {
 
 describe('which way the others’ cards face', () => {
   const middle = { x: 12, y: 149, w: 366, h: 415 };
-  it('turns the cards of a seat across the table round, and those at the ends of the oval a quarter', () => {
+  it('turns the cards of every seat beyond the middle round, never a quarter', () => {
     expect(facing({ x: 83, y: 74, w: 109, h: 69 }, middle)).toBe(180);
     expect(facing({ x: 198, y: 74, w: 109, h: 69 }, middle)).toBe(180);
     const wide = { x: 24, y: 224, w: 1232, h: 157 };
-    expect(facing({ x: 132, y: 148, w: 206, h: 103 }, wide)).toBe(90);
-    expect(facing({ x: 942, y: 148, w: 206, h: 103 }, wide)).toBe(270);
+    expect(facing({ x: 132, y: 148, w: 206, h: 103 }, wide)).toBe(180);
+    expect(facing({ x: 942, y: 148, w: 206, h: 103 }, wide)).toBe(180);
     // A seat below the middle would face it the way I do.
     expect(facing({ x: 150, y: 700, w: 90, h: 60 }, middle)).toBe(0);
   });
