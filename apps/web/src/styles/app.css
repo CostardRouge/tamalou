@@ -1490,6 +1490,23 @@ html:has(.game) body {
   background: rgb(0 0 0 / 0.45);
   z-index: 10;
   padding: 12px;
+  /* Nothing behind an open panel moves under a finger (the owner's report, 2026-10-25): a drag on the backdrop does
+     nothing, a panel scrolled to its end does not hand the scroll on, and the page under it is locked below. */
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+/* Only the panel itself scrolls (its own scroll container, so the backdrop's touch-action stops at it). */
+.overlay .panel,
+.overlay .sheet {
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
+}
+
+html:has(.overlay),
+html:has(.overlay) body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .panel {
@@ -2626,6 +2643,84 @@ html:has(.game) body {
 
 .flight .card-side {
   box-shadow: 0 18px 26px -12px rgb(0 0 0 / 0.45);
+}
+
+/* The others' hands (FlightLayer.tsx, CarriedCard): a named cursor with a mouse, a fingertip on a touch screen, in the
+   player's seat colour; above every flying card. */
+.reach {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.reach-off {
+  opacity: 0;
+}
+
+.reach-arrow {
+  display: block;
+  width: 26px;
+  height: 26px;
+  translate: -4px -3px;
+  transform-origin: 4px 3px;
+  transition: scale 0.12s ease;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.35));
+}
+
+.reach-arrow path {
+  fill: var(--who);
+  stroke: var(--on-seat);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.reach-press .reach-arrow {
+  scale: 0.8;
+}
+
+.reach-dot {
+  position: absolute;
+  left: -17px;
+  top: -17px;
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 3px solid var(--who);
+  background: color-mix(in srgb, var(--who) 22%, transparent);
+  box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.4);
+  transition:
+    scale 0.14s ease,
+    background 0.14s ease;
+}
+
+.reach-press .reach-dot {
+  scale: 0.72;
+  background: color-mix(in srgb, var(--who) 45%, transparent);
+}
+
+.reach-tag {
+  position: absolute;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--who);
+  color: var(--on-seat);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reach-cursor .reach-tag {
+  left: 16px;
+  top: 18px;
+}
+
+.reach-finger .reach-tag {
+  left: 12px;
+  top: -36px;
 }
 
 .bubble {

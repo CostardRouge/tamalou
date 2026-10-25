@@ -15,9 +15,11 @@ import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './dr
 import { noteDrop, useFlights } from './FlightLayer.tsx';
 import { dealToReplay, type Place, slotPlace } from './flights.ts';
 import { HandPicker } from './HandPicker.tsx';
+import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
+import { handKind, PACE_FACTOR, SPEED_FACTOR } from './pace.ts';
 import { RoundOver } from './RoundOver.tsx';
 
 // The table, portrait first (docs/SPEC.md §6): opponents on top, the piles in the middle, my grid at the bottom with
@@ -46,11 +48,32 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const reduced = useReducedMotion();
   // The cards are dealt on this table, from the deck to every hand: the game is already there when the deal ends.
   const [replayFrom] = useState(() => dealToReplay(events));
+  const settings = useSettings();
+  // The others' moves played by their hand (game/pace.ts): a named cursor with a mouse, a fingertip on a touch screen.
+  const [handKindHere] = useState(handKind);
   const fly = useFlights(events, view.me, !reduced, {
     replayFrom,
     handOf: (id) => view.players.find((p) => p.id === id)?.slots.length ?? 4,
+    hands: settings.showHands
+      ? {
+          kind: handKindHere,
+          name: (id) => view.players.find((p) => p.id === id)?.name ?? id,
+          color: (id) =>
+            `var(--seat-${
+              (Math.max(
+                0,
+                view.players.filter((p) => p.id !== view.me).findIndex((p) => p.id === id),
+              ) %
+                5) +
+              1
+            })`,
+        }
+      : null,
+    speed: SPEED_FACTOR[settings.cardSpeed],
+    pace: PACE_FACTOR[settings.botPace],
   });
-  const settings = useSettings();
+  // The bots this device hosts follow its pace, changed mid-game too (from their next move).
+  useEffect(() => conn.setBotPace?.(PACE_FACTOR[settings.botPace]), [conn, settings.botPace]);
   const [pending, setPending] = useState<Pending>(NONE);
   const [showLog, setShowLog] = useState(false);
   const [showRules, setShowRules] = useState(false);
@@ -507,6 +530,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               </button>
             </div>
             <HandPicker name="hand-table" />
+            <HandWatch name="watch-table" />
           </div>
         </div>
       ) : null}

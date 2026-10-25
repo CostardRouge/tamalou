@@ -40,6 +40,8 @@ export interface TableOptions {
   rules: RuleSet;
   seats: SeatSpec[];
   scheduler: Scheduler;
+  /** The bots' pace from the first move (setBotPace). */
+  botPace?: number;
 }
 
 export type SubmitResult = { ok: true; deferred?: boolean } | { ok: false; error: string };
@@ -75,9 +77,12 @@ export class Table {
   private hostTimer: unknown = null;
   private turnTimer: { key: string; handle: unknown } | null = null;
   private disposed = false;
+  /** What the bots' turn delays are multiplied by (setBotPace). */
+  private botPace = 1;
 
-  constructor({ seed, rules, seats, scheduler }: TableOptions) {
+  constructor({ seed, rules, seats, scheduler, botPace }: TableOptions) {
     this.rules = rules;
+    if (botPace !== undefined) this.setBotPace(botPace);
     this.seats = seats;
     this.scheduler = scheduler;
     this.rng = (seed ^ 0x2545f491) >>> 0;
@@ -206,6 +211,15 @@ export class Table {
     this.after();
   }
 
+  /**
+   * How long the bots take over a turn's move, as a factor of their level's delay (a device's setting in solo: the
+   * owner's "rythme des bots"). A quick-discard reaction keeps its delay: it decides who wins the claim, not how the
+   * game reads. Applies from the next move a bot plans.
+   */
+  setBotPace(factor: number): void {
+    this.botPace = Number.isFinite(factor) && factor > 0 ? factor : 1;
+  }
+
   /** Whether a human's draw is waiting for the window to run out. */
   drawPending(): boolean {
     return this.deferredDraw !== null;
@@ -286,7 +300,10 @@ export class Table {
       const action = bot.decide(view, { claims });
       if (!action) continue;
       const profile = PROFILES[bot.profile.level];
-      let wait = this.delay(action.type === 'quickDiscard' ? profile.delays.quickDiscard : profile.delays.turn);
+      let wait =
+        action.type === 'quickDiscard'
+          ? this.delay(profile.delays.quickDiscard)
+          : Math.round(this.delay(profile.delays.turn) * this.botPace);
       if (action.type === 'draw') wait = Math.max(wait, this.windowRemaining());
       const handle = this.scheduler.setTimeout(() => {
         this.plans.delete(id);

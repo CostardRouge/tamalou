@@ -1,10 +1,11 @@
 import { updateSettings, useSettings } from '../feedback/settings.ts';
 import { HandPicker } from '../game/HandPicker.tsx';
+import { HandWatch } from '../game/HandWatch.tsx';
 import { currentLang, LANGS, type Lang, setLang, t } from '../i18n/index.ts';
 import { install, usePwa } from '../pwa.ts';
 
-// This device's settings, behind the launch screen's button: language, sounds, vibrations, the hand's layout, and
-// installing the game when the browser offers it.
+// This device's settings, behind the launch screen's button: language, sounds, vibrations, the hand's layout, how the
+// others are watched (the bots' pace, their hands, the cards' speed), and installing the game when the browser offers it.
 
 const LANG_KEY = { fr: 'langFr', en: 'langEn' } as const;
 
@@ -48,6 +49,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
         </label>
       ) : null}
       <HandPicker name="hand" />
+      <HandWatch name="watch" />
       {canInstall ? (
         <div className="install">
           <button type="button" className="btn btn-secondary" onClick={() => void install()}>

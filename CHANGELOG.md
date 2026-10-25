@@ -8,9 +8,22 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Added
+
+- Watch the others play: their moves are now played by their hand, a cursor with their name on a computer and a
+  fingertip on a phone or a tablet. It reaches for a card, weighs one up before a swap, touches the cards a power looks
+  at, and carries each card where it goes. It can be turned off in the settings or the table's Display button.
+- Choose the bots' pace (brisk, normal or unhurried) and how fast cards fly (fast, normal or gentle), in the settings
+  or the table's Display button. The pace never changes how quickly a bot claims a quick discard.
+
 ### Changed
 
 - On a computer, the table's oval now goes round your own hand too, as at a real table.
+
+### Fixed
+
+- On a phone, the screen behind an open panel (Display, settings, rules, a mode's panel) no longer scrolls under your
+  finger.
 
 ## [0.14.0] - 2026-10-24 — Nain jaune
 

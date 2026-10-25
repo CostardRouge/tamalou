@@ -10,9 +10,9 @@ const seats = (...levels: ('human' | 'easy' | 'medium' | 'hard')[]): SeatSpec[] 
       : { id: `b${i}`, name: `Bot ${i}`, kind: 'bot', level: l },
   );
 
-const table = (spec: SeatSpec[], input: RuleSetInput = {}, seed = 3) => {
+const table = (spec: SeatSpec[], input: RuleSetInput = {}, seed = 3, botPace?: number) => {
   const clock = new FakeClock();
-  const t = new Table({ seed, rules: parseRules(input), seats: spec, scheduler: clock });
+  const t = new Table({ seed, rules: parseRules(input), seats: spec, scheduler: clock, botPace });
   return { t, clock };
 };
 
@@ -32,6 +32,25 @@ describe('table host', () => {
     expect(t.view('h0').phase).toBe('initialPeek');
     expect(t.submit({ type: 'ready', by: 'h0' })).toEqual({ ok: true });
     expect(t.view('h0')).toMatchObject({ phase: 'play', current: 'h0', step: 'draw' });
+  });
+
+  it('stretches or shortens the bots’ turn delays by their pace', () => {
+    // A medium bot waits 600 to 1200 ms before a turn's move; its first is being ready after the initial peek.
+    const normal = table(seats('medium', 'medium'));
+    normal.clock.advance(1200);
+    expect(normal.t.view('b0').phase).toBe('play');
+    const slow = table(seats('medium', 'medium'), {}, 3, 2);
+    slow.clock.advance(1199);
+    expect(slow.t.view('b0').phase).toBe('initialPeek');
+    const fast = table(seats('medium', 'medium'), {}, 3, 0.5);
+    fast.clock.advance(600);
+    expect(fast.t.view('b0').phase).toBe('play');
+    // Changed during a game, it applies from the next move a bot plans.
+    fast.t.setBotPace(Number.NaN);
+    const before = fast.t.events('b0').length;
+    // (The first draw also waits out the quick-discard window's minimum.)
+    fast.clock.advance(3000);
+    expect(fast.t.events('b0').length).toBeGreaterThan(before);
   });
 
   it('refuses actions for a seat that is not a human one', () => {

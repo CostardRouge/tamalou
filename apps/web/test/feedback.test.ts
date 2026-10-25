@@ -49,10 +49,21 @@ describe('cues', () => {
 });
 
 describe('settings', () => {
-  it('start with sounds and vibrations on and the hand in a row, and change one at a time', () => {
-    expect(getSettings()).toEqual({ sound: true, haptics: true, hand: 'row', oppHand: true });
+  it('start with sounds and vibrations on, the hand in a row and the others’ hands shown, and change one at a time', () => {
+    const defaults = {
+      sound: true,
+      haptics: true,
+      hand: 'row',
+      oppHand: true,
+      botPace: 'normal',
+      showHands: true,
+      cardSpeed: 'normal',
+    };
+    expect(getSettings()).toEqual(defaults);
     updateSettings({ sound: false });
-    expect(getSettings()).toEqual({ sound: false, haptics: true, hand: 'row', oppHand: true });
-    updateSettings({ sound: true });
+    expect(getSettings()).toEqual({ ...defaults, sound: false });
+    updateSettings({ sound: true, botPace: 'slow' });
+    expect(getSettings().botPace).toBe('slow');
+    updateSettings({ botPace: 'normal' });
   });
 });

@@ -38,9 +38,10 @@ describe('the flights of a move', () => {
       { type: 'swapped', player: 'ada', slot: 2, discarded: c('Q', 'C') },
     ];
     expect(flightsOf(events, 'me')).toEqual([
-      { from: 'deck', to: 'drawn', card: null, beat: 0 },
-      { from: 'drawn', to: 'slot:ada:2', card: null, beat: 1 },
-      { from: 'slot:ada:2', to: 'discard', card: c('Q', 'C'), turnsOver: true, beat: 2 },
+      { from: 'deck', to: 'drawn', card: null, by: 'ada', beat: 0 },
+      // Her hand weighs up her next card before it goes for the third.
+      { from: 'drawn', to: 'slot:ada:2', card: null, by: 'ada', hover: 'slot:ada:3', beat: 1 },
+      { from: 'slot:ada:2', to: 'discard', card: c('Q', 'C'), turnsOver: true, by: 'ada', beat: 2 },
     ]);
   });
 
@@ -59,7 +60,7 @@ describe('the flights of a move', () => {
       'me',
     );
     expect(quick).toEqual([
-      { from: 'slot:ada:1', to: 'discard', card: c('6', 'H'), turnsOver: true, thrown: true, beat: 0 },
+      { from: 'slot:ada:1', to: 'discard', card: c('6', 'H'), turnsOver: true, thrown: true, by: 'ada', beat: 0 },
     ]);
     const swap = flightsOf(
       [
@@ -74,6 +75,41 @@ describe('the flights of a move', () => {
       'me',
     );
     expect(swap.map((f) => `${f.from}>${f.to}`)).toEqual(['slot:ada:3>slot:me:1', 'slot:me:1>slot:ada:3']);
+    // One hand carries the first card; the other leaves as soon as it is picked up.
+    expect(swap.map((f) => [f.by, f.alongside])).toEqual([
+      ['ada', undefined],
+      ['ada', true],
+    ]);
+  });
+
+  it('has the hand touch a power’s targets first, without taking a beat from the cards', () => {
+    const jack = flightsOf(
+      [
+        {
+          type: 'powerUsed',
+          player: 'ada',
+          power: 'blindSwap',
+          targets: [
+            { player: 'ada', slot: 0 },
+            { player: 'me', slot: 2 },
+          ],
+        },
+        {
+          type: 'cardsSwapped',
+          player: 'ada',
+          a: { player: 'ada', slot: 0 },
+          b: { player: 'me', slot: 2 },
+          power: 'blindSwap',
+        },
+      ],
+      'me',
+    );
+    expect(jack.map((f) => [f.tap ?? false, f.from, f.beat])).toEqual([
+      [true, 'slot:ada:0', 0],
+      [true, 'slot:me:2', 0],
+      [false, 'slot:ada:0', 0],
+      [false, 'slot:me:2', 0],
+    ]);
   });
 });
 

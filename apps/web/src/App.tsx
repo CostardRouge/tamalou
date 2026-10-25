@@ -5,7 +5,9 @@ import { trackEvent, trackView } from './audience.ts';
 import { LocalConnection } from './connection/local.ts';
 import { roomsAvailable } from './connection/remote.ts';
 import type { GameConnection } from './connection/types.ts';
+import { getSettings } from './feedback/settings.ts';
 import { GameScreen } from './game/GameScreen.tsx';
+import { PACE_FACTOR } from './game/pace.ts';
 import { choiceFor, type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
 import { MODE_DEFAULTS } from './home/modes.ts';
 import { onLangChange, t } from './i18n/index.ts';
@@ -18,6 +20,7 @@ export function newGame(c: GameChoice): GameConnection {
     humans: c.mode === 'solo' ? [c.name.trim() || t('homeNameDefault')] : c.players.map(playerName),
     bots: Array.from({ length: c.bots }, (_, i) => ({ name: names[i] ?? t('botName', { n: i + 1 }), level: c.level })),
     rules: rulesOf({ preset: c.preset, overrides: c.overrides }, MODE_DEFAULTS[c.mode]),
+    botPace: PACE_FACTOR[getSettings().botPace],
   });
 }
 
