@@ -1,6 +1,6 @@
 import type { Action, PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { getSettings, updateSettings, useSettings } from '../feedback/settings.ts';
@@ -21,6 +21,7 @@ import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { Overlay } from './Overlay.tsx';
 import { handKind, PACE_FACTOR, SPEED_FACTOR } from './pace.ts';
+import { RevealStage } from './RevealStage.tsx';
 import { RoundOver } from './RoundOver.tsx';
 
 // The table, portrait first (docs/SPEC.md §6): opponents on top, the piles in the middle, my grid at the bottom with
@@ -50,6 +51,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   // The cards are dealt on this table, from the deck to every hand: the game is already there when the deal ends.
   const [replayFrom] = useState(() => dealToReplay(events));
   const settings = useSettings();
+  const currentRef = useRef(view.current);
+  currentRef.current = view.current;
   // The others' moves played by their hand (game/pace.ts): a named cursor with a mouse, a fingertip on a touch screen.
   const [handKindHere] = useState(handKind);
   const fly = useFlights(events, view.me, !reduced, {
@@ -68,6 +71,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 5) +
               1
             })`,
+          current: () => currentRef.current,
         }
       : null,
     speed: SPEED_FACTOR[settings.cardSpeed],
@@ -99,6 +103,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
   // A selection that no longer applies (the turn moved on, the top card changed, the device changed hands) is dropped.
   const stepKey = `${view.me}:${view.phase}:${view.step}:${view.current}:${view.discardTop?.id}`;
+  // The discard shows the top from before the cards still on their way to it (another player's hand has not put them
+  // down yet): the tops it had, newest last, read back by how many are inbound.
+  const discardTops = useRef<{ round: number; tops: (typeof view.discardTop)[] }>({ round: 0, tops: [] });
+  if (discardTops.current.round !== view.round) discardTops.current = { round: view.round, tops: [null] };
+  if (discardTops.current.tops.at(-1)?.id !== view.discardTop?.id) {
+    discardTops.current.tops = [...discardTops.current.tops.slice(-8), view.discardTop];
+  }
+  const shownDiscard = discardTops.current.tops.at(-1 - fly.inbound('discard')) ?? view.discardTop;
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset on step change only
   useEffect(() => {
     setPending(NONE);
@@ -288,6 +300,11 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           : promptFor(view, rules.hand.initialPeek.count, pending, conn.drawPending(), nameOf);
 
   // The spotlight (design B of "lisibilité du tour"): whose turn glows; while I choose, what I cannot touch fades.
+  // A card a power lets me look at, shown large in front of me (RevealStage).
+  const looking =
+    view.step === 'reveal' && view.current === view.me && view.reveal?.player === view.me && view.reveal.card
+      ? { target: view.reveal.target, card: view.reveal.card }
+      : null;
   const choosing =
     !!staged ||
     pending.kind !== 'none' ||
@@ -307,7 +324,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   return (
     // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -389,7 +406,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         <div className="pile pile-discard">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
-              key={view.discardTop?.id ?? 'empty'}
+              key={shownDiscard?.id ?? 'empty'}
               initial={{ y: -24, opacity: 0, rotate: -6 }}
               animate={{ y: 0, opacity: 1, rotate: 0 }}
               exit={{ opacity: 0 }}
@@ -399,12 +416,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 { kind: 'discard' },
                 'discard',
                 <CardView
-                  card={view.discardTop}
+                  card={shownDiscard}
                   place="discard"
                   mark={mark('discard')}
-                  ghost={fly.landing.has('discard')}
-                  empty={!view.discardTop}
-                  label={view.discardTop ? `${t('discard')} : ${cardName(view.discardTop)}` : t('discardEmpty')}
+                  // Not ghosted: the top from before stays in sight until the inbound card lands on it.
+                  empty={!shownDiscard}
+                  label={shownDiscard ? `${t('discard')} : ${cardName(shownDiscard)}` : t('discardEmpty')}
                   size="md"
                   hint={!!ui.find('draw', (a) => a.from === 'discard')}
                   onSelect={
@@ -571,6 +588,18 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         ) : null}
       </AnimatePresence>
 
+      {looking ? (
+        <RevealStage
+          key={`${looking.target.player}:${looking.target.slot}:${looking.card.id}`}
+          card={looking.card}
+          place={slotPlace(looking.target)}
+          caption={
+            looking.target.player === view.me
+              ? t('slotMine', { n: looking.target.slot + 1 })
+              : t('slotOf', { n: looking.target.slot + 1, name: nameOf(looking.target.player) })
+          }
+        />
+      ) : null}
       {fly.layer}
 
       {ask ? (
