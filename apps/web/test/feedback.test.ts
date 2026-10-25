@@ -49,7 +49,7 @@ describe('cues', () => {
 });
 
 describe('settings', () => {
-  it('start with sounds and vibrations on, the hand in a row and the others’ hands shown, and change one at a time', () => {
+  it('start with sounds and vibrations on, the hand in a row, the others’ hands shown and my drawn card held, and change one at a time', () => {
     const defaults = {
       sound: true,
       haptics: true,
@@ -58,6 +58,7 @@ describe('settings', () => {
       botPace: 'normal',
       showHands: true,
       cardSpeed: 'normal',
+      drawView: 'held',
     };
     expect(getSettings()).toEqual(defaults);
     updateSettings({ sound: false });

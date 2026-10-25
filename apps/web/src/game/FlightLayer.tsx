@@ -4,6 +4,7 @@ import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useRef,
 import { CardView } from '../cards/CardView.tsx';
 import { cardName, t } from '../i18n/index.ts';
 import { type Bubble, bubblesOf, type Flight, flightsOf, type Place } from './flights.ts';
+import { frontOf } from './front.ts';
 import type { HandKind } from './pace.ts';
 
 // Cards fly between the places of the table on a soft spring when a move happens, mine or another player's, and the
@@ -40,6 +41,8 @@ interface Active {
   at: number;
   /** Landed: the card is gone and its destination shows, while the hand that carried it lingers. */
   landed?: boolean;
+  /** Picked up by its hand: until then the card still lies at its source. */
+  lifted?: boolean;
   /** Played by a hand: when it may start, and what it tells its lane. */
   lane?: { start: Promise<void>; picked: () => void; done: () => void };
 }
@@ -48,6 +51,8 @@ interface Said {
   id: number;
   bubble: Bubble;
   at: Box;
+  /** The top it may not rise above: the card in front of the seat. */
+  below?: number;
 }
 
 const BEAT = 0.34;
@@ -109,6 +114,8 @@ export interface FlightLayer {
   landing: ReadonlySet<Place>;
   /** How many cards are on their way to a place (the discard shows the top from before them). */
   inbound: (place: Place) => number;
+  /** A hand has yet to pick up the card lying there (another player's drawn card stays in front of them till then). */
+  waiting: (place: Place) => boolean;
   layer: ReactNode;
 }
 
@@ -118,7 +125,12 @@ interface HandRoom extends HandsOptions {
   pace: number;
   at: Map<PlayerId, { x: number; y: number; t: number }>;
   busy: Map<PlayerId, number>;
+  /** Until when each player looks at the card they just drew, before their hand may take it on. */
+  look: Map<PlayerId, number>;
 }
+
+/** How long a player looks at the card they drew at least, at normal pace (the owner: «il observe, il décide»). */
+const LOOK = 700;
 
 export function useFlights(
   events: readonly GameEvent[],
@@ -132,6 +144,7 @@ export function useFlights(
   const lanes = useRef(new Map<PlayerId, Lane>());
   const handAt = useRef(new Map<PlayerId, { x: number; y: number; t: number }>());
   const busy = useRef(new Map<PlayerId, number>());
+  const look = useRef(new Map<PlayerId, number>());
   const [active, setActive] = useState<Active[]>([]);
   const [said, setSaid] = useState<Said[]>([]);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -152,17 +165,24 @@ export function useFlights(
     if (fresh.length === 0) return;
 
     if (motionOn) {
-      // A drawn card that came and went within one batch has no place on screen: the middle of the table stands in.
+      // A drawn card that came and went within one batch has no place on screen: where it would have been stands in,
+      // in front of the player who drew it (game/front.ts), or the middle of the table for mine.
       const middle = boxOf('.center');
-      const stand = middle ? { x: middle.x + middle.w / 2 - 30, y: middle.y + middle.h / 2 - 42, w: 60, h: 84 } : null;
-      const find = (place: Place, first: Map<Place, Box>, then: Map<Place, Box>) =>
-        first.get(place) ?? then.get(place) ?? (place === 'drawn' ? stand : null);
+      const stand = (by: PlayerId | undefined): Box | null => {
+        if (!middle) return null;
+        const seat = by && by !== me ? boxOf(`[data-seat="${CSS.escape(by)}"]`) : null;
+        if (!seat) return { x: middle.x + middle.w / 2 - 30, y: middle.y + middle.h / 2 - 42, w: 60, h: 84 };
+        const at = frontOf(seat, middle, { w: 60, h: 84 }, { w: window.innerWidth, h: window.innerHeight });
+        return { ...at, w: 60, h: 84 };
+      };
+      const find = (place: Place, first: Map<Place, Box>, then: Map<Place, Box>, by?: PlayerId) =>
+        first.get(place) ?? then.get(place) ?? (place === 'drawn' ? stand(by) : null);
       const list: Active[] = [];
       for (const flight of flightsOf(fresh, me, handOf)) {
         const by = hands && flight.by && flight.by !== me ? flight.by : null;
         if (flight.tap && !by) continue;
-        const from = takeDrop(flight.from) ?? find(flight.from, before, now);
-        const to = flight.tap ? from : find(flight.to, now, before);
+        const from = takeDrop(flight.from) ?? find(flight.from, before, now, flight.by);
+        const to = flight.tap ? from : find(flight.to, now, before, flight.by);
         if (!from || !to) continue;
         const item: Active = { id: nextId.current++, flight, from, to, at: performance.now() };
         if (by) item.lane = enqueue(by, flight.alongside === true);
@@ -176,7 +196,11 @@ export function useFlights(
       const added: Said[] = [];
       for (const bubble of bubbles) {
         const seat = boxOf(`[data-seat="${CSS.escape(bubble.player)}"]`);
-        if (seat) added.push({ id: nextId.current++, bubble, at: seat });
+        if (!seat) continue;
+        // Under the card they hold up, when it sits under their seat.
+        const front = boxOf(`[data-front-of="${CSS.escape(bubble.player)}"]`);
+        const below = front && front.y > seat.y + seat.h - 12 ? front.y + front.h + 6 : undefined;
+        added.push({ id: nextId.current++, bubble, at: seat, ...(below === undefined ? {} : { below }) });
       }
       const ids = new Set(added.map((s) => s.bubble.player));
       setSaid((s) => [...s.filter((x) => !ids.has(x.bubble.player)), ...added]);
@@ -214,12 +238,25 @@ export function useFlights(
 
   const remove = (id: number) => setActive((a) => a.filter((x) => x.id !== id));
   const land = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, landed: true } : x)));
+  const lift = (id: number) => setActive((a) => a.map((x) => (x.id === id ? { ...x, lifted: true } : x)));
   // The table shows the state before a move until its gesture has played it: a destination hides from the moment the
   // move arrives (the copy waiting at its source covers what the state already changed there) until the copy lands.
   const flying = active.filter((a) => !a.landed && !a.flight.tap);
-  const landing = new Set(flying.map((a) => a.flight.to));
-  const inbound = (place: Place) => flying.filter((a) => a.flight.to === place).length;
-  const room: HandRoom | null = hands ? { ...hands, speed, pace, at: handAt.current, busy: busy.current } : null;
+  // Moves this render brings that the effect below has not turned into flights yet count as on their way already, so
+  // the table never shows their outcome for a frame first (the deal's first discard card flashed then faded).
+  const coming =
+    motionOn && events.length > seen.current
+      ? flightsOf(events.slice(seen.current), me, handOf).filter((f) => !f.tap)
+      : [];
+  const landing = new Set([...flying.map((a) => a.flight.to), ...coming.map((f) => f.to)]);
+  const inbound = (place: Place) =>
+    flying.filter((a) => a.flight.to === place).length + coming.filter((f) => f.to === place).length;
+  const waiting = (place: Place) =>
+    active.some((a) => a.lane && !a.lifted && !a.landed && a.flight.from === place) ||
+    (!!hands && coming.some((f) => f.from === place && f.by !== undefined && f.by !== me));
+  const room: HandRoom | null = hands
+    ? { ...hands, speed, pace, at: handAt.current, busy: busy.current, look: look.current }
+    : null;
   const layer = (
     <div className="flights" aria-hidden="true">
       {active.map((a) =>
@@ -227,7 +264,14 @@ export function useFlights(
           a.flight.alongside ? (
             <AlongsideCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
           ) : (
-            <CarriedCard key={a.id} a={a} room={room} onLand={() => land(a.id)} onDone={() => remove(a.id)} />
+            <CarriedCard
+              key={a.id}
+              a={a}
+              room={room}
+              onLift={() => lift(a.id)}
+              onLand={() => land(a.id)}
+              onDone={() => remove(a.id)}
+            />
           )
         ) : (
           <FlyingCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
@@ -250,7 +294,7 @@ export function useFlights(
       </AnimatePresence>
     </div>
   );
-  return { landing, inbound, layer };
+  return { landing, inbound, waiting, layer };
 }
 
 /**
@@ -263,7 +307,7 @@ function stack(said: readonly Said[]): { s: Said; style: CSSProperties }[] {
     .sort((a, b) => a.at.x - b.at.x)
     .map((s) => {
       const left = Math.max(108, Math.min(window.innerWidth - 108, s.at.x + s.at.w / 2));
-      let top = s.at.y + s.at.h - 6;
+      let top = Math.max(s.at.y + s.at.h - 6, s.below ?? 0);
       while (placed.some((p) => Math.abs(p.left - left) < 200 && Math.abs(p.top - top) < 34)) top += 36;
       placed.push({ left, top });
       return { s, style: { left, top } };
@@ -367,11 +411,13 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 function CarriedCard({
   a,
   room,
+  onLift,
   onLand,
   onDone,
 }: {
   a: Active;
   room: HandRoom;
+  onLift: () => void;
   onLand: () => void;
   onDone: () => void;
 }) {
@@ -387,8 +433,8 @@ function CarriedCard({
   const [handOn, setHandOn] = useState(false);
   const [press, setPress] = useState(false);
   const [face, setFace] = useState<Card | null>(flight.turnsOver ? null : flight.card);
-  const latest = useRef({ room, onLand, onDone, lane: a.lane });
-  latest.current = { room, onLand, onDone, lane: a.lane };
+  const latest = useRef({ room, onLift, onLand, onDone, lane: a.lane });
+  latest.current = { room, onLift, onLand, onDone, lane: a.lane };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: one gesture per mount, read from the latest props
   useEffect(() => {
@@ -417,6 +463,9 @@ function CarriedCard({
       landed = true;
       // The next gesture in this lane starts from here.
       if (byHand) r.at.set(by, { x: hx.get(), y: hy.get(), t: performance.now() });
+      // A card just drawn is looked at before the hand takes it on.
+      if (flight.to === 'drawn') r.look.set(by, performance.now() + (LOOK * r.pace) / s);
+      latest.current.onLift();
       lane?.picked();
       lane?.done();
       latest.current.onLand();
@@ -437,6 +486,7 @@ function CarriedCard({
           const k = 700 * s * s;
           const quick = { type: 'spring' as const, stiffness: k, damping: 2 * 0.9 * Math.sqrt(k) };
           if (flight.turnsOver) setFace(flight.card);
+          latest.current.onLift();
           await Promise.all([animate(cx, to.x, quick), animate(cy, to.y, quick), animate(scale, 1, quick)]);
         }
         finishLanding(false);
@@ -471,6 +521,12 @@ function CarriedCard({
       const g = grip(from);
       await move(g.x, g.y, hurry ? 1.6 : 1);
       if (!alive) return;
+      // The card they drew: they finish looking at it first.
+      const looking = flight.from === 'drawn' ? (r.look.get(by) ?? 0) - performance.now() : 0;
+      if (looking > 0) {
+        await sleep(looking);
+        if (!alive) return;
+      }
       setPress(true);
       await sleep(80 / s);
       setPress(false);
@@ -479,6 +535,7 @@ function CarriedCard({
         await sleep((240 * r.pace) / s);
         finishLanding();
       } else {
+        latest.current.onLift();
         lane?.picked();
         // The card hangs from the hand: under the arrow's tip, or centred under the finger.
         const off = { x: to.w / 2, y: to.h * (finger ? 0.5 : 0.35) };
@@ -523,7 +580,18 @@ function CarriedCard({
       {flight.tap || a.landed ? null : (
         <motion.div
           className="flight"
-          style={{ x: cx, y: cy, scale, rotate: rot, width: to.w, '--w': `${to.w}px` } as unknown as CSSProperties}
+          style={
+            {
+              x: cx,
+              y: cy,
+              scale,
+              rotate: rot,
+              width: to.w,
+              '--w': `${to.w}px`,
+              // Another player's drawn card still lies in front of them (FrontCard) until the hand takes it.
+              visibility: flight.from === 'drawn' && !a.lifted ? 'hidden' : 'visible',
+            } as unknown as CSSProperties
+          }
         >
           <CardView card={face} label="" size="md" />
         </motion.div>

@@ -15,12 +15,19 @@ code, though the game speaks French first. Codenames are French card words, in a
   at, and carries each card where it goes. It can be turned off in the settings or the table's Display button.
 - Choose the bots' pace (brisk, normal or unhurried) and how fast cards fly (fast, normal or gentle), in the settings
   or the table's Display button. The pace never changes how quickly a bot claims a quick discard.
+- Choose how the card you draw shows: held just above your cards (the default, the table stays in sight) or large in
+  the middle of the table, in the settings or the table's Display button. Either way, drag it onto one of your cards
+  to swap it, or onto the discard to throw it; tapping still works.
 
 ### Changed
 
 - A card a power lets you look at now comes up large in front of you and turns over, with whose card it is, instead
   of turning in place where it could be tiny or half hidden.
 - On a computer, the oval drawn round the table is gone.
+- The card another player draws now comes in front of them, face down for you, raised on their side as they look at
+  it, with an eye; they swap it or throw it from there, instead of it waiting beside the discard.
+- The backs of the other players' cards face them: turned round for those across the table, a quarter turn for those
+  at the ends of a wide table.
 
 ### Fixed
 
@@ -35,6 +42,10 @@ code, though the game speaks French first. Codenames are French card words, in a
 - In the "Posée" layout, the cards at both ends no longer look turned: the hand is laid flat without perspective.
 - Every panel (Affichage, the settings, the rules, a mode's panel) closes on a tap beside it or with Escape, not only
   with "Fermer".
+- The deal starts on an empty discard: its first card is put down at the end of the deal instead of showing from the
+  start.
+- On your own turn, before you draw, an open discard now glows and your cards lift as during the others' turns: a
+  quick discard was already possible there but not shown.
 
 ## [0.14.0] - 2026-10-24 — Nain jaune
 
