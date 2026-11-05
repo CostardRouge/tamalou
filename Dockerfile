@@ -9,13 +9,13 @@
 # day, which nobody tested here; Dependabot raises the tag (.github/dependabot.yml), one pull request the CI gate checks.
 # Node 25+ no longer bundles corepack: it comes from npm at an exact version, then pins pnpm from packageManager.
 
-FROM node:26.12.1-alpine AS build
+FROM node:26.13.0-alpine AS build
 WORKDIR /app
 RUN npm install -g corepack@0.36.0 && corepack enable
 COPY . .
 RUN pnpm install --frozen-lockfile && pnpm build
 
-FROM node:26.12.1-alpine
+FROM node:26.13.0-alpine
 LABEL org.opencontainers.image.source="https://github.com/CostardRouge/tamalou" \
       org.opencontainers.image.description="Tamalou, the card game: LAN server and web app" \
       org.opencontainers.image.licenses="MIT"
