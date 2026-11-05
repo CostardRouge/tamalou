@@ -243,7 +243,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     if (d.followUp) setQueued(d.followUp);
     go(d.send, null, () => setPending(NONE));
   };
-  // biome-ignore lint/correctness/useExhaustiveDependencies: checked after every render, like the queue it serves
+  // No dependency list: checked after every render, like the queue it serves.
   useEffect(() => {
     if (queued?.type === 'quickDiscard') {
       // A quick discard made through my own power: it goes as soon as the power is let go and the window open.
