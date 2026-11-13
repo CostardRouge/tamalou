@@ -25,6 +25,10 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- Changing your mind is allowed until a card is put down. Tapping the discard, or "Prendre la défausse", lifts it
+  without taking it: tap one of your cards to place it there, or tap beside it to put it back. Tapping the card you
+  drew lifts it the same way and shows where it can go. Drawing from the deck is still final, since you have seen the
+  card.
 - The quick-discard window now lasts at least 3 seconds (it was 2), counted from when the card is down on the screen;
   it can still be changed in the rules.
 - The bots wait for each move to finish on the screen before playing on, and "À toi !" comes once the others are done.
