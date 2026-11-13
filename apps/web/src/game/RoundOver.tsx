@@ -5,6 +5,7 @@ import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { cardName, t } from '../i18n/index.ts';
+import { roundHeadline, type Seats, seatLabel } from './roundText.ts';
 
 // The end of a round (docs/SPEC.md §6): every hand turned over one card after the other, the points of the round and
 // the totals, then "next round". At the end of the game, the winners and the way back.
@@ -29,17 +30,9 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
   }, [over, rounds]);
   if (!result) return null;
   const waiting = conn.readyForNext().includes(view.me);
-  const who = (id: PlayerId) => (id === view.me ? t('you') : nameOf(id));
+  const seats: Seats = { me: view.me, nameOf, shared: !!conn.handoff };
   const winners = view.winners ?? [];
-
-  let headline = t('roundNoCaller');
-  if (result.caller)
-    headline = t(result.callerFailed ? 'roundCallerFailed' : 'roundCallerWon', { name: who(result.caller) });
-  if (over) {
-    if (winners.length === 1)
-      headline = winners[0] === view.me ? t('youWin') : t('winner', { name: nameOf(winners[0] ?? '') });
-    else headline = t('winners', { names: winners.map(who).join(', ') });
-  }
+  const headline = roundHeadline(view, seats);
 
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="round-title">
@@ -68,10 +61,12 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
             {result.scores.map((s, row) => {
               const seat = view.players.find((p) => p.id === s.player);
               const out = result.eliminated.includes(s.player);
+              const label = seatLabel(s.player, seats);
               return (
                 <tr key={s.player} className={winners.includes(s.player) ? 'win' : ''}>
                   <th scope="row">
-                    {who(s.player)}
+                    {label.name}
+                    {label.you ? <span className="muted"> ({t('roundYou')})</span> : null}
                     {s.player === result.caller ? <span className="badge">Tamalou</span> : null}
                     {out ? <span className="muted"> · {t('eliminated')}</span> : null}
                   </th>

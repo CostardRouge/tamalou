@@ -41,6 +41,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Fixed
 
+- The end of a round speaks to you properly: "Tu as réussi ton Tamalou." instead of "Toi a réussi son Tamalou."
+  ("You made your Tamalou." in English), and the scores show your name followed by "(toi)". On a phone passed round
+  several players, everyone goes by name.
 - The deal: the deck counts down as it deals, your two cards to remember turn over together once it is done, and
   the discard's first card no longer flickers as it lands.
 - On a phone, the screen behind an open panel (Display, settings, rules, a mode's panel) no longer scrolls under your

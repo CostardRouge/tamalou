@@ -250,6 +250,10 @@ export const fr = {
   roundOver: 'Fin de la manche {round}',
   roundCallerWon: '{name} a réussi son Tamalou.',
   roundCallerFailed: '{name} a raté son Tamalou : pénalité.',
+  // The same lines when the caller is the player reading them; "(toi)" follows their name in the scores.
+  roundCallerWon_you: 'Tu as réussi ton Tamalou.',
+  roundCallerFailed_you: 'Tu as raté ton Tamalou : pénalité.',
+  roundYou: 'toi',
   roundNoCaller: 'Personne n’a annoncé Tamalou.',
   colPlayer: 'Joueur',
   colHand: 'Main',
