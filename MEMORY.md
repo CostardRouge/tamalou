@@ -42,7 +42,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.
 - Views are checked against events: a face in a view must have been revealed to that player by an event they received — `architecture.md`.
 - The host (bot timing, the window's minimum, round flow, turn timer) is `packages/room`'s `Table` with an injected clock; the browser runs it for solo — ADR-0009, `architecture.md`.
-- The web UI offers only `legalActions(view)`; quick discard is an armed mode; log lines about "you" have `_you` keys — `web.md`.
+- The web UI offers only `legalActions(view)`; quick discard is an armed mode; lines about "you" (log, end-of-round panel) have `_you` keys, never «Toi» in a `{name}` slot — `web.md`.
 - Builds of `main` go to GitHub Pages (solo and pass-and-play only: no API there) — ADR-0010 — and, once configured, to Cloudflare with the rooms — ADR-0014.
 - The game master edits every RuleSet leaf on one screen (a test fails if a leaf has none); rules travel as a preset + diff, by `#rules=` link or a JSON file — ADR-0011, `rules.md`, `web.md`.
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
