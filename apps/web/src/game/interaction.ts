@@ -11,7 +11,12 @@ export type Pending =
   | { kind: 'quick' }
   | { kind: 'quickGive'; target: SlotRef }
   | { kind: 'blindOwn'; own: number }
-  | { kind: 'choosePeek'; slots: number[] };
+  | { kind: 'choosePeek'; slots: number[] }
+  /**
+   * A card lifted by a touch, nothing sent yet (the owner, 2026-11-13: a touch must not lock a choice in): the discard
+   * before my draw, or the card I drew. A touch on one of my cards puts it there; a touch beside it puts it back.
+   */
+  | { kind: 'lift'; source: 'discard' | 'drawn' };
 
 export const NONE: Pending = { kind: 'none' };
 
@@ -34,6 +39,8 @@ export interface Interaction {
     test?: (a: Extract<Action, { type: T }>) => boolean,
   ): Extract<Action, { type: T }> | undefined;
   canQuick: boolean;
+  /** Whether a touch may lift this card: the discard before my draw, the card I drew. */
+  canLift(source: 'discard' | 'drawn'): boolean;
   /**
    * During my own power (choosing a target, or looking at the card it shows), what lets it go so the window opens on
    * the card I threw: a quick discard then goes on at once (the owner, 2026-10-25: «il faut me laisser faire la
@@ -90,6 +97,15 @@ export function interaction(view: PlayerView, rules: RuleSet, pending: Pending):
         if (slots.length > rules.hand.initialPeek.count) return null;
         return { next: { kind: 'choosePeek', slots } };
       }
+      case 'lift': {
+        if (pending.source !== 'discard') break;
+        // Taking the discard and placing it is one gesture, sent when the card is put down, as a drop does.
+        const take = find('draw', (a) => a.from === 'discard');
+        const filled = mySlots.some((s) => s.slot === ref.slot && s.filled);
+        return take && ref.player === me && filled
+          ? { send: take, followUp: { type: 'swap', by: me, slot: ref.slot } }
+          : null;
+      }
       case 'blindOwn': {
         const a = find('usePower', (u) => u.targets[0]?.slot === pending.own && same(u.targets[1] as SlotRef, ref));
         if (a) return { send: a };
@@ -125,5 +141,10 @@ export function interaction(view: PlayerView, rules: RuleSet, pending: Pending):
     return false;
   };
 
-  return { legal, slot, selected, find, canQuick: quick.length > 0, letGo, quickThrough };
+  const canLift = (source: 'discard' | 'drawn') =>
+    source === 'discard'
+      ? !!find('draw', (a) => a.from === 'discard')
+      : !!view.drawn && (!!find('swap') || !!find('discardDrawn'));
+
+  return { legal, slot, selected, find, canQuick: quick.length > 0, canLift, letGo, quickThrough };
 }

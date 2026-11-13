@@ -96,6 +96,9 @@ export const fr = {
   promptDrawWaiting: 'Un instant : défausse rapide possible…',
   promptPlace: 'Échange-la avec une de tes cartes, ou défausse-la.',
   promptPlaceMustSwap: 'Échange-la avec une de tes cartes.',
+  // A card lifted by a touch, nothing played yet.
+  promptLifted: 'Pose-la sur une de tes cartes ou sur la défausse. Touche à côté pour la reposer.',
+  promptLiftedMustSwap: 'Pose-la sur une de tes cartes. Touche à côté pour la reposer.',
   promptPeekOwn: 'Pouvoir : regarde une de tes cartes.',
   promptPeekOther: 'Pouvoir : regarde une carte d’un adversaire.',
   promptBlindSwapOwn: 'Pouvoir : choisis une de tes cartes à échanger…',
@@ -137,6 +140,7 @@ export const fr = {
   actPass: 'Continuer',
   actQuick: 'Défausse rapide',
   actCancel: 'Annuler',
+  actPutBack: 'Reposer la carte',
   actConfirm: 'Confirmer',
   actNextRound: 'Manche suivante',
   actReplay: 'Rejouer',
@@ -149,6 +153,7 @@ export const fr = {
   barKeep: 'Garder',
   barPass: 'Continuer',
   barCancel: 'Annuler',
+  barPutBack: 'Reposer',
 
   // Powers
   // The in-game rules, one card per rule to leaf through.

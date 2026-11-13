@@ -264,7 +264,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       go(swap, { player: view.me, slot: queued.slot });
     } else if (view.current !== view.me || view.phase !== 'play') setQueued(null);
   });
-  const handsFree = pending.kind === 'none' && !staged && !claim && !ask;
+  /** The card a touch lifted, if any: it can still be carried by hand. */
+  const lifted = pending.kind === 'lift' ? pending.source : null;
+  const handsFree = (pending.kind === 'none' || !!lifted) && !staged && !claim && !ask;
+  /** A move left unconfirmed takes its second half with it (a swap queued behind a draw). */
+  const dropStaged = () => {
+    setStaged(null);
+    setQueued(null);
+  };
   const carry = (source: DragSource, place: Place, child: ReactNode) => {
     const drops = handsFree ? dropsFor(source, ui, view) : [];
     return (
@@ -361,6 +368,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     (!myTurn || view.step === 'draw') &&
     ui.canQuick &&
     handsFree &&
+    !lifted &&
     !claimers;
   const throwing = !!drag?.drops.some((d) => d.place === 'discard' && d.send.type === 'quickDiscard');
   const prompt = fly.dealing
@@ -386,7 +394,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   // at (the Queen's look keeps my card, as "Garder" does). Escape does the same.
   const dismiss = () => {
     if (ask) setAsk(null);
-    else if (staged) setStaged(null);
+    else if (staged) dropStaged();
     else if (claim) setClaim(null);
     else if (pending.kind !== 'none') setPending(NONE);
     else if (looking) send(ui.find('endReveal') ?? ui.find('queenDecide', (a) => a.swapWith === null));
@@ -437,6 +445,13 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           ghost={fly.landing.has('drawn')}
           label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
           size="lg"
+          // A touch lifts it and shows where it may go; a second touch, or one beside it, puts it back.
+          selected={lifted === 'drawn'}
+          onSelect={
+            holdingMine && ui.canLift('drawn')
+              ? () => setPending(lifted === 'drawn' ? NONE : { kind: 'lift', source: 'drawn' })
+              : undefined
+          }
         />,
       )
     : null;
@@ -549,11 +564,16 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 empty={!shownDiscard}
                 label={shownDiscard ? `${t('discard')} : ${cardName(shownDiscard)}` : t('discardEmpty')}
                 size="md"
-                hint={!!ui.find('draw', (a) => a.from === 'discard')}
+                // A touch lifts it (nothing is sent until it is put on one of my cards); while I lift the card I
+                // drew, a touch here throws it.
+                hint={(ui.canLift('discard') && !lifted) || (lifted === 'drawn' && !!ui.find('discardDrawn'))}
+                selected={lifted === 'discard'}
                 onSelect={
-                  ui.find('draw', (a) => a.from === 'discard')
-                    ? () => send(ui.find('draw', (a) => a.from === 'discard'))
-                    : undefined
+                  lifted === 'drawn' && ui.find('discardDrawn')
+                    ? () => send(ui.find('discardDrawn'))
+                    : ui.canLift('discard')
+                      ? () => setPending(lifted === 'discard' ? NONE : { kind: 'lift', source: 'discard' })
+                      : undefined
                 }
               />,
             )}
@@ -611,7 +631,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                       main: true,
                       onClick: confirmStaged,
                     },
-                    cancelAct(() => setStaged(null)),
+                    cancelAct(dropStaged),
                   ]
                 : claim === 'who'
                   ? [
@@ -775,6 +795,10 @@ function promptFor(
   if (pending.kind === 'quick') return t('promptQuick');
   if (pending.kind === 'quickGive') return t('promptQuickGive');
   if (pending.kind === 'blindOwn') return t('promptBlindSwapOther');
+  if (pending.kind === 'lift') {
+    if (pending.source === 'discard' || view.drawn?.from === 'discard') return t('promptLiftedMustSwap');
+    return t('promptLifted');
+  }
   const seated = view.players.some((p) => p.id === view.me);
   if (view.phase === 'initialPeek') {
     if (!seated || view.ready.includes(view.me)) return t('promptWaitOthers');
@@ -841,6 +865,21 @@ function actsFor(
   shared = false,
 ): Act[] {
   const out: Act[] = [];
+  if (pending.kind === 'lift') {
+    // A lifted card: put it back, or (the card I drew) throw it from the bar as before.
+    const discard = pending.source === 'drawn' ? ui.find('discardDrawn') : undefined;
+    if (discard)
+      out.push({
+        key: 'discard',
+        label: t('actDiscard'),
+        icon: 'discard',
+        tone: 'primary',
+        main: true,
+        onClick: () => send(discard),
+      });
+    out.push({ ...cancelAct(() => setPending(NONE)), label: t('actPutBack'), caption: t('barPutBack') });
+    return out;
+  }
   if (pending.kind !== 'none') {
     if (pending.kind === 'choosePeek' && pending.slots.length === peekCount) {
       const slots = pending.slots;
@@ -898,7 +937,8 @@ function actsFor(
       label: t('actTakeDiscard'),
       caption: t('barTake'),
       icon: 'take',
-      onClick: () => send(take),
+      // It lifts the discard like a touch on it: the card is taken once it is put on one of mine.
+      onClick: () => setPending({ kind: 'lift', source: 'discard' }),
     });
   const skip = ui.find('skipPower');
   if (skip)

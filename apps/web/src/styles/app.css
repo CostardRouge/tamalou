@@ -2993,6 +2993,13 @@ html:has(.overlay) body {
     0 16px 24px -12px rgb(0 0 0 / 0.5);
 }
 
+/* Lifted by a touch, nothing played yet: the selection's ring, as on the lifted discard. */
+.held .card-selected .card-side {
+  box-shadow:
+    0 0 0 3px var(--b-ink),
+    0 16px 24px -12px rgb(0 0 0 / 0.5);
+}
+
 .held-label {
   position: absolute;
   left: calc(100% + 10px);

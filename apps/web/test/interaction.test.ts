@@ -90,3 +90,28 @@ describe('table interaction', () => {
     expect(three).toBeNull();
   });
 });
+
+describe('a lifted card', () => {
+  it('puts the lifted discard on one of my cards as a take then a swap, and nowhere else', () => {
+    const s = game();
+    const view = viewFor(s, 'me', noPeek);
+    const lift = interaction(view, noPeek, { kind: 'lift', source: 'discard' });
+    expect(lift.canLift('discard')).toBe(true);
+    expect(lift.slot({ player: 'me', slot: 1 })).toEqual({
+      send: { type: 'draw', by: 'me', from: 'discard' },
+      followUp: { type: 'swap', by: 'me', slot: 1 },
+    });
+    expect(lift.slot({ player: 'bot', slot: 1 })).toBeNull();
+    // Without the lift, a touch on my card does nothing before I draw.
+    expect(interaction(view, noPeek, NONE).slot({ player: 'me', slot: 1 })).toBeNull();
+  });
+
+  it('lets me lift the card I drew, which still swaps where it is put', () => {
+    const s = act(game(), { type: 'draw', by: 'me', from: 'deck' });
+    const view = viewFor(s, 'me', noPeek);
+    const lift = interaction(view, noPeek, { kind: 'lift', source: 'drawn' });
+    expect(lift.canLift('drawn')).toBe(true);
+    expect(lift.canLift('discard')).toBe(false);
+    expect(lift.slot({ player: 'me', slot: 0 })).toEqual({ send: { type: 'swap', by: 'me', slot: 0 } });
+  });
+});
