@@ -28,6 +28,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The card turned over by the deal can no longer be quick-discarded on: nobody loses a card to a mistake before the
+  first move. The game master can allow it again in the rules ("On the dealt card", under quick discard).
 - Changing your mind is allowed until a card is put down. Tapping the discard, or "Prendre la défausse", lifts it
   without taking it: tap one of your cards to place it there, or tap beside it to put it back. Tapping the card you
   drew lifts it the same way and shows where it can go. Drawing from the deck is still final, since you have seen the

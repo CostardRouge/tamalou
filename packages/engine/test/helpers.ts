@@ -33,11 +33,12 @@ const parse = (spec: CardSpec): { rank: Rank; suit: Suit | null } => {
 
 /**
  * Puts chosen cards in chosen places: each hand, the discard (top last) and the top of the pile (top last). Every other
- * card goes under the pile, in table order. Knowledge is cleared.
+ * card goes under the pile, in table order. Knowledge is cleared. `window`: whether the top card has just landed, so a
+ * quick discard may be made on it (the dealt card opens none by default).
  */
 export function rig(
   s: GameState,
-  spec: { hands?: Record<PlayerId, (CardSpec | null)[]>; discard?: CardSpec[]; deck?: CardSpec[] },
+  spec: { hands?: Record<PlayerId, (CardSpec | null)[]>; discard?: CardSpec[]; deck?: CardSpec[]; window?: boolean },
 ): GameState {
   const used = new Set<CardId>();
   const take = (c: CardSpec): CardId => {
@@ -70,6 +71,7 @@ export function rig(
   next.discard = discard;
   next.deck = [...rest, ...deckTop];
   for (const p of next.players) next.knows[p.id] = [];
+  if (spec.window !== undefined) next.window = spec.window;
   return next;
 }
 

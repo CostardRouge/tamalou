@@ -82,7 +82,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 - À tout moment, même hors de son tour, **n'importe quel joueur** peut poser une de ses cartes si elle a **le même rang** que la carte du dessus de la défausse. Il a alors une carte de moins.
 - **Erreur** (la carte ne correspond pas) : la carte retourne à sa place, et le joueur prend **1 carte de pénalité** de la pioche, face cachée, sans la regarder. **[ADR-0006]** Cette carte ouvre une case de plus dans sa grille.
 - **Concurrence** : si plusieurs joueurs défaussent en même temps, seul **le premier validé par le serveur** est accepté. Pour les autres, la carte de dessus a changé et leur action est annulée sans pénalité.
-- **[ADR-0005]** **Fenêtre** : elle s'ouvre quand une carte arrive face visible sur la défausse et se ferme quand le joueur suivant pioche, avec un minimum de 3 s (2 s jusqu'au 2026-10-25), compté depuis que la carte est posée à l'écran. En pass-and-play, la défausse rapide est **désactivée par défaut** (activable).
+- **[ADR-0005]** **Fenêtre** : elle s'ouvre quand une carte arrive face visible sur la défausse et se ferme quand le joueur suivant pioche, avec un minimum de 3 s (2 s jusqu'au 2026-10-25), compté depuis que la carte est posée à l'écran. En pass-and-play, la défausse rapide est **désactivée par défaut** (activable). **[ADR-0021]** La carte retournée à la donne n'ouvre **pas** de fenêtre par défaut (le propriétaire, 2026-11-21 : on se trompait avant que la partie ait commencé) ; la première fenêtre s'ouvre sur la première carte jouée. Paramétrable (`quickDiscard.onDealtCard`).
 - Option (désactivée par défaut) : défausser la carte d'un **adversaire** si elle correspond. On lui donne alors une de ses propres cartes en échange.
 
 ### Fin de manche : « Tamalou ! »
@@ -120,7 +120,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
   - **Main :** taille de la main, nombre et position des cartes vues au départ, disposition.
   - **Pouvoirs :** une table rang → pouvoir. Les pouvoirs disponibles sont `peekOwn`, `peekOther`, `blindSwap`, `peekThenSwap`, `none`. La table reste extensible pour de futurs pouvoirs.
   - **Activation des pouvoirs :** seulement depuis la pioche, ou aussi depuis la défausse.
-  - **Défausse rapide :** activée ou non, pénalité d'erreur (nombre de cartes), autorisation de défausser la carte d'un adversaire.
+  - **Défausse rapide :** activée ou non, pénalité d'erreur (nombre de cartes), autorisation de défausser la carte d'un adversaire, possible ou non sur la carte retournée à la donne.
   - **Prise dans la défausse :** échange obligatoire ou non.
   - **Tamalou :** moment de l'annonce, verrouillage des cartes, pénalité en cas d'échec (+N ou ×2), bonus en cas de victoire, tour minimum avant de pouvoir annoncer (**[ADR-0006]** 0 par défaut).
   - **Fin de partie :** seuil d'élimination, ou nombre de manches, et mode de victoire.

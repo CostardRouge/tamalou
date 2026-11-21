@@ -242,7 +242,20 @@ describe('quick discard', () => {
       hands: { a: ['2H', '3H', '4H', '5H'], b: ['9S', '3S', '4S', '5S'], c: ['2D', '3D', '4D', '5D'] },
       discard: ['9C'],
       deck: ['KS', 'QS'],
+      window: true,
     });
+
+  it('opens no window on the card the deal turns over, unless the rules say so', () => {
+    // No peek in these rules: play starts with the deal.
+    const dealt = (r = base) => newGame(r, 2).state;
+    const s = rig(dealt(), { hands: { b: ['9S', '3S', '4S', '5S'] }, discard: ['9C'] });
+    expect(s.window).toBe(false);
+    const claim = { type: 'quickDiscard', by: 'b', target: { player: 'b', slot: 0 }, expectTop: top(s) } as const;
+    expect(refuse(s, claim, base)).toBe('windowClosed');
+    const on = rules({ quickDiscard: { onDealtCard: true } });
+    const t = rig(dealt(on), { hands: { b: ['9S', '3S', '4S', '5S'] }, discard: ['9C'] });
+    expect(act(t, { ...claim, expectTop: top(t) }, on).events[0]).toMatchObject({ type: 'quickDiscard', player: 'b' });
+  });
 
   it('lets anyone, out of turn, lay a card of the same rank', () => {
     const s = open();
@@ -484,6 +497,7 @@ describe('Tamalou and scoring', () => {
     const s = rig(newGame(r, 2).state, {
       hands: { a: ['9H', null, null, null], b: ['2S', '3S', '4S', '5S'] },
       discard: ['9C'],
+      window: true,
     });
     const { state } = act(s, { type: 'quickDiscard', by: 'a', target: { player: 'a', slot: 0 }, expectTop: top(s) }, r);
     expect(state.phase).toBe('roundEnding');

@@ -252,10 +252,13 @@ describe('room game', () => {
   });
 
   it('holds back a draw sent during the quick-discard window, whatever the order of its fields', () => {
-    const { gm, bob, clock } = started();
+    const { gm, bob, clock } = lobbyOfThree();
+    gm.send({ t: 'setRules', choice: { preset: 'classic', overrides: { quickDiscard: { onDealtCard: true } } } });
+    bob.send({ t: 'ready', ready: true });
+    gm.send({ t: 'start' });
     gm.send({ t: 'action', action: { type: 'ready' } });
     bob.send({ t: 'action', action: { type: 'ready' } });
-    // The bot memorises its cards; play starts, and with it the first window.
+    // The bot memorises its cards; play starts, and with it the first window (on the dealt card, as these rules say).
     for (let i = 0; i < 50 && gm.game().view.phase !== 'play'; i++) clock.advance(100);
     const current = gm.game().view.current;
     const player = current === 's1' ? gm : bob;

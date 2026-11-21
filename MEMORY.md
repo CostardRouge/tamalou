@@ -36,7 +36,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - pnpm monorepo, packages ship TS sources, one typecheck, Biome + Vitest — ADR-0002, `architecture.md`.
 - Front: React 19 + Vite + Motion — ADR-0003.
 - Servers: a Node `ws` server for LAN (Docker on the homelab) AND a Cloudflare Worker + Durable Objects for online, both thin adapters over the pure `packages/room` — ADR-0004, `architecture.md`.
-- Quick discard window: open from a card landing on the discard until the next player draws (3 s minimum since 2026-10-25, counted from when the screen has put the card down; a draw held only while someone else may claim); off by default in pass-and-play — ADR-0005, `rules.md`.
+- Quick discard window: open from a card landing on the discard until the next player draws (3 s minimum since 2026-10-25, counted from when the screen has put the card down; a draw held only while someone else may claim); off by default in pass-and-play; never on the card the deal turns over unless the game master says so (2026-11-21) — ADR-0005, ADR-0021, `rules.md`.
 - Defaults for the brief's unspecified rule points — ADR-0006, `rules.md`.
 - Visual identity reused from Versus; card faces behind a theme — ADR-0007, `design.md`.
 - The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.

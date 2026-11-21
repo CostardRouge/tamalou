@@ -316,6 +316,9 @@ export const fr = {
   rule_opponentCards_help: 'Défausser la carte d’un adversaire si elle correspond, en lui donnant une des siennes.',
   rule_minWindow: 'Durée minimale',
   rule_minWindow_help: 'Le temps laissé à tous pour réagir avant la pioche suivante.',
+  rule_dealtCard: 'Sur la carte de la donne',
+  rule_dealtCard_help:
+    'Permet une défausse rapide sur la carte retournée à la donne, avant que quiconque ait joué. Désactivé, personne ne peut se tromper avant le premier coup.',
   rule_timing: 'Moment de l’annonce',
   rule_timing_help: 'Quand un joueur peut annoncer Tamalou.',
   rule_minTurns: 'Tours avant d’annoncer',
@@ -391,6 +394,8 @@ export const fr = {
   sum_quickOwn: 'Seulement ses propres cartes.',
   sum_quickOpponents: 'Aussi les cartes adverses, en donnant une des siennes.',
   sum_quickWindow: 'Au moins {s} s pour réagir.',
+  sum_quickDealt: 'Aussi sur la carte retournée à la donne.',
+  sum_quickNotDealt: 'Pas sur la carte retournée à la donne : on attend le premier coup.',
   sum_quickOff: 'Pas de défausse rapide.',
   sum_callStart: 'Tamalou s’annonce à la place de son tour.',
   sum_callEnd: 'Tamalou s’annonce à la fin de son tour.',

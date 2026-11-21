@@ -299,6 +299,9 @@ export const en: Messages = {
   rule_opponentCards_help: 'Discard an opponent’s matching card, giving them one of yours.',
   rule_minWindow: 'Minimum time',
   rule_minWindow_help: 'The time everyone gets to react before the next draw.',
+  rule_dealtCard: 'On the dealt card',
+  rule_dealtCard_help:
+    'Allows a quick discard on the card the deal turns over, before anyone has played. Off, nobody can slip up before the first move.',
   rule_timing: 'When to call',
   rule_timing_help: 'When a player may call Tamalou.',
   rule_minTurns: 'Turns before calling',
@@ -372,6 +375,8 @@ export const en: Messages = {
   sum_quickOwn: 'Only one’s own cards.',
   sum_quickOpponents: 'Opponents’ cards too, giving one of yours.',
   sum_quickWindow: 'At least {s} s to react.',
+  sum_quickDealt: 'Also on the card the deal turns over.',
+  sum_quickNotDealt: 'Not on the card the deal turns over: wait for the first move.',
   sum_quickOff: 'No quick discard.',
   sum_callStart: 'Tamalou is called instead of a turn.',
   sum_callEnd: 'Tamalou is called at the end of a turn.',

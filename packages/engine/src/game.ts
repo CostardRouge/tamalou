@@ -148,7 +148,7 @@ function dealRound(s: GameState, rules: RuleSet, events: GameEvent[]): void {
   s.phase = 'initialPeek';
   s.step = null;
   s.current = null;
-  maybeStartPlay(s, events);
+  maybeStartPlay(s, rules, events);
 }
 
 function showInitialPeek(s: GameState, player: PlayerId, slots: number[], events: GameEvent[]): void {
@@ -160,14 +160,15 @@ function showInitialPeek(s: GameState, player: PlayerId, slots: number[], events
   events.push({ type: 'initialPeek', to: player, cards });
 }
 
-function maybeStartPlay(s: GameState, events: GameEvent[]): void {
+function maybeStartPlay(s: GameState, rules: RuleSet, events: GameEvent[]): void {
   if (!activePlayers(s).every((p) => s.peek[p.id]?.ready)) return;
   const starter = s.players[s.starter] as (typeof s.players)[number];
   s.phase = 'play';
   s.step = 'draw';
   s.current = starter.id;
-  // The first face-up card opens a window, like any card landing on the discard.
-  s.window = true;
+  // The card turned over by the deal opens no window unless the game master says so (the owner, 2026-11-21: players
+  // threw a card on it by mistake before the game had begun, ADR-0021); every card landing afterwards does.
+  s.window = rules.quickDiscard.onDealtCard;
   events.push({ type: 'playStarted', current: starter.id });
   events.push({ type: 'turnStarted', player: starter.id });
 }
@@ -412,7 +413,7 @@ function step(s: GameState, a: Action, rules: RuleSet, events: GameEvent[]): Eng
       if (p.slots === null) return 'notChosen';
       p.ready = true;
       events.push({ type: 'playerReady', player: me });
-      maybeStartPlay(s, events);
+      maybeStartPlay(s, rules, events);
       return null;
     }
 

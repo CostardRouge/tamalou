@@ -16,6 +16,9 @@ const table = (spec: SeatSpec[], input: RuleSetInput = {}, seed = 3, botPace?: n
   return { t, clock };
 };
 
+/** Rules where the card the deal turns over opens a window too, so these tests have a window at the start of play. */
+const DEALT: RuleSetInput = { quickDiscard: { onDealtCard: true } };
+
 describe('table host', () => {
   it('plays an all-bot game to the end on its own clock', () => {
     const { t, clock } = table(seats('hard', 'medium', 'easy'));
@@ -48,7 +51,6 @@ describe('table host', () => {
     // Changed during a game, it applies from the next move a bot plans.
     fast.t.setBotPace(Number.NaN);
     const before = fast.t.events('b0').length;
-    // (The first draw also waits out the quick-discard window's minimum.)
     fast.clock.advance(3000);
     expect(fast.t.events('b0').length).toBeGreaterThan(before);
   });
@@ -61,11 +63,11 @@ describe('table host', () => {
 
   it('holds a draw back until the quick-discard window has run its minimum, while someone else may claim', () => {
     // Two humans: the other one may still claim, so the window's minimum holds the draw back.
-    const { t, clock } = table(seats('human', 'human'));
+    const { t, clock } = table(seats('human', 'human'), DEALT);
     t.submit({ type: 'ready', by: 'h0' });
     t.submit({ type: 'ready', by: 'h1' });
     const current = t.view('h0').current as string;
-    // Play just started: the first face-up card opened the window.
+    // Play just started: the first face-up card opened the window (these rules say it does).
     const r = t.submit({ type: 'draw', by: current, from: 'deck' });
     expect(r).toEqual({ ok: true, deferred: true });
     expect(t.drawPending()).toBe(true);
@@ -78,7 +80,7 @@ describe('table host', () => {
   it('lets a held draw go as soon as the last one who could claim has claimed', () => {
     // Search a seed where a bot claims the round's first card while the human's draw is held back.
     for (let seed = 1; seed < 200; seed++) {
-      const { t, clock } = table(seats('human', 'hard', 'hard'), {}, seed);
+      const { t, clock } = table(seats('human', 'hard', 'hard'), DEALT, seed);
       t.submit({ type: 'ready', by: 'h0' });
       for (let i = 0; i < 60 && t.view('h0').phase !== 'play'; i++) clock.advance(100);
       if (t.view('h0').current !== 'h0' || t.view('h0').step !== 'draw') continue;
@@ -95,7 +97,7 @@ describe('table host', () => {
 
   it('lets a draw go at once when nobody else may claim', () => {
     // Alone with a bot that has no claim planned: the minimum is there for the others, so there is nothing to wait for.
-    const { t, clock } = table(seats('human', 'medium'));
+    const { t, clock } = table(seats('human', 'medium'), DEALT);
     clock.advance(5000);
     t.submit({ type: 'ready', by: 'h0' });
     expect(t.windowRemaining()).toBeGreaterThan(0);
@@ -103,8 +105,18 @@ describe('table host', () => {
     expect(t.view('h0').step).toBe('place');
   });
 
+  it('starts play with no window on the dealt card, by default: the first draw goes at once', () => {
+    const { t } = table(seats('human', 'human'));
+    t.submit({ type: 'ready', by: 'h0' });
+    t.submit({ type: 'ready', by: 'h1' });
+    expect(t.view('h1').quickDiscardOpen).toBe(false);
+    expect(t.windowRemaining()).toBe(0);
+    const current = t.view('h0').current as string;
+    expect(t.submit({ type: 'draw', by: current, from: 'deck' })).toEqual({ ok: true });
+  });
+
   it('holds the bots while the screen shows the last moves, and counts the window from then', () => {
-    const { t, clock } = table(seats('medium', 'medium'));
+    const { t, clock } = table(seats('medium', 'medium'), DEALT);
     clock.advance(1200);
     expect(t.view('b0').phase).toBe('play');
     // The deal's discard card opened the window; the screen is still dealing.
