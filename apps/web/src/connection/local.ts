@@ -73,6 +73,14 @@ export class LocalConnection implements GameConnection {
   drawPending() {
     return this.table.drawPending();
   }
+  paused() {
+    return this.table.paused();
+  }
+  /** Anyone at this device may pause: it is their game (solo) or their table (pass-and-play). */
+  setPaused(on: boolean) {
+    if (on) this.table.pause(this.me);
+    else this.table.resume();
+  }
   setBotPace(factor: number) {
     this.table.setBotPace(factor);
   }

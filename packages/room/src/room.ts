@@ -361,6 +361,14 @@ export class Room {
       case 'start':
         this.start(c);
         return;
+      case 'pause':
+        if (this.phase !== 'playing' || !this.table) {
+          this.refuse(c, msg.t, 'notPlaying');
+          return;
+        }
+        if (msg.on) this.table.pause(seat.id);
+        else this.table.resume();
+        return;
       case 'replay': {
         if (this.phase !== 'over') {
           this.refuse(c, msg.t, 'notOver');
@@ -495,6 +503,7 @@ export class Room {
         events: log.slice(from),
         readyForNext: table.readyForNext(),
         drawPending: table.drawPending(),
+        paused: table.paused()?.by ?? null,
       },
     });
   }

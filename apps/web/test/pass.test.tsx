@@ -72,7 +72,8 @@ describe('pass-and-play', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Joueur 2' }));
     const target = screen.getByRole('button', { name: 'Carte 1 de Joueur 2, Carte face cachée' });
     fireEvent.click(target);
-    // The claim went through, right or wrong: the log names Joueur 2.
+    // The claim went through, right or wrong: the journal names Joueur 2.
+    fireEvent.click(screen.getByRole('button', { name: 'Journal' }));
     expect(screen.getByText(/Joueur 2 (défausse rapidement|se trompe)/)).toBeTruthy();
   });
 

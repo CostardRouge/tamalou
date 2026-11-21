@@ -5,7 +5,7 @@ import { CardView } from '../cards/CardView.tsx';
 import { Overlay } from '../game/Overlay.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
-import { VERSION } from '../version.ts';
+import { BUILD } from '../version.ts';
 import { fitsTable, MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
 import { Settings } from './Settings.tsx';
 import { MODE_KEY, SetupSheet, titleOf } from './Setup.tsx';
@@ -221,7 +221,7 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
         {/* The site's home page (ADR-0017): what the game is, a first round, the rules; in this language. */}
         <a href={t('siteHref')}>{t('siteLink')}</a>
         <a href={t('legalHref')}>{t('legalLink')}</a>
-        <p className="version mono">v{VERSION}</p>
+        <p className="version mono">{BUILD}</p>
       </footer>
 
       {sheet ? (

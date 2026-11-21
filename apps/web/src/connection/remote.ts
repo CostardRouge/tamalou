@@ -317,6 +317,17 @@ export class RemoteConnection implements GameConnection {
   drawPending() {
     return this.state.update.drawPending;
   }
+  paused() {
+    const by = this.state.update.paused;
+    return by ? { by } : null;
+  }
+  /** Only the game master pauses a room, for everyone (ADR-0023). */
+  get setPaused() {
+    if (!this.client.isGameMaster) return undefined;
+    return (on: boolean) => {
+      this.client.send({ t: 'pause', on });
+    };
+  }
   subscribe(listener: () => void) {
     return this.client.subscribe(listener);
   }

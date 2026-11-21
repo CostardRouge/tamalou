@@ -43,6 +43,22 @@ describe('the app', () => {
     expect(within(panel()).getByRole('button', { name: 'Jouer' }).hasAttribute('disabled')).toBe(true);
   });
 
+  it('pauses behind a curtain, by the button or when the player leaves the app, and resumes', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mettre en pause' }));
+    const curtain = screen.getByRole('dialog', { name: 'Pause' });
+    expect(within(curtain).getByRole('button', { name: 'Voir les règles' })).toBeTruthy();
+    fireEvent.click(within(curtain).getByRole('button', { name: 'Reprendre' }));
+    expect(screen.queryByRole('dialog', { name: 'Pause' })).toBeNull();
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+    fireEvent(document, new Event('visibilitychange'));
+    expect(screen.getByRole('dialog', { name: 'Pause' })).toBeTruthy();
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Reprendre' }));
+    expect(screen.queryByRole('dialog', { name: 'Pause' })).toBeNull();
+  });
+
   it('lays my hand out as picked in the settings, the opponents’ fans seen from across the table', () => {
     const { container } = render(<App />);
     const mine = () => container.querySelector('.mine fieldset');

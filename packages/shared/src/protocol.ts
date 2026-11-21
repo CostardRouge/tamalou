@@ -8,7 +8,7 @@ import type { PlayerView } from './view.ts';
 // The client sends intentions; the server answers with its lobby, and during a game with this seat's view and the
 // events it may see. Everything a client sends is parsed here first: the server trusts nothing that did not.
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Room codes: no I, O, 0 or 1, which read alike (docs/SPEC.md §5.3). */
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -86,6 +86,8 @@ export const ClientMessageSchema = z.discriminatedUnion('t', [
   z.object({ t: z.literal('action'), action: ActionInputSchema }),
   /** Ready for the next round. */
   z.object({ t: z.literal('continue') }),
+  /** Game master, during a game: pause it for everyone, or resume it (ADR-0023). */
+  z.object({ t: z.literal('pause'), on: z.boolean() }),
   /** Game master, after a game: back to the lobby with the same players and rules. */
   z.object({ t: z.literal('replay') }),
   /** Leave the room for good (the seat is freed in the lobby, played by a bot in a game). */
@@ -139,6 +141,8 @@ export interface GameUpdate {
   events: GameEvent[];
   readyForNext: PlayerId[];
   drawPending: boolean;
+  /** The seat that paused the game, while it is paused (ADR-0023). */
+  paused: PlayerId | null;
 }
 
 export type CloseReason =

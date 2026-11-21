@@ -10,6 +10,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- The home screen and the table's Display panel show which build you run next to the version (v0.14.0 · 64ef767),
+  so a phone still on an older build can be spotted.
+- Pause a game with the new button at the top of the table: the table hides behind a curtain and everything stops
+  (bots, the quick discard, the turn timer) until you resume. A game on your phone also pauses by itself when you
+  leave it for a call or another app. In a room, the game master pauses it for everyone and the others see who did.
 - Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
   regarde une de tes cartes"), before you choose. While a power is played, a label under the piles says whose power it
   is and what it does, the discard that gave it lights up, and the player's seat carries its mark.
@@ -31,6 +36,13 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- A room's waiting screen is redone for a full table: one "room access" ticket with the code, a QR code you tap
+  to enlarge and a single "Invite players" button; the players as tiles in a grid; the button to start or to say you
+  are ready pinned at the bottom of the screen.
+- Nothing the table says covers the cards any more: what the others do, «À toi !» and the power being played show
+  in a line of their own between the other players and the piles, one at a time, and a small icon by a player's name
+  says what they just did (the same icons as the buttons). A power being played is also written in the instruction
+  at the bottom, in orange, so it can never be missed.
 - Quick-discarding an opponent's card you know is now on by default (it can be switched off in the rules). Once it
   has gone, you pick which of your cards to give them, knowing the claim worked; the table waits for your choice.
   Drag their card onto the discard, or use the bolt and touch it. Online rooms need everyone on the new version.
