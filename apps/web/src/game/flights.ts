@@ -137,13 +137,9 @@ export function flightsOf(
         break;
       case 'quickDiscard':
         fly({ from: slotPlace(e.target), to: 'discard', card: e.card, turnsOver: true, thrown: true, by: e.player });
-        if (e.give !== undefined) {
-          fly(
-            { from: slotPlace({ player: e.player, slot: e.give }), to: slotPlace(e.target), card: null, by: e.player },
-            1,
-          );
-          span = 2;
-        }
+        break;
+      case 'cardGiven':
+        fly({ from: slotPlace({ player: e.player, slot: e.slot }), to: slotPlace(e.into), card: null, by: e.player });
         break;
       case 'quickDiscardFailed':
         for (const slot of e.penalty) fly({ from: 'deck', to: slotPlace({ player: e.player, slot }), card: null });
@@ -183,7 +179,9 @@ export interface Bubble {
     | 'bubbleSwapYou'
     | 'bubbleSwap'
     | 'bubbleQuick'
-    | 'bubbleMissed';
+    | 'bubbleMissed'
+    | 'bubbleGiveYou'
+    | 'bubbleGive';
   /** For a line naming a card: "Je jette le 7." */
   card?: Card;
   /** The index of the move it tells, in the list given: it is said as that move is played. */
@@ -223,6 +221,9 @@ export function bubblesOf(events: readonly GameEvent[], me: PlayerId): Bubble[] 
         break;
       case 'quickDiscardFailed':
         say({ player: e.player, key: 'bubbleMissed' });
+        break;
+      case 'cardGiven':
+        say({ player: e.player, key: e.into.player === me ? 'bubbleGiveYou' : 'bubbleGive' });
         break;
       default:
         break;

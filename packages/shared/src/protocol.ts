@@ -8,7 +8,7 @@ import type { PlayerView } from './view.ts';
 // The client sends intentions; the server answers with its lobby, and during a game with this seat's view and the
 // events it may see. Everything a client sends is parsed here first: the server trusts nothing that did not.
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 /** Room codes: no I, O, 0 or 1, which read alike (docs/SPEC.md §5.3). */
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -56,8 +56,8 @@ export const ActionInputSchema = z.discriminatedUnion('type', [
     type: z.literal('quickDiscard'),
     target: slotRef,
     expectTop: z.number().int().min(0),
-    give: slot.optional(),
   }),
+  z.object({ type: z.literal('giveCard'), slot }),
 ]);
 export type ActionInput = z.infer<typeof ActionInputSchema>;
 

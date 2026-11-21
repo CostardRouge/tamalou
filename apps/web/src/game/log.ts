@@ -35,6 +35,9 @@ export function describeEvent(e: GameEvent, nameOf: (id: PlayerId) => string, me
     }
     case 'quickDiscard':
       return line('logQuickDiscard', e.player, { card: cardName(e.card) });
+    case 'cardGiven':
+      if (e.into.player === me) return t('logGaveYours', { name: nameOf(e.player) });
+      return line('logGave', e.player, { target: nameOf(e.into.player) });
     case 'quickDiscardFailed':
       return line('logQuickFailed', e.player, { card: cardName(e.card) });
     case 'deckReshuffled':

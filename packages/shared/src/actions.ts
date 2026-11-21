@@ -35,11 +35,16 @@ export type Action =
   /** endOfTurn timing: decline the call offered after this player's turn. */
   | { type: 'passCall'; by: PlayerId }
   /**
-   * Claim the card at `target` matches the discard's top rank. An opponent's card needs allowOpponentCards and
-   * `give`, the claimer's own slot handed to that opponent on a match. `expectTop` is the discard's top card the
-   * claim was aimed at: if another claim changed it first, this one is cancelled without penalty.
+   * Claim the card at `target` matches the discard's top rank. An opponent's card needs allowOpponentCards; on a
+   * match the claimer then owes that opponent one of their own cards (giveCard). `expectTop` is the discard's top
+   * card the claim was aimed at: if another claim changed it first, this one is cancelled without penalty.
    */
-  | { type: 'quickDiscard'; by: PlayerId; target: SlotRef; expectTop: CardId; give?: number }
+  | { type: 'quickDiscard'; by: PlayerId; target: SlotRef; expectTop: CardId }
+  /**
+   * After a matching claim on an opponent's card: the claimer hands that opponent one of their own cards, chosen once
+   * the claim has succeeded (the owner, 2026-11-21). The game waits for it.
+   */
+  | { type: 'giveCard'; by: PlayerId; slot: number }
   /** Host: close the last quick-discard window and score the round. */
   | { type: 'endRound'; by: 'host' }
   /** Host: deal the next round. */

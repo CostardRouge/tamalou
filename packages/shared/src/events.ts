@@ -36,7 +36,12 @@ export type GameEvent =
   | { type: 'powerUsed'; player: PlayerId; power: Power; targets: SlotRef[] }
   | { type: 'peeked'; to: PlayerId; target: SlotRef; card: Card }
   | { type: 'cardsSwapped'; player: PlayerId; a: SlotRef; b: SlotRef; power: Power }
-  | { type: 'quickDiscard'; player: PlayerId; target: SlotRef; card: Card; give?: number }
+  | { type: 'quickDiscard'; player: PlayerId; target: SlotRef; card: Card }
+  /**
+   * The claimer's card `slot` went, face down, into the opponent's slot their claim emptied. Public: named `into`,
+   * since a `to` field makes an event private (isVisibleTo).
+   */
+  | { type: 'cardGiven'; player: PlayerId; slot: number; into: SlotRef }
   | { type: 'quickDiscardFailed'; player: PlayerId; target: SlotRef; card: Card; penalty: number[] }
   | { type: 'deckReshuffled'; size: number }
   | { type: 'penaltySkipped'; player: PlayerId; missing: number }

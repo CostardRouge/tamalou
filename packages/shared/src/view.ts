@@ -45,6 +45,8 @@ export interface PlayerView {
   /** A look in progress: the face only for the player looking. */
   reveal: { player: PlayerId; power: Power; target: SlotRef; card: Card | null } | null;
   quickDiscardOpen: boolean;
+  /** A claimer who took an opponent's card and owes them one of theirs (giveCard): the game waits for it. Public. */
+  owedGive: { player: PlayerId; to: SlotRef } | null;
   caller: PlayerId | null;
   /** Players still owed their last turn after a call. */
   lastTurns: PlayerId[];

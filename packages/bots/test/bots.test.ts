@@ -59,7 +59,10 @@ describe('bot memory', () => {
     m.observe(ev);
     expect(m.at({ player: 'a', slot: 3 })?.rank).toBe('2');
     expect(m.at({ player: 'b', slot: 0 })?.rank).toBe('J');
-    m.observe([{ type: 'quickDiscard', player: 'a', target: { player: 'b', slot: 0 }, card: card('J', 'H'), give: 3 }]);
+    m.observe([
+      { type: 'quickDiscard', player: 'a', target: { player: 'b', slot: 0 }, card: card('J', 'H') },
+      { type: 'cardGiven', player: 'a', slot: 3, into: { player: 'b', slot: 0 } },
+    ]);
     expect(m.at({ player: 'b', slot: 0 })?.rank).toBe('2');
     expect(m.at({ player: 'a', slot: 3 })).toBeNull();
     m.observe([

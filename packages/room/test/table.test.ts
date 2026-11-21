@@ -115,6 +115,38 @@ describe('table host', () => {
     expect(t.submit({ type: 'draw', by: current, from: 'deck' })).toEqual({ ok: true });
   });
 
+  it('waits for a card owed after a claim on an opponent’s, and has the stand-in give it when time runs out', () => {
+    // Find a deal where one of h1's cards matches the dealt card, by trying each slot on a fresh table.
+    const claimed = (seed: number, input: RuleSetInput) => {
+      for (let slot = 0; slot < 4; slot++) {
+        const { t, clock } = table(seats('human', 'human'), { ...DEALT, ...input }, seed);
+        t.submit({ type: 'ready', by: 'h0' });
+        t.submit({ type: 'ready', by: 'h1' });
+        const top = t.view('h0').discardTop?.id as number;
+        t.submit({ type: 'quickDiscard', by: 'h0', target: { player: 'h1', slot }, expectTop: top });
+        if (t.view('h0').owedGive) return { t, clock };
+      }
+      return null;
+    };
+    let found: ReturnType<typeof claimed> = null;
+    for (let seed = 1; seed < 300 && !found; seed++) found = claimed(seed, {});
+    if (!found) throw new Error('no seed with a matching card');
+    const { t } = found;
+    expect(t.humanToAct()).toBe('h0');
+    const current = t.view('h0').current as string;
+    expect(t.submit({ type: 'draw', by: current, from: 'deck' }).ok).toBe(false);
+    expect(t.submit({ type: 'giveCard', by: 'h0', slot: 1 })).toEqual({ ok: true });
+    expect(t.view('h1').owedGive).toBeNull();
+    expect(t.events('h1').at(-1)).toMatchObject({ type: 'cardGiven', player: 'h0', slot: 1 });
+
+    let timed: ReturnType<typeof claimed> = null;
+    for (let seed = 1; seed < 300 && !timed; seed++) timed = claimed(seed, { pace: { turnTimerSeconds: 5 } });
+    if (!timed) throw new Error('no seed with a matching card');
+    timed.clock.advance(5000);
+    expect(timed.t.view('h0').owedGive).toBeNull();
+    expect(timed.t.events('h0').some((e) => e.type === 'cardGiven')).toBe(true);
+  });
+
   it('holds the bots while the screen shows the last moves, and counts the window from then', () => {
     const { t, clock } = table(seats('medium', 'medium'), DEALT);
     clock.advance(1200);

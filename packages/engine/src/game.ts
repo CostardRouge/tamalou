@@ -87,6 +87,7 @@ export function createGame({ seed, players, rules }: NewGame): { state: GameStat
     pendingPower: null,
     reveal: null,
     window: false,
+    owedGive: null,
     caller: null,
     lastTurns: [],
     turns: {},
@@ -112,6 +113,7 @@ function dealRound(s: GameState, rules: RuleSet, events: GameEvent[]): void {
   s.drawn = null;
   s.pendingPower = null;
   s.reveal = null;
+  s.owedGive = null;
   s.caller = null;
   s.lastTurns = [];
   s.window = false;
@@ -361,6 +363,8 @@ export function apply(state: GameState, action: Action, rules: RuleSet): ApplyRe
 }
 
 function step(s: GameState, a: Action, rules: RuleSet, events: GameEvent[]): EngineError | null {
+  // A claimer who owes a card holds the whole table until they give it (the host's actions too).
+  if (s.owedGive && a.type !== 'giveCard') return 'giveOwed';
   if (a.type === 'endRound') {
     if (s.phase !== 'roundEnding') return 'wrongPhase';
     scoreRound(s, rules, events);
@@ -550,7 +554,9 @@ function step(s: GameState, a: Action, rules: RuleSet, events: GameEvent[]): Eng
     }
 
     case 'quickDiscard':
-      return quickDiscard(s, rules, me, a.target, a.expectTop, a.give, events);
+      return quickDiscard(s, rules, me, a.target, a.expectTop, events);
+    case 'giveCard':
+      return giveCard(s, rules, me, a.slot, events);
   }
 }
 
@@ -621,7 +627,6 @@ function quickDiscard(
   me: PlayerId,
   target: SlotRef,
   expectTop: CardId,
-  give: number | undefined,
   events: GameEvent[],
 ): EngineError | null {
   if (!rules.quickDiscard.enabled) return 'quickDiscardDisabled';
@@ -636,12 +641,6 @@ function quickDiscard(
   const err = checkTarget(s, rules, me, target, own ? 'own' : 'opponent');
   if (err) return err;
   const myHand = s.hands[me] as (CardId | null)[];
-  if (
-    !own &&
-    (give === undefined || !Number.isInteger(give) || give < 0 || give >= myHand.length || myHand[give] === null)
-  ) {
-    return 'badGive';
-  }
 
   const hand = s.hands[target.player] as (CardId | null)[];
   const claimed = hand[target.slot] as CardId;
@@ -650,11 +649,13 @@ function quickDiscard(
   if (card.rank === cardOf(s, top).rank) {
     hand[target.slot] = null;
     s.discard.push(claimed);
-    if (!own) {
-      hand[target.slot] = myHand[give as number] as CardId;
-      myHand[give as number] = null;
+    events.push({ type: 'quickDiscard', player: me, target: { ...target }, card });
+    // An opponent's card: the claimer now owes them one of theirs, chosen knowing the claim went through (the owner,
+    // 2026-11-21). A claimer with no card left has nothing to give.
+    if (!own && myHand.some((c) => c !== null)) {
+      s.owedGive = { player: me, to: { ...target } };
+      return null;
     }
-    events.push({ type: 'quickDiscard', player: me, target: { ...target }, card, ...(own ? {} : { give }) });
     checkEmptyHand(s, rules, events);
     return null;
   }
@@ -673,6 +674,20 @@ function quickDiscard(
   }
   events.push({ type: 'quickDiscardFailed', player: me, target: { ...target }, card, penalty });
   if (missing > 0) events.push({ type: 'penaltySkipped', player: me, missing });
+  return null;
+}
+
+function giveCard(s: GameState, rules: RuleSet, me: PlayerId, slot: number, events: GameEvent[]): EngineError | null {
+  const owed = s.owedGive;
+  if (!owed || owed.player !== me) return 'noGiveOwed';
+  const myHand = s.hands[me] as (CardId | null)[];
+  if (!Number.isInteger(slot) || slot < 0 || slot >= myHand.length || myHand[slot] === null) return 'badGive';
+  const hand = s.hands[owed.to.player] as (CardId | null)[];
+  hand[owed.to.slot] = myHand[slot] as CardId;
+  myHand[slot] = null;
+  s.owedGive = null;
+  events.push({ type: 'cardGiven', player: me, slot, into: { ...owed.to } });
+  checkEmptyHand(s, rules, events);
   return null;
 }
 

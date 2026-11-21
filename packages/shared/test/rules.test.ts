@@ -32,7 +32,7 @@ describe('RuleSet defaults', () => {
     expect(r.quickDiscard).toEqual({
       enabled: true,
       penaltyCards: 1,
-      allowOpponentCards: false,
+      allowOpponentCards: true,
       minWindowMs: 3000,
       onDealtCard: false,
     });

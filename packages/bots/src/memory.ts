@@ -139,7 +139,9 @@ export class BotMemory {
       case 'quickDiscard':
         this.clear(e.target);
         this.discard.push(e.card);
-        if (e.give !== undefined) this.move({ player: e.player, slot: e.give }, e.target);
+        break;
+      case 'cardGiven':
+        this.move({ player: e.player, slot: e.slot }, e.into);
         break;
       case 'quickDiscardFailed':
         // The card was shown to everyone and went back to its place.
