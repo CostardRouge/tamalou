@@ -25,13 +25,11 @@ export function confirmQuestion(action: Action, view: PlayerView, nameOf: (id: P
         ? t('confirm_queenMine', { n: action.swapWith.slot + 1 })
         : t('confirm_queen', { n: action.swapWith.slot + 1, name: nameOf(action.swapWith.player) });
     case 'quickDiscard':
-      return action.give === undefined
+      return action.target.player === me
         ? t('confirm_quick', { n: action.target.slot + 1 })
-        : t('confirm_quickGive', {
-            n: action.give + 1,
-            m: action.target.slot + 1,
-            name: nameOf(action.target.player),
-          });
+        : t('confirm_quickOther', { n: action.target.slot + 1, name: nameOf(action.target.player) });
+    case 'giveCard':
+      return view.owedGive ? t('confirm_give', { n: action.slot + 1, name: nameOf(view.owedGive.to.player) }) : null;
     case 'callTamalou':
       return t('confirm_call');
     default:

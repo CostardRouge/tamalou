@@ -31,6 +31,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- Quick-discarding an opponent's card you know is now on by default (it can be switched off in the rules). Once it
+  has gone, you pick which of your cards to give them, knowing the claim worked; the table waits for your choice.
+  Drag their card onto the discard, or use the bolt and touch it. Online rooms need everyone on the new version.
 - The card turned over by the deal can no longer be quick-discarded on: nobody loses a card to a mistake before the
   first move. The game master can allow it again in the rules ("On the dealt card", under quick discard).
 - Changing your mind is allowed until a card is put down. Tapping the discard, or "Prendre la défausse", lifts it

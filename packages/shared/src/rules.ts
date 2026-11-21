@@ -126,8 +126,11 @@ export const RuleSetSchema = z
         enabled: z.boolean().default(true),
         /** Cards drawn face down, unseen, for a claim that does not match. Each opens a new slot (ADR-0006). */
         penaltyCards: z.number().int().min(0).max(4).default(1),
-        /** Claim an opponent's card; on a match the claimer gives that opponent one of their own cards. */
-        allowOpponentCards: z.boolean().default(false),
+        /**
+         * Claim an opponent's card; on a match the claimer then gives that opponent one of their own cards, chosen
+         * after the match. On by default since 2026-11-21 (the owner's table plays it; ADR-0022).
+         */
+        allowOpponentCards: z.boolean().default(true),
         /**
          * The window opens when a card lands face up on the discard and closes when the next player draws (ADR-0005).
          * The engine has no clock: the host (LocalConnection, the room) holds a draw back until this long after the

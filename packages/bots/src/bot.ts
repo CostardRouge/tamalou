@@ -112,6 +112,11 @@ export class Bot {
     const all = legalActions(view, this.rules);
     const legal = claims ? all : all.filter((a) => a.type !== 'quickDiscard');
     if (legal.length === 0) return null;
+    // A card owed after taking an opponent's: my worst one goes (at random for a bot that does not think).
+    if (view.owedGive?.player === this.me) {
+      const worst = this.profile.smart ? this.worstSlot(view) : null;
+      return legal.find((a) => a.type === 'giveCard' && a.slot === worst?.ref.slot) ?? this.pick(legal) ?? null;
+    }
     if (!this.profile.smart) return this.decideRandom(view, legal);
 
     const claim = this.quickDiscard(view, legal);
@@ -213,10 +218,9 @@ export class Bot {
       if (this.slotValue(view, a.target).card?.rank === rank) return a;
     }
     if (!this.profile.tactics) return null;
-    // An opponent's matching card, paying with my worst card (allowOpponentCards).
-    const worst = this.worstSlot(view);
+    // An opponent's matching card (allowOpponentCards): my worst card pays for it once it has gone through.
     for (const a of claims) {
-      if (a.target.player === this.me || a.give !== worst?.ref.slot) continue;
+      if (a.target.player === this.me) continue;
       if (this.slotValue(view, a.target).card?.rank === rank) return a;
     }
     return null;

@@ -59,12 +59,21 @@ export function dropsFor(source: DragSource, ui: Interaction, view: PlayerView):
     }
     case 'slot': {
       const { ref } = source;
-      if (ref.player !== me) return [];
-      const out: Drop[] = [];
       const quick = ui.legal.find(
-        (a) =>
-          a.type === 'quickDiscard' && a.target.player === me && a.target.slot === ref.slot && a.give === undefined,
+        (a) => a.type === 'quickDiscard' && a.target.player === ref.player && a.target.slot === ref.slot,
       );
+      // An opponent's card I know (allowOpponentCards): onto the discard, and I give one of mine once it has gone.
+      if (ref.player !== me) {
+        return quick
+          ? [{ place: 'discard', send: quick, label: { key: 'dropQuickOther', n: ref.slot + 1, player: ref.player } }]
+          : [];
+      }
+      const out: Drop[] = [];
+      // A card I owe: onto the slot my claim emptied.
+      const give = ui.find('giveCard', (a) => a.slot === ref.slot);
+      if (give && view.owedGive) {
+        out.push({ place: slotPlace(view.owedGive.to), send: give, label: { key: 'dropGive', n: ref.slot + 1 } });
+      }
       if (quick) out.push({ place: 'discard', send: quick, label: { key: 'dropQuick', n: ref.slot + 1 } });
       else {
         // During my own power: let it go, then the quick discard.

@@ -39,13 +39,17 @@ export function legalActions(view: PlayerView, rules: RuleSet): Action[] {
     return out;
   }
 
+  // A card owed after a claim on an opponent's: the claimer gives it, everyone else waits.
+  if (view.owedGive) {
+    if (view.owedGive.player !== me) return [];
+    return myFilled.map((slot) => ({ type: 'giveCard', by: me, slot }));
+  }
+
   if ((view.phase === 'play' || view.phase === 'roundEnding') && view.quickDiscardOpen && view.discardTop) {
     const expectTop = view.discardTop.id;
     for (const target of ownSlots) out.push({ type: 'quickDiscard', by: me, target, expectTop });
     if (rules.quickDiscard.allowOpponentCards) {
-      for (const target of opponentSlots) {
-        for (const give of myFilled) out.push({ type: 'quickDiscard', by: me, target, expectTop, give });
-      }
+      for (const target of opponentSlots) out.push({ type: 'quickDiscard', by: me, target, expectTop });
     }
   }
 
@@ -103,7 +107,9 @@ export function legalActions(view: PlayerView, rules: RuleSet): Action[] {
 }
 
 /** What the host owes the game, if anything: scoring a finished round, dealing the next one. */
-export function hostAction(s: Pick<GameState, 'phase'>): Action | null {
+export function hostAction(s: Pick<GameState, 'phase'> & Partial<Pick<GameState, 'owedGive'>>): Action | null {
+  // A card still owed after a claim holds the end of the round too.
+  if (s.owedGive) return null;
   if (s.phase === 'roundEnding') return { type: 'endRound', by: 'host' };
   if (s.phase === 'roundOver') return { type: 'nextRound', by: 'host' };
   return null;

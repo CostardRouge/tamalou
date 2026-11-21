@@ -262,10 +262,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   useEffect(() => {
     if (queued?.type === 'quickDiscard') {
       // A quick discard made through my own power: it goes as soon as the power is let go and the window open.
-      const claim = ui.find(
-        'quickDiscard',
-        (a) => a.target.slot === queued.target.slot && a.target.player === view.me && a.give === undefined,
-      );
+      const claim = ui.find('quickDiscard', (a) => a.target.slot === queued.target.slot && a.target.player === view.me);
       if (claim && claim.expectTop === queued.expectTop) {
         setQueued(null);
         go(claim, null);
@@ -436,6 +433,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const choosing =
     !!staged ||
     pending.kind !== 'none' ||
+    view.owedGive?.player === view.me ||
     (myTurn && view.phase === 'play' && (view.step === 'draw' || view.step === 'place' || view.step === 'power'));
   const spot = view.phase === 'play' ? (myTurn ? ' turn-mine' : ' turn-other') : '';
   // The drawn card (game/front.ts): in front of whoever drew it, mine held above my hand or large on the table.
@@ -861,11 +859,16 @@ function promptFor(
   nameOf: (id: PlayerId) => string,
 ): string {
   if (pending.kind === 'quick') return t('promptQuick');
-  if (pending.kind === 'quickGive') return t('promptQuickGive');
   if (pending.kind === 'blindOwn') return t('promptBlindSwapOther');
   if (pending.kind === 'lift') {
     if (pending.source === 'discard' || view.drawn?.from === 'discard') return t('promptLiftedMustSwap');
     return t('promptLifted');
+  }
+  // A card owed after a quick discard on an opponent's: the whole table waits for it.
+  if (view.owedGive) {
+    return view.owedGive.player === view.me
+      ? t('promptGive', { name: nameOf(view.owedGive.to.player) })
+      : t('promptWaitGive', { name: nameOf(view.owedGive.player) });
   }
   const seated = view.players.some((p) => p.id === view.me);
   if (view.phase === 'initialPeek') {

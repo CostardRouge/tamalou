@@ -83,7 +83,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 - **Erreur** (la carte ne correspond pas) : la carte retourne à sa place, et le joueur prend **1 carte de pénalité** de la pioche, face cachée, sans la regarder. **[ADR-0006]** Cette carte ouvre une case de plus dans sa grille.
 - **Concurrence** : si plusieurs joueurs défaussent en même temps, seul **le premier validé par le serveur** est accepté. Pour les autres, la carte de dessus a changé et leur action est annulée sans pénalité.
 - **[ADR-0005]** **Fenêtre** : elle s'ouvre quand une carte arrive face visible sur la défausse et se ferme quand le joueur suivant pioche, avec un minimum de 3 s (2 s jusqu'au 2026-10-25), compté depuis que la carte est posée à l'écran. En pass-and-play, la défausse rapide est **désactivée par défaut** (activable). **[ADR-0021]** La carte retournée à la donne n'ouvre **pas** de fenêtre par défaut (le propriétaire, 2026-11-21 : on se trompait avant que la partie ait commencé) ; la première fenêtre s'ouvre sur la première carte jouée. Paramétrable (`quickDiscard.onDealtCard`).
-- Option (désactivée par défaut) : défausser la carte d'un **adversaire** si elle correspond. On lui donne alors une de ses propres cartes en échange.
+- **[ADR-0022]** Défausser la carte d'un **adversaire** si elle correspond (activé par défaut depuis le 2026-11-21, désactivable). Le coup réussi, on lui donne une de ses propres cartes, **choisie après** la réussite ; le don est obligatoire (sauf si l'on n'a plus de carte) et la table attend qu'il soit fait.
 
 ### Fin de manche : « Tamalou ! »
 - Un joueur peut annoncer **« Tamalou »**. Par défaut, il le fait **à la place de son tour**, au début de celui-ci.

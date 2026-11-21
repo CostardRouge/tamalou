@@ -318,21 +318,46 @@ describe('quick discard', () => {
     ).toBe(true);
   });
 
-  it("claims an opponent's card only when allowed, handing them one of mine", () => {
+  it("claims an opponent's card only when allowed, then gives them one of mine, chosen after the match", () => {
     const s = open();
-    const claim = {
-      type: 'quickDiscard',
-      by: 'a',
-      target: { player: 'b', slot: 0 },
-      expectTop: top(s),
-      give: 3,
-    } as const;
-    expect(refuse(s, claim, base)).toBe('opponentCardsDisabled');
-    const r = rules({ quickDiscard: { allowOpponentCards: true } });
-    expect(refuse(s, { ...claim, give: undefined }, r)).toBe('badGive');
-    const { state } = act(s, claim, r);
-    expect(handOf(state, 'b')[0]).toBe('5H');
-    expect(handOf(state, 'a')[3]).toBeNull();
+    const claim = { type: 'quickDiscard', by: 'a', target: { player: 'b', slot: 0 }, expectTop: top(s) } as const;
+    expect(refuse(s, claim, rules({ quickDiscard: { allowOpponentCards: false } }))).toBe('opponentCardsDisabled');
+    // On by default (the owner, 2026-11-21).
+    const { state, events } = act(s, claim, base);
+    expect(events).toMatchObject([{ type: 'quickDiscard', player: 'a', target: { player: 'b', slot: 0 } }]);
+    expect(handOf(state, 'b')[0]).toBeNull();
+    expect(state.owedGive).toEqual({ player: 'a', to: { player: 'b', slot: 0 } });
+    // The whole table waits for the card: the others, the current player, the host.
+    expect(viewFor(state, 'b', base).owedGive).toEqual({ player: 'a', to: { player: 'b', slot: 0 } });
+    expect(legalActions(viewFor(state, 'b', base), base)).toEqual([]);
+    expect(legalActions(viewFor(state, 'a', base), base).map((a) => a.type)).toEqual([
+      'giveCard',
+      'giveCard',
+      'giveCard',
+      'giveCard',
+    ]);
+    expect(refuse(state, { type: 'draw', by: 'a', from: 'deck' }, base)).toBe('giveOwed');
+    expect(refuse(state, { type: 'giveCard', by: 'c', slot: 0 }, base)).toBe('noGiveOwed');
+    expect(refuse(state, { type: 'giveCard', by: 'a', slot: 9 }, base)).toBe('badGive');
+    const given = act(state, { type: 'giveCard', by: 'a', slot: 3 }, base);
+    expect(given.events).toEqual([{ type: 'cardGiven', player: 'a', slot: 3, into: { player: 'b', slot: 0 } }]);
+    expect(handOf(given.state, 'b')[0]).toBe('5H');
+    expect(handOf(given.state, 'a')[3]).toBeNull();
+    expect(given.state.owedGive).toBeNull();
+    // The game goes on: the current player may draw again.
+    expect(act(given.state, { type: 'draw', by: 'a', from: 'deck' }, base).state.step).toBe('place');
+    expect(refuse(given.state, { type: 'giveCard', by: 'a', slot: 0 }, base)).toBe('noGiveOwed');
+  });
+
+  it('owes nothing when the claimer has no card left to give', () => {
+    const s = rig(open(), { hands: { a: [null, null, null, null] }, discard: ['9C'], window: true });
+    const { state } = act(
+      s,
+      { type: 'quickDiscard', by: 'a', target: { player: 'b', slot: 0 }, expectTop: top(s) },
+      base,
+    );
+    expect(state.owedGive).toBeNull();
+    expect(handOf(state, 'b')[0]).toBeNull();
   });
 
   it('can be turned off', () => {

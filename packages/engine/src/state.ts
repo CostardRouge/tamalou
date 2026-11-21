@@ -34,6 +34,8 @@ export interface GameState {
   reveal: { player: PlayerId; power: Power; target: SlotRef; card: CardId } | null;
   /** The quick-discard window (ADR-0005). */
   window: boolean;
+  /** After a matching claim on an opponent's card: who owes a card, and the slot it goes into. Blocks every move. */
+  owedGive: { player: PlayerId; to: SlotRef } | null;
   caller: PlayerId | null;
   lastTurns: PlayerId[];
   /** Own turns completed this round, by player. */
@@ -68,6 +70,8 @@ export type EngineError =
   | 'staleTop'
   | 'opponentCardsDisabled'
   | 'badGive'
+  | 'giveOwed'
+  | 'noGiveOwed'
   | 'notHost';
 
 export const activePlayers = (s: GameState): Seat[] => s.players.filter((p) => !p.eliminated);

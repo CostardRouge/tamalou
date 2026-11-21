@@ -108,7 +108,8 @@ export const fr = {
   promptQueen: 'Échange-la avec une carte de l’autre camp, ou garde tout.',
   promptCallDecision: 'Annoncer Tamalou maintenant ?',
   promptQuick: 'Défausse rapide : touche une carte de même valeur que la défausse.',
-  promptQuickGive: 'Choisis la carte que tu lui donnes.',
+  promptGive: 'Bien vu ! Donne une de tes cartes à {name}.',
+  promptWaitGive: '{name} choisit une carte à donner.',
   promptRoundEnding: 'Fin de la manche…',
   promptQuickOpen: 'Défausse ouverte ! Même valeur que le dessus ? Glisse ta carte dessus.',
   quickBarHint: 'Ou touche l’éclair, puis ta carte.',
@@ -124,7 +125,8 @@ export const fr = {
   confirm_queen: 'Échanger la carte regardée avec la carte {n} de {name} ?',
   confirm_queenMine: 'Échanger la carte regardée avec ta carte {n} ?',
   confirm_quick: 'Poser ta carte {n} sur la défausse ?',
-  confirm_quickGive: 'Poser la carte {m} de {name} sur la défausse et lui donner ta carte {n} ?',
+  confirm_quickOther: 'Poser la carte {n} de {name} sur la défausse ?',
+  confirm_give: 'Donner ta carte {n} à {name} ?',
   confirm_call: 'Annoncer Tamalou ? Les autres jouent un dernier tour.',
 
   // Buttons
@@ -198,6 +200,8 @@ export const fr = {
   bubbleSwapYou: 'J’échange avec toi !',
   bubbleSwap: 'J’échange deux cartes.',
   bubbleQuick: 'Défausse rapide : {card} !',
+  bubbleGiveYou: 'Tiens, une carte pour toi.',
+  bubbleGive: 'Je donne une carte.',
   bubbleMissed: 'Raté…',
 
   // Dropping a card where it could mean two things: the table asks (game/drag.ts).
@@ -209,6 +213,8 @@ export const fr = {
   dropSwap: 'Échanger avec ta carte {n}',
   dropDiscard: 'La jeter sur la défausse',
   dropQuick: 'Défausse rapide de ta carte {n}',
+  dropQuickOther: 'Défausse rapide de la carte {n} de {name}',
+  dropGive: 'Donner ta carte {n}',
   dropBlind: 'Échanger avec la carte {n} de {name}',
 
   power_none: 'Aucun',
@@ -228,6 +234,8 @@ export const fr = {
   logPeekedOther: '{name} regarde une carte de {target}.',
   logSwappedCards: '{name} échange une carte avec {target}.',
   logQuickDiscard: '{name} défausse rapidement {card} !',
+  logGave: '{name} donne une carte à {target}.',
+  logGaveYours: '{name} te donne une carte.',
   logQuickFailed: '{name} se trompe avec {card} : pénalité.',
   logReshuffled: 'La défausse est mélangée pour refaire la pioche.',
   logCalled: '{name} annonce Tamalou !',
@@ -247,6 +255,7 @@ export const fr = {
   logSwappedCards_you: 'Tu échanges une carte avec {target}.',
   logSwappedYours: '{name} échange une carte avec toi.',
   logQuickDiscard_you: 'Tu défausses rapidement {card} !',
+  logGave_you: 'Tu donnes une carte à {target}.',
   logQuickFailed_you: 'Tu te trompes avec {card} : pénalité.',
   logCalled_you: 'Tu annonces Tamalou !',
   logPassed_you: 'Tu n’annonces pas.',
@@ -313,7 +322,8 @@ export const fr = {
   rule_penaltyCards: 'Pénalité en cas d’erreur',
   rule_penaltyCards_help: 'Cartes piochées sans les regarder quand la carte ne correspond pas.',
   rule_opponentCards: 'Cartes adverses',
-  rule_opponentCards_help: 'Défausser la carte d’un adversaire si elle correspond, en lui donnant une des siennes.',
+  rule_opponentCards_help:
+    'Défausser la carte d’un adversaire si elle correspond, puis lui donner une de ses cartes, choisie une fois le coup réussi.',
   rule_minWindow: 'Durée minimale',
   rule_minWindow_help: 'Le temps laissé à tous pour réagir avant la pioche suivante.',
   rule_dealtCard: 'Sur la carte de la donne',
@@ -392,7 +402,7 @@ export const fr = {
   sum_quickPenalty_one: 'Erreur : {n} carte de pénalité.',
   sum_quickPenalty_other: 'Erreur : {n} cartes de pénalité.',
   sum_quickOwn: 'Seulement ses propres cartes.',
-  sum_quickOpponents: 'Aussi les cartes adverses, en donnant une des siennes.',
+  sum_quickOpponents: 'Aussi les cartes adverses : réussi, on lui donne une de ses cartes.',
   sum_quickWindow: 'Au moins {s} s pour réagir.',
   sum_quickDealt: 'Aussi sur la carte retournée à la donne.',
   sum_quickNotDealt: 'Pas sur la carte retournée à la donne : on attend le premier coup.',

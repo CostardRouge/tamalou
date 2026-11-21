@@ -21,6 +21,8 @@ export function cueOf(e: GameEvent, me: PlayerId): CueHit | null {
     case 'discarded':
     case 'cardsSwapped':
       return { cue: 'place', mine: e.player === me };
+    case 'cardGiven':
+      return { cue: 'place', mine: e.player === me || e.into.player === me };
     case 'peeked':
       return { cue: 'peek', mine: true };
     case 'quickDiscard':
@@ -56,6 +58,7 @@ export function touchedSlots(events: readonly GameEvent[]): string[] {
     if (e.type === 'cardsSwapped') out.push(`${e.a.player}:${e.a.slot}`, `${e.b.player}:${e.b.slot}`);
     if (e.type === 'quickDiscard' || e.type === 'quickDiscardFailed') out.push(`${e.target.player}:${e.target.slot}`);
     if (e.type === 'powerUsed') for (const t of e.targets) out.push(`${t.player}:${t.slot}`);
+    if (e.type === 'cardGiven') out.push(`${e.into.player}:${e.into.slot}`);
   }
   return out;
 }

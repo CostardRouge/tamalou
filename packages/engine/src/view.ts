@@ -61,6 +61,7 @@ export function viewFor(s: GameState, me: PlayerId, rules: RuleSet): PlayerView 
         }
       : null,
     quickDiscardOpen: rules.quickDiscard.enabled && s.window,
+    owedGive: s.owedGive ? { player: s.owedGive.player, to: { ...s.owedGive.to } } : null,
     caller: s.caller,
     lastTurns: [...s.lastTurns],
     ready: s.players.filter((p) => s.peek[p.id]?.ready).map((p) => p.id),

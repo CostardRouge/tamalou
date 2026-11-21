@@ -136,6 +136,8 @@ export class Table {
    */
   humanToAct(): PlayerId | null {
     const s = this.state;
+    // A claimer who owes a card holds everything: on a shared screen, the device goes to them.
+    if (s.owedGive) return this.isHuman(s.owedGive.player) ? s.owedGive.player : null;
     if (s.phase === 'initialPeek') {
       return this.humans().find((h) => !s.peek[h]?.ready && !s.players.find((p) => p.id === h)?.eliminated) ?? null;
     }
@@ -197,8 +199,9 @@ export class Table {
         const fire = () => {
           // The window may have been counted again since (the screen showed a move meanwhile).
           const rest = this.othersMayClaim(action.by) ? this.windowRemaining() : 0;
-          if (rest > 0 && this.deferredDraw) {
-            this.deferredDraw.handle = this.scheduler.setTimeout(fire, rest);
+          // A card still owed after a claim holds the draw too (the give's after() lets it go).
+          if ((rest > 0 || this.state.owedGive) && this.deferredDraw) {
+            this.deferredDraw.handle = this.scheduler.setTimeout(fire, Math.max(rest, AFTER_SHOW_MS));
             return;
           }
           this.deferredDraw = null;
@@ -331,7 +334,7 @@ export class Table {
     this.planTurnTimer();
     // A held draw goes as soon as nobody else may claim any more (a bot made its claim, or let it go).
     const held = this.deferredDraw;
-    if (held && !this.othersMayClaim(held.action.by)) {
+    if (held && !this.state.owedGive && !this.othersMayClaim(held.action.by)) {
       this.scheduler.clearTimeout(held.handle);
       this.deferredDraw = null;
       if (this.play(held.action) === null) return;
@@ -364,8 +367,9 @@ export class Table {
       const action = bot.decide(view, { claims });
       if (!action) continue;
       const profile = PROFILES[bot.profile.level];
+      // Giving a card after a claim is part of the claim's pace: the table waits for it.
       let wait =
-        action.type === 'quickDiscard'
+        action.type === 'quickDiscard' || action.type === 'giveCard'
           ? this.delay(profile.delays.quickDiscard)
           : Math.round(this.delay(profile.delays.turn) * this.botPace);
       if (action.type === 'draw') wait = Math.max(wait, this.windowRemaining());
@@ -421,12 +425,15 @@ export class Table {
 
   private planTurnTimer(): void {
     const seconds = this.rules.pace.turnTimerSeconds;
-    const current = this.state.current;
-    const key = `${this.state.round}:${current}:${current ? this.state.turns[current] : ''}`;
+    // A card owed after a claim is timed like a turn: the table cannot wait on it forever.
+    const owed = this.state.owedGive;
+    const current = owed ? owed.player : this.state.current;
+    const key = `${this.state.round}:${current}:${current ? this.state.turns[current] : ''}${owed ? ':give' : ''}`;
     if (this.turnTimer && this.turnTimer.key === key) return;
     if (this.turnTimer) this.scheduler.clearTimeout(this.turnTimer.handle);
     this.turnTimer = null;
-    if (seconds <= 0 || this.state.phase !== 'play' || !current || !this.isHuman(current) || this.away.has(current)) {
+    const live = this.state.phase === 'play' || (owed !== null && this.state.phase === 'roundEnding');
+    if (seconds <= 0 || !live || !current || !this.isHuman(current) || this.away.has(current)) {
       return;
     }
     const handle = this.scheduler.setTimeout(() => {
@@ -443,6 +450,11 @@ export class Table {
     if (this.deferredDraw) {
       this.scheduler.clearTimeout(this.deferredDraw.handle);
       this.deferredDraw = null;
+    }
+    if (this.state.owedGive?.player === seat) {
+      const give = bot.decide(this.view(seat));
+      if (give?.type === 'giveCard') this.play(give);
+      return;
     }
     for (let guard = 0; guard < 10 && this.state.current === seat && this.state.phase === 'play'; guard++) {
       const action = bot.decide(this.view(seat));

@@ -3,13 +3,12 @@ import type { Action, PlayerId, PlayerView, RuleSet, SlotRef } from '@tamalou/sh
 
 // What the player can touch right now, and what each touch sends. Everything is derived from legalActions(view): the UI
 // offers exactly the moves the engine would accept, and a move it does not list cannot be made from the screen.
-// Local selection states cover the moves that take two touches (a blind swap, an opponent's card in a quick discard,
-// the initial peek in choose mode).
+// Local selection states cover the moves that take two touches (a blind swap, the initial peek in choose mode).
+// A card owed after taking an opponent's in a quick discard is given with one touch on one of mine.
 
 export type Pending =
   | { kind: 'none' }
   | { kind: 'quick' }
-  | { kind: 'quickGive'; target: SlotRef }
   | { kind: 'blindOwn'; own: number }
   | { kind: 'choosePeek'; slots: number[] }
   /**
@@ -78,17 +77,10 @@ export function interaction(view: PlayerView, rules: RuleSet, pending: Pending):
   const slot = (ref: SlotRef): SlotAction | null => {
     switch (pending.kind) {
       case 'quick': {
-        if (ref.player === me) {
-          const a = quick.find((q) => same(q.target, ref) && q.give === undefined);
-          if (a) return { send: a };
-          return quickThrough(ref.slot);
-        }
-        return quick.some((q) => same(q.target, ref)) ? { next: { kind: 'quickGive', target: ref } } : null;
-      }
-      case 'quickGive': {
-        if (ref.player !== me) return null;
-        const a = quick.find((q) => same(q.target, pending.target) && q.give === ref.slot);
-        return a ? { send: a } : null;
+        const a = quick.find((q) => same(q.target, ref));
+        if (a) return { send: a };
+        // An opponent's card goes at once; what I give them is chosen once the claim has gone through.
+        return ref.player === me ? quickThrough(ref.slot) : null;
       }
       case 'choosePeek': {
         if (ref.player !== me) return null;
@@ -117,6 +109,9 @@ export function interaction(view: PlayerView, rules: RuleSet, pending: Pending):
       default:
         break;
     }
+    // A card I owe after taking an opponent's: one touch on one of mine gives it.
+    const give = find('giveCard', (a) => ref.player === me && a.slot === ref.slot);
+    if (give) return { send: give };
     if (view.phase === 'initialPeek' && view.myPeekSlots === null && ref.player === me && find('choosePeek')) {
       return rules.hand.initialPeek.count > 0 ? { next: { kind: 'choosePeek', slots: [ref.slot] } } : null;
     }
@@ -136,7 +131,6 @@ export function interaction(view: PlayerView, rules: RuleSet, pending: Pending):
 
   const selected = (ref: SlotRef): boolean => {
     if (pending.kind === 'blindOwn') return ref.player === me && ref.slot === pending.own;
-    if (pending.kind === 'quickGive') return same(ref, pending.target);
     if (pending.kind === 'choosePeek') return ref.player === me && pending.slots.includes(ref.slot);
     return false;
   };
