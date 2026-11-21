@@ -36,9 +36,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
-- A room's waiting screen fits a full table: the code and the share buttons take one line, the QR code shows when
-  you ask for it, the players are tiles in a grid, and the button to start or to say you are ready stays pinned at
-  the bottom of the screen.
+- A room's waiting screen is redone for a full table: one "room access" ticket with the code, a QR code you tap
+  to enlarge and a single "Invite players" button; the players as tiles in a grid; the button to start or to say you
+  are ready pinned at the bottom of the screen.
 - Nothing the table says covers the cards any more: what the others do, «À toi !» and the power being played show
   in a line of their own between the other players and the piles, one at a time, and a small icon by a player's name
   says what they just did (the same icons as the buttons). A power being played is also written in the instruction

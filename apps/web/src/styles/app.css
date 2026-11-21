@@ -1996,48 +1996,209 @@ html:has(.overlay) body {
 }
 
 .lobby {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 18px;
+  /* The start / ready bar sits at the bottom of the screen even while the room is nearly empty. */
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+.lobby > .lobby-go {
+  margin-top: auto;
 }
 
 .lobby-bar {
   margin: -16px 0 -8px -10px;
 }
 
-.room-card {
-  display: grid;
-  justify-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+.field-title {
+  font-size: 1.05rem;
+}
+
+/* The way into a room (the owner's pick A on the 2026-11-21 canvas): a ticket. The code in letters laid like cards,
+   the QR code as a thumbnail past a perforation (a touch opens it large), one action to invite. */
+.ticket {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--r-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
+  border-top: 6px solid var(--a);
 }
 
-/* The code and the ways to share it on one line (2026-11-21); the QR code under it, on demand. */
-.room-line {
+.ticket-body {
   display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.ticket-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 16px 14px 14px 18px;
+  text-align: left;
+}
+
+.ticket-kicker {
+  margin: 0;
+  font-family: var(--f-body);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ticket-code {
+  margin: 0;
+}
+
+.ticket-code > span[aria-hidden] {
+  display: flex;
+  gap: 6px;
+}
+
+.ticket-letter {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 46px;
+  border-radius: 7px;
+  background: var(--card-face);
+  border: 1.5px solid var(--line);
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--a);
+  box-shadow: 0 4px 10px -6px rgb(0 0 0 / 0.35);
+}
+
+.ticket-letter:nth-child(odd) {
+  rotate: -3deg;
+}
+
+.ticket-letter:nth-child(even) {
+  rotate: 2.5deg;
+}
+
+.ticket-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.ticket-qr {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  width: 112px;
+  padding: 12px 10px;
+  border-left: 2px dashed var(--line);
+  margin-block: 14px;
+}
+
+.qr-thumb {
+  position: relative;
+  padding: 6px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  cursor: zoom-in;
+}
+
+.qr-thumb .qr {
+  display: block;
+  width: 74px;
+}
+
+.qr-grow {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  background: var(--a);
+  color: var(--on-accent);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.qr-grow svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ticket-qr-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ticket-invite {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px 10px;
+  gap: 10px;
+  width: calc(100% - 28px);
+  min-height: 48px;
+  margin: 0 14px 14px;
+  border: 2px solid var(--a);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--a);
+  font: 800 1rem var(--f-body);
+  cursor: pointer;
+}
+
+.ticket-invite svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qr svg {
+  display: block;
   width: 100%;
+  height: auto;
 }
 
-.room-id {
+/* The QR code large, to be scanned across the table. */
+.qr-sheet {
   display: grid;
-  margin: 0 auto 0 0;
-  text-align: left;
-  line-height: 1.1;
+  justify-items: center;
+  gap: 12px;
+  width: min(340px, 100%);
+  text-align: center;
 }
 
-.room-id .muted {
-  font-size: 0.75rem;
+.qr-sheet h2 {
+  margin: 0;
 }
 
-.room-line .btn {
-  min-height: 44px;
-  padding-inline: 14px;
+.qr-big {
+  width: min(70vw, 260px);
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: #fff;
+}
+
+.qr-sheet .btn {
+  width: 100%;
 }
 
 .room-code {
@@ -2048,26 +2209,10 @@ html:has(.overlay) body {
   color: var(--a);
 }
 
-.qr {
-  width: min(52vw, 200px);
-  border-radius: var(--r-md);
-  overflow: hidden;
-}
-
-.qr svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.field-title {
-  font-size: 1.05rem;
-}
-
+/* The players as tiles (2026-11-21): ten fit on a phone without a long list. */
 .lobby-seats {
   display: grid;
-  /* Tiles, two or three to a row (2026-11-21): ten players fit on a phone without a long list. */
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
   padding: 0;
@@ -2077,13 +2222,13 @@ html:has(.overlay) body {
 .lobby-seats li {
   position: relative;
   display: grid;
+  justify-items: center;
   align-content: start;
   gap: 4px;
-  min-height: 64px;
-  padding: 8px 10px;
+  padding: 10px 6px;
   border-radius: var(--r-md);
   background: var(--surface);
-  text-align: left;
+  text-align: center;
   box-shadow: inset 0 0 0 2px transparent;
 }
 
@@ -2091,9 +2236,21 @@ html:has(.overlay) body {
   box-shadow: inset 0 0 0 2px var(--good);
 }
 
+.lobby-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-pill);
+  background: var(--avatar, var(--seat-1));
+  color: var(--on-seat);
+  font-family: var(--f-display);
+  font-weight: 800;
+}
+
 .lobby-seats .seat-name {
-  max-width: none;
-  padding-right: 36px;
+  max-width: 100%;
+  font-size: 0.9rem;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -2102,22 +2259,9 @@ html:has(.overlay) body {
   color: var(--muted);
 }
 
-.seat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 4px;
-}
-
-.seat-tags .tag,
-.seat-tags .badge {
-  margin-left: 0;
-}
-
 .ready {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--muted);
 }
 
@@ -2129,14 +2273,74 @@ html:has(.overlay) body {
   position: absolute;
   top: 0;
   right: 0;
-  min-width: 44px;
-  min-height: 44px;
-  font-size: 1.4rem;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.lobby-add button {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  min-height: 96px;
+  border: 2px dashed var(--field);
+  border-radius: var(--r-md);
+  background: none;
+  color: var(--muted);
+  font: 700 0.9rem var(--f-body);
+  cursor: pointer;
+}
+
+.lobby-seats li.lobby-add {
+  padding: 0;
+  background: none;
 }
 
 .add-bot {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.add-bot legend {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* The rules in one line: the preset and how many changes, a link to see or edit them. */
+.lobby-rules {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px 8px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.lobby-rules p {
+  flex: 1;
+  display: grid;
+  margin: 0;
+  text-align: left;
+}
+
+.lobby-rules small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.lobby-rules .ghost {
+  min-height: 44px;
+  color: var(--a);
+  font-weight: 700;
 }
 
 .lobby-go {
@@ -2150,7 +2354,8 @@ html:has(.overlay) body {
   position: sticky;
   bottom: 0;
   z-index: 5;
-  margin: 0 -16px calc(-1 * max(24px, env(safe-area-inset-bottom)));
+  margin-inline: -16px;
+  margin-bottom: calc(-1 * max(24px, env(safe-area-inset-bottom)));
   padding: 12px 16px max(14px, env(safe-area-inset-bottom));
   background: var(--bg);
   box-shadow: 0 -10px 24px -16px rgb(0 0 0 / 0.35);
