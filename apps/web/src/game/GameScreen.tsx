@@ -17,12 +17,12 @@ import { useFeedback } from '../feedback/useFeedback.ts';
 import { tableSeats } from '../home/table.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
-import { type Act, ActionBar } from './ActionBar.tsx';
+import { type Act, type ActIcon, ActionBar, Icon } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
 import { Draggable, measurePlaces } from './Draggable.tsx';
 import { DrawStage } from './DrawStage.tsx';
 import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
-import { noteDrop, useFlights } from './FlightLayer.tsx';
+import { noteDrop, useFlights, type Voice } from './FlightLayer.tsx';
 import { FrontCard } from './FrontCard.tsx';
 import { dealToReplay, type Place, slotPlace } from './flights.ts';
 import { facing } from './front.ts';
@@ -465,7 +465,19 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   // said by the discard and marked on its player's seat once its card has landed there.
   const thrownPower = holdingMine ? powerIfThrown(view.drawn, rules) : null;
   const inPlay = powerInPlay(view);
-  const livePower = inPlay && !fly.dealing && fly.inbound('discard') === 0 ? inPlay : null;
+  // The power is told once its card is down, or after a second whatever the animation does: a flight that never ends
+  // on some phone must not hide it (the Brave report, 2026-11-21).
+  const powerKey = inPlay ? `${view.round}:${inPlay.player}:${inPlay.power}:${view.discardTop?.id ?? ''}` : '';
+  const [overdue, setOverdue] = useState('');
+  useEffect(() => {
+    if (!powerKey) return;
+    const id = window.setTimeout(() => setOverdue(powerKey), 1000);
+    return () => window.clearTimeout(id);
+  }, [powerKey]);
+  const livePower = inPlay && !fly.dealing && (fly.inbound('discard') === 0 || overdue === powerKey) ? inPlay : null;
+  // What the others are saying (the band, the marks by their names): the newest last.
+  const voice = fly.voices.at(-1) ?? null;
+  const voiceOf = (id: PlayerId) => fly.voices.findLast((v) => v.bubble.player === id) ?? null;
   const drawnCard = view.drawn
     ? carry(
         { kind: 'drawn' },
@@ -545,9 +557,6 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         </span>
       </header>
       {banner}
-      <p className="ticker" aria-hidden="true">
-        {lines.at(-1) ?? '\u00a0'}
-      </p>
 
       <section className="opponents" aria-label={t('opponents')}>
         {opponents.map((p, i) => (
@@ -562,7 +571,13 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 {view.current === p.id ? <span aria-hidden="true">▸ </span> : null}
                 {p.name}
               </span>
-              {livePower?.player === p.id ? <PowerMark power={livePower.power} /> : null}
+              {livePower?.player === p.id ? (
+                <PowerMark power={livePower.power} />
+              ) : voiceOf(p.id) ? (
+                <span className="voice-mark" aria-hidden="true">
+                  <Icon name={VOICE_ICON[(voiceOf(p.id) as Voice).bubble.key]} />
+                </span>
+              ) : null}
               <span className="mono seat-total">{p.total}</span>
             </div>
             <Presence state={conn.presence?.(p.id) ?? null} />
@@ -571,6 +586,27 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           </div>
         ))}
       </section>
+
+      {/* The band (the owner's pick A on the 2026-11-21 canvas): everything the table says, one line at a time, in a
+          row of its own between the others and the piles, never over a card. By priority: my turn, a power being
+          played, what another player says, else the journal's last line. */}
+      <Band
+        hello={hello}
+        power={
+          livePower
+            ? {
+                power: livePower.power,
+                kicker:
+                  livePower.player === view.me
+                    ? t('powerKicker_you')
+                    : t('powerKicker', { name: nameOf(livePower.player) }),
+                words: powerWords(livePower.power, livePower.player === view.me),
+              }
+            : null
+        }
+        voice={voice ? { ...voice, name: nameOf(voice.bubble.player), color: colorOf(voice.bubble.player) } : null}
+        log={lines.at(-1) ?? null}
+      />
 
       <section className="center" aria-label={t('table')}>
         <div className="pile">
@@ -630,30 +666,6 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
           )}
         </div>
-        {/* Out of the centre's grid: it comes and goes without moving the piles. */}
-        <AnimatePresence>
-          {livePower ? (
-            <motion.div
-              key={`${livePower.player}:${livePower.power}`}
-              className={`power-callout${livePower.player === view.me ? ' power-mine' : ''}`}
-              role="status"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 24 }}
-            >
-              <PowerMark power={livePower.power} />
-              <span className="power-words">
-                <small>
-                  {livePower.player === view.me
-                    ? t('powerKicker_you')
-                    : t('powerKicker', { name: nameOf(livePower.player) })}
-                </small>
-                <b>{powerWords(livePower.power, livePower.player === view.me)}</b>
-              </span>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
       </section>
 
       {me ? (
@@ -685,9 +697,29 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       )}
 
       <footer className="controls">
-        <p className="prompt" aria-live="polite">
-          {prompt}
-        </p>
+        {/* A power being played is said here too (the owner's pick A, 2026-11-21): in the page's flow, waiting on no
+            animation, so nothing can hide it. */}
+        {livePower && !staged && !claim && !fly.dealing && (livePower.player === view.me || pending.kind === 'none') ? (
+          <div className={`prompt prompt-power${livePower.player === view.me ? ' power-mine' : ''}`} aria-live="polite">
+            <PowerMark power={livePower.power} />
+            <span className="power-words">
+              <small>
+                {livePower.player === view.me
+                  ? t('powerKicker_you')
+                  : t('powerKicker', { name: nameOf(livePower.player) })}
+              </small>
+              <b>
+                {livePower.player === view.me && (pending.kind !== 'none' || view.step === 'reveal')
+                  ? prompt
+                  : powerWords(livePower.power, livePower.player === view.me)}
+              </b>
+            </span>
+          </div>
+        ) : (
+          <p className="prompt" aria-live="polite">
+            {prompt}
+          </p>
+        )}
         <ActionBar
           acts={
             fly.dealing
@@ -763,22 +795,6 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           </div>
         </Overlay>
       ) : null}
-
-      <AnimatePresence>
-        {hello ? (
-          <motion.div
-            key="hello"
-            className="turn-banner"
-            aria-hidden="true"
-            initial={{ y: -24, opacity: 0, scale: 0.9 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: -10, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-          >
-            {t('turnBanner')}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
 
       <AnimatePresence>
         {feedback.splash ? (
@@ -908,6 +924,80 @@ function PauseCurtain({
       <button type="button" className="btn pause-alt" onClick={onQuit}>
         {t('pauseQuit')}
       </button>
+    </div>
+  );
+}
+
+/** The mark by a player's name for what they just did: the same icons as the action bar's. */
+const VOICE_ICON: Record<Voice['bubble']['key'], ActIcon> = {
+  bubbleDraw: 'draw',
+  bubbleTake: 'take',
+  bubbleKeep: 'swap',
+  bubbleThrow: 'discard',
+  bubblePeekOwn: 'look',
+  bubblePeekYou: 'look',
+  bubblePeekOther: 'look',
+  bubbleSwapYou: 'swap',
+  bubbleSwap: 'swap',
+  bubbleQuick: 'quick',
+  bubbleMissed: 'cancel',
+  bubbleGiveYou: 'pass',
+  bubbleGive: 'pass',
+};
+
+/**
+ * The band between the others and the piles: one line at a time. Its height never changes, so nothing on the table
+ * moves when it speaks; it is hidden from screen readers like the bubbles were (the prompt below speaks).
+ */
+function Band({
+  hello,
+  power,
+  voice,
+  log,
+}: {
+  hello: boolean;
+  power: { power: Parameters<typeof PowerMark>[0]['power']; kicker: string; words: string } | null;
+  voice: (Voice & { name: string; color: string }) | null;
+  log: string | null;
+}) {
+  const kind = hello ? 'hello' : power ? 'power' : voice ? 'voice' : 'log';
+  const key = hello ? 'hello' : power ? `p:${power.kicker}:${power.power}` : voice ? `v:${voice.id}` : 'log';
+  return (
+    <div className={`band band-${kind}`} aria-hidden="true">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={key}
+          className="band-line"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.16 }}
+        >
+          {hello ? (
+            <b className="band-hello">{t('turnBanner')}</b>
+          ) : power ? (
+            <>
+              <PowerMark power={power.power} />
+              <span className="power-words">
+                <small>{power.kicker}</small>
+                <b>{power.words}</b>
+              </span>
+            </>
+          ) : voice ? (
+            <>
+              <span className="voice-mark" style={{ background: voice.color }}>
+                <Icon name={VOICE_ICON[voice.bubble.key]} />
+              </span>
+              <span className="power-words">
+                <small>{voice.name}</small>
+                <b>{voice.text}</b>
+              </span>
+            </>
+          ) : (
+            <span className="band-log">{log ?? '\u00a0'}</span>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

@@ -34,6 +34,10 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- Nothing the table says covers the cards any more: what the others do, «À toi !» and the power being played show
+  in a line of their own between the other players and the piles, one at a time, and a small icon by a player's name
+  says what they just did (the same icons as the buttons). A power being played is also written in the instruction
+  at the bottom, in orange, so it can never be missed.
 - Quick-discarding an opponent's card you know is now on by default (it can be switched off in the rules). Once it
   has gone, you pick which of your cards to give them, knowing the claim worked; the table waits for your choice.
   Drag their card onto the discard, or use the bolt and touch it. Online rooms need everyone on the new version.

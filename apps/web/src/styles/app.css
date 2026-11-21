@@ -758,18 +758,18 @@ button {
 .game {
   /* Card sizes follow the height left for them as well as the width: a phone browser's toolbars take a good part of
      the screen. --unit is the width of a large card. Measured at phone sizes (2026-10-17): what is not cards (bars,
-     labels, two rows of buttons) takes about 370px and the cards 5.2 units; a second row of opponents adds 48px and
+     labels, two rows of buttons, the band since 2026-11-21) takes about 398px and the cards 5.2 units; a second row of opponents adds 48px and
      1.25 units (its small cards follow the unit). */
   --opp-rows: 1;
   --unit: clamp(
     30px,
-    min(22vw, calc((100dvh - 370px - (var(--opp-rows) - 1) * 48px) / (5.2 + (var(--opp-rows) - 1) * 1.25))),
+    min(22vw, calc((100dvh - 398px - (var(--opp-rows) - 1) * 48px) / (5.2 + (var(--opp-rows) - 1) * 1.25))),
     112px
   );
   display: grid;
   /* The opponents' row gives way first: on a screen too short for everything it scrolls on its own, so the centre,
      your cards and the buttons always stay whole. */
-  grid-template-rows: auto auto minmax(0, max-content) 1fr auto auto;
+  grid-template-rows: auto minmax(0, max-content) auto 1fr auto auto;
   gap: 8px;
   /* The table is pinned to the screen: the page never scrolls, bounces or zooms under a finger moving a card. The card
      sizes above make everything fit; panels that need it (journal, rules, end of round) scroll on their own. */
@@ -863,24 +863,6 @@ html:has(.game) body {
   animation: breathe 1.6s ease-in-out infinite;
 }
 
-.turn-banner {
-  position: fixed;
-  z-index: 25;
-  top: 28%;
-  left: 50%;
-  translate: -50% 0;
-  padding: 10px 26px;
-  border-radius: var(--r-pill);
-  background: var(--a);
-  color: var(--on-accent);
-  font-family: var(--f-display);
-  font-weight: 800;
-  font-size: 1.6rem;
-  white-space: nowrap;
-  box-shadow: 0 12px 28px -10px var(--a);
-  pointer-events: none;
-}
-
 @keyframes seat-pulse {
   50% {
     box-shadow: 0 0 0 8px color-mix(in srgb, var(--a) 22%, transparent);
@@ -910,7 +892,7 @@ html:has(.game) body {
   }
 }
 
-/* The narrowest phones: the round number gives way to the pause button (the ticker and the end of a round say it). */
+/* The narrowest phones: the round number gives way to the pause button (the band and the end of a round say it). */
 @media (max-width: 359px) {
   .game-bar .round {
     display: none;
@@ -1379,16 +1361,6 @@ html:has(.game) body {
   color: var(--on-accent);
 }
 
-.ticker {
-  margin: -6px 0 0;
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .journal {
   position: fixed;
   top: 52px;
@@ -1431,7 +1403,8 @@ html:has(.game) body {
     grid-row: 1;
   }
 
-  .game .ticker {
+  /* The band keeps the top line, under the bar: the others sit round the felt below it. */
+  .game .band {
     grid-row: 2;
   }
 
@@ -2248,6 +2221,132 @@ html:has(.overlay) body {
   line-height: 1;
 }
 
+/* ------------------------------------------------------------ the band (GameScreen.tsx `Band`, 2026-11-21) */
+
+/* One line between the others and the piles, its height fixed so nothing on the table moves when it speaks: my turn,
+   a power, what another player says, else the journal's last line. Nothing the table says sits over a card. */
+.band {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: -2px 0 0;
+  overflow: hidden;
+}
+
+.band-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 4px 14px 4px 6px;
+  border-radius: var(--r-pill);
+}
+
+.band-voice .band-line,
+.band-power .band-line {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.band-power .band-line {
+  box-shadow:
+    0 0 0 2px var(--b),
+    var(--shadow);
+}
+
+.band-hello .band-line {
+  padding: 6px 26px;
+  background: var(--a);
+  color: var(--on-accent);
+}
+
+.band-hello b {
+  font-family: var(--f-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.band-log {
+  padding-left: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.band .power-words {
+  min-width: 0;
+}
+
+.band .power-words b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* What a player just did, by their name and in the band: the action bar's icons, so the eye learns them. */
+.voice-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--on-seat, #fff);
+}
+
+.voice-mark .icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.seat-head .voice-mark {
+  width: 22px;
+  height: 20px;
+  margin-left: auto;
+  background: var(--muted);
+  color: var(--surface);
+}
+
+.seat-head .voice-mark .icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* The prompt telling a power (the owner's pick A, 2026-11-21): in the flow of the page, so nothing hides it. */
+.prompt.prompt-power {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-inline: auto;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 6px 14px 6px 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 0 0 2px var(--b);
+}
+
+.prompt.prompt-power.power-mine {
+  background: var(--b);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
 /* ------------------------------------------------------------ the pause (ADR-0023) */
 
 /* The table hidden behind an opaque curtain, so a pause is no time to study it; a panel opened from it (the rules)
@@ -2307,39 +2406,11 @@ html:has(.overlay) body {
 
 /* ------------------------------------------------------------ powers made visible (game/power.ts, 2026-11-21) */
 
-/* The power being played, under the piles and out of their grid (nothing in the middle moves); the discard that gave
-   it rings in the power's colour, and its player's seat carries the same mark. */
-.center {
-  position: relative;
-}
-
-/* Just under the piles, which sit in the middle of the centre: half a pile (a card 0.78 unit wide, 7/5 as tall, and
-   its label) below the middle. */
-.power-callout {
-  position: absolute;
-  top: calc(50% + var(--unit) * 0.546 + 18px);
-  left: 50%;
-  translate: -50% 0;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: max-content;
-  max-width: min(92vw, 420px);
-  padding: 6px 14px 6px 8px;
-  border-radius: var(--r-pill);
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow:
-    0 0 0 2px var(--b),
-    var(--shadow);
-  pointer-events: none;
-}
-
-.power-callout.power-mine {
-  background: var(--b);
-  color: var(--on-accent);
-  box-shadow: var(--shadow);
+/* The power being played: in the band and in the prompt (GameScreen.tsx); the discard that gave it rings in the
+   power's colour, and its player's seat carries the same mark. */
+.power-mine .power-mark {
+  background: var(--on-accent);
+  color: var(--b);
 }
 
 .power-words {
@@ -2372,11 +2443,6 @@ html:has(.overlay) body {
   border-radius: var(--r-pill);
   background: var(--b);
   color: var(--on-accent);
-}
-
-.power-mine .power-mark {
-  background: var(--on-accent);
-  color: var(--b);
 }
 
 .power-mark .icon {
@@ -2990,37 +3056,6 @@ html:has(.overlay) body {
 .reach-finger .reach-tag {
   left: 12px;
   top: -36px;
-}
-
-.bubble {
-  position: absolute;
-  translate: -50% 0;
-  width: max-content;
-  max-width: 200px;
-  box-sizing: border-box;
-  padding: 7px 12px;
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--ink);
-  font-weight: 700;
-  font-size: 0.85rem;
-  line-height: 1.25;
-  text-align: center;
-  box-shadow:
-    var(--shadow),
-    0 0 0 1px var(--line);
-}
-
-.bubble::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: calc(50% - 6px);
-  width: 12px;
-  height: 12px;
-  background: inherit;
-  rotate: 45deg;
-  border-radius: 2px;
 }
 
 /* ------------------------------------------------------------ by hand (Draggable.tsx, drag.ts) */

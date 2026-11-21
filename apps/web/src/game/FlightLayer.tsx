@@ -1,5 +1,5 @@
 import type { Card, GameEvent, PlayerId } from '@tamalou/shared';
-import { AnimatePresence, animate, type MotionValue, motion, useMotionValue } from 'motion/react';
+import { animate, type MotionValue, motion, useMotionValue } from 'motion/react';
 import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import { cardName, t } from '../i18n/index.ts';
@@ -8,7 +8,8 @@ import { facing, frontOf } from './front.ts';
 import type { HandKind } from './pace.ts';
 
 // Cards fly between the places of the table on a soft spring when a move happens, mine or another player's, and the
-// other players say what they do in a bubble by their seat. The table marks its places with `data-place` and its
+// other players say what they do: `voices`, which the table shows in its band, never over the cards (the owner's pick
+// on the 2026-11-21 canvas; they were bubbles by the seats before). The table marks its places with `data-place` and its
 // seats with `data-seat`; this layer remembers where each place was before the move (the drawn card is already gone
 // from the screen when its swap arrives), flies a copy, and hides the destination until the copy lands.
 //
@@ -51,12 +52,11 @@ interface Active {
   event: number;
 }
 
-interface Said {
+/** What another player says, while it is said: newest last. */
+export interface Voice {
   id: number;
   bubble: Bubble;
-  at: Box;
-  /** The top it may not rise above: the card in front of the seat. */
-  below?: number;
+  text: string;
 }
 
 const BEAT = 0.34;
@@ -146,6 +146,8 @@ export interface FlightLayer {
   dealing: boolean;
   /** How many cards are still to leave a place (the deck counts down as it deals). */
   leaving: (place: Place) => number;
+  /** What the others are saying now, newest last (shown in the table's band and by their names). */
+  voices: readonly Voice[];
   layer: ReactNode;
 }
 
@@ -176,7 +178,7 @@ export function useFlights(
   const busy = useRef(new Map<PlayerId, number>());
   const look = useRef(new Map<PlayerId, number>());
   const [active, setActive] = useState<Active[]>([]);
-  const [said, setSaid] = useState<Said[]>([]);
+  const [said, setSaid] = useState<Voice[]>([]);
   // Redraws once a batch is turned into flights: what this render counted as coming is then settled, even when no
   // card could fly (a place not on screen).
   const [, settled] = useReducer((x: number) => x + 1, 0);
@@ -245,21 +247,14 @@ export function useFlights(
     } else say(bubblesOf(fresh, me));
   });
 
-  /** Bubbles by their seats, under the card a player holds up when it sits under their seat. */
+  /** What the others say, each line for a moment, one per player. */
   function say(bubbles: Bubble[]) {
     if (bubbles.length === 0) return;
-    const added: Said[] = [];
-    for (const bubble of bubbles) {
-      const seat = boxOf(`[data-seat="${CSS.escape(bubble.player)}"]`);
-      if (!seat) continue;
-      const front = boxOf(`[data-front-of="${CSS.escape(bubble.player)}"]`);
-      const below = front && front.y > seat.y + seat.h - 12 ? front.y + front.h + 6 : undefined;
-      added.push({ id: nextId.current++, bubble, at: seat, ...(below === undefined ? {} : { below }) });
-    }
+    const added: Voice[] = bubbles.map((bubble) => ({ id: nextId.current++, bubble, text: bubbleText(bubble) }));
     const ids = new Set(added.map((s) => s.bubble.player));
     setSaid((s) => [...s.filter((x) => !ids.has(x.bubble.player)), ...added]);
     for (const s of added) {
-      timers.current.push(setTimeout(() => setSaid((list) => list.filter((x) => x.id !== s.id)), 1900));
+      timers.current.push(setTimeout(() => setSaid((list) => list.filter((x) => x.id !== s.id)), 2600));
     }
   }
 
@@ -350,41 +345,9 @@ export function useFlights(
           <FlyingCard key={a.id} a={a} speed={speed} onDone={() => remove(a.id)} />
         ),
       )}
-      <AnimatePresence>
-        {stack(said).map(({ s, style }) => (
-          <motion.div
-            key={s.id}
-            className="bubble"
-            style={style}
-            initial={{ opacity: 0, y: -8, scale: 0.7 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-          >
-            {bubbleText(s.bubble)}
-          </motion.div>
-        ))}
-      </AnimatePresence>
     </div>
   );
-  return { landing, inbound, waiting, played, showing, dealing, leaving, layer };
-}
-
-/**
- * Each bubble centred under its seat and kept on screen (at most 200px wide, so its centre stays 108px from an edge);
- * two bubbles that would overlap (neighbouring seats, or a narrow screen) step down one under the other.
- */
-function stack(said: readonly Said[]): { s: Said; style: CSSProperties }[] {
-  const placed: { left: number; top: number }[] = [];
-  return [...said]
-    .sort((a, b) => a.at.x - b.at.x)
-    .map((s) => {
-      const left = Math.max(108, Math.min(window.innerWidth - 108, s.at.x + s.at.w / 2));
-      let top = Math.max(s.at.y + s.at.h - 6, s.below ?? 0);
-      while (placed.some((p) => Math.abs(p.left - left) < 200 && Math.abs(p.top - top) < 34)) top += 36;
-      placed.push({ left, top });
-      return { s, style: { left, top } };
-    });
+  return { landing, inbound, waiting, played, showing, dealing, leaving, voices: said, layer };
 }
 
 function bubbleText(b: Bubble): string {
