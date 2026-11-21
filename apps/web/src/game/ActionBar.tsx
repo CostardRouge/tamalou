@@ -2,7 +2,18 @@
 // action is a square icon with a one-word caption. Plain choices without an icon (who claims a quick discard on a
 // shared screen) stay text buttons, and the line scrolls sideways rather than wrap.
 
-export type ActIcon = 'take' | 'call' | 'quick' | 'skip' | 'keep' | 'pass' | 'cancel' | 'look' | 'discard' | 'draw';
+export type ActIcon =
+  | 'take'
+  | 'call'
+  | 'quick'
+  | 'skip'
+  | 'keep'
+  | 'pass'
+  | 'cancel'
+  | 'look'
+  | 'discard'
+  | 'draw'
+  | 'swap';
 
 export interface Act {
   key: string;
@@ -32,6 +43,7 @@ const PATHS: Record<ActIcon, string> = {
   cancel: 'M6 6l12 12 M18 6 6 18',
   look: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
   discard: 'M4 7h16 M9 7V4h6v3 M6 7l1 13h10l1-13',
+  swap: 'M4 8h14 M15 5l3 3-3 3 M20 16H6 M9 13l-3 3 3 3',
 };
 
 export function Icon({ name }: { name: ActIcon }) {

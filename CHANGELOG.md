@@ -10,6 +10,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
+  regarde une de tes cartes"), before you choose. While a power is played, a label under the piles says whose power it
+  is and what it does, the discard that gave it lights up, and the player's seat carries its mark.
 - Play with up to ten at the table (six before), in every mode: nine bots in solo, ten names on one phone, ten seats
   in a room. A table whose hands do not fit in one deck (ten players with large hands) says so before the game and
   asks for two decks.

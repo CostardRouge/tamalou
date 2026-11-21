@@ -2241,6 +2241,138 @@ html:has(.overlay) body {
   line-height: 1;
 }
 
+/* ------------------------------------------------------------ powers made visible (game/power.ts, 2026-11-21) */
+
+/* The power being played, under the piles and out of their grid (nothing in the middle moves); the discard that gave
+   it rings in the power's colour, and its player's seat carries the same mark. */
+.center {
+  position: relative;
+}
+
+/* Just under the piles, which sit in the middle of the centre: half a pile (a card 0.78 unit wide, 7/5 as tall, and
+   its label) below the middle. */
+.power-callout {
+  position: absolute;
+  top: calc(50% + var(--unit) * 0.546 + 18px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: min(92vw, 420px);
+  padding: 6px 14px 6px 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 2px var(--b),
+    var(--shadow);
+  pointer-events: none;
+}
+
+.power-callout.power-mine {
+  background: var(--b);
+  color: var(--on-accent);
+  box-shadow: var(--shadow);
+}
+
+.power-words {
+  display: grid;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.power-words small {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.power-words b {
+  font-size: 0.86rem;
+}
+
+.power-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  flex: none;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  border-radius: var(--r-pill);
+  background: var(--b);
+  color: var(--on-accent);
+}
+
+.power-mine .power-mark {
+  background: var(--on-accent);
+  color: var(--b);
+}
+
+.power-mark .icon {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.seat-head .power-mark {
+  min-width: 22px;
+  height: 20px;
+  margin-left: auto;
+}
+
+.seat-head .power-mark .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.game.power-live .pile-discard .card-side {
+  box-shadow: 0 0 0 3px var(--b);
+}
+
+/* The card I hold: what throwing it would do, before I choose. */
+.power-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 2px var(--b),
+    var(--shadow);
+  pointer-events: none;
+}
+
+.power-chip .power-words b {
+  font-size: 0.78rem;
+}
+
+.power-chip .power-words small {
+  font-size: 0.62rem;
+}
+
+/* Under the large card: on one line, spilling evenly on both sides like the caption above it. */
+.draw-stage .power-chip {
+  width: max-content;
+  max-width: min(92vw, 440px);
+}
+
+.draw-stage .power-words b {
+  white-space: nowrap;
+}
+
 /* ------------------------------------------------------------ rules as cards to leaf through (RulesCards.tsx) */
 
 .rc-panel {
@@ -3016,11 +3148,20 @@ html:has(.overlay) body {
     0 16px 24px -12px rgb(0 0 0 / 0.5);
 }
 
-.held-label {
+.held-words {
   position: absolute;
   left: calc(100% + 10px);
   top: 50%;
   translate: 0 -50%;
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  width: max-content;
+  /* Room to the right of the card, centred above my hand, on a phone. */
+  max-width: min(180px, calc(50vw - var(--unit) * 0.45 - 30px));
+}
+
+.held-label {
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--a);
@@ -3039,11 +3180,13 @@ html:has(.overlay) body {
     --w: var(--unit);
   }
 
-  .held-label {
+  .held-words {
     left: 50%;
     top: auto;
     bottom: calc(100% + 6px);
     translate: -50% 0;
+    justify-items: center;
+    max-width: 240px;
   }
 }
 
