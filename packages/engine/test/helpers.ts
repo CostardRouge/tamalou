@@ -19,7 +19,7 @@ export function rules(input: RuleSetInput = {}): RuleSet {
 }
 
 export function newGame(r: RuleSet, n = 2, seed = 1) {
-  const ids = ['a', 'b', 'c', 'd', 'e', 'f'].slice(0, n);
+  const ids = Array.from({ length: n }, (_, i) => String.fromCharCode(97 + i));
   return createGame({ seed, players: ids.map((id) => ({ id, name: id.toUpperCase() })), rules: r });
 }
 

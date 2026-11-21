@@ -158,13 +158,13 @@ describe('room lobby', () => {
     gm.send({ t: 'start' });
     expect(gm.last('refused')).toMatchObject({ error: 'notReady' });
     bob.send({ t: 'ready', ready: true });
-    for (let i = 0; i < 4; i++) gm.send({ t: 'addBot', level: 'easy' });
+    for (let i = 0; i < 8; i++) gm.send({ t: 'addBot', level: 'easy' });
     expect(
       gm
         .lobby()
         .seats.map((x) => x.name)
         .slice(2),
-    ).toEqual(['Bot 1', 'Bot 2', 'Bot 3', 'Bot 4']);
+    ).toEqual(['Bot 1', 'Bot 2', 'Bot 3', 'Bot 4', 'Bot 5', 'Bot 6', 'Bot 7', 'Bot 8']);
     gm.send({ t: 'addBot', level: 'easy' });
     expect(gm.last('refused')).toMatchObject({ about: 'addBot', error: 'full' });
     gm.send({ t: 'start' });
@@ -173,11 +173,24 @@ describe('room lobby', () => {
     expect(gm.last('refused')).toMatchObject({ about: 'start', error: 'notInLobby' });
   });
 
-  it('turns away a seventh player but lets them watch', () => {
+  it('refuses to start a table its rules cannot deal', () => {
     const s = setup();
     const gm = s.client('a');
     gm.hello('Alice');
-    for (let i = 0; i < 5; i++) gm.send({ t: 'addBot', level: 'easy' });
+    for (let i = 0; i < 9; i++) gm.send({ t: 'addBot', level: 'easy' });
+    gm.send({ t: 'setRules', choice: { preset: 'classic', overrides: { hand: { size: 8 } } } });
+    gm.send({ t: 'start' });
+    expect(gm.last('refused')).toMatchObject({ about: 'start', error: 'rules' });
+    gm.send({ t: 'setRules', choice: { preset: 'classic', overrides: { hand: { size: 8 }, deck: { count: 2 } } } });
+    gm.send({ t: 'start' });
+    expect(gm.lobby().phase).toBe('playing');
+  });
+
+  it('turns away an eleventh player but lets them watch', () => {
+    const s = setup();
+    const gm = s.client('a');
+    gm.hello('Alice');
+    for (let i = 0; i < 9; i++) gm.send({ t: 'addBot', level: 'easy' });
     const late = s.client('late');
     late.hello('Zoé');
     expect(late.closed()).toBe('full');

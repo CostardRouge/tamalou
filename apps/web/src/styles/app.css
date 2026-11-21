@@ -1481,6 +1481,22 @@ html:has(.game) body {
     --base: clamp(24px, min(calc(var(--unit) * 0.46), 3vw), 58px);
   }
 
+  /* Seven to nine others (ten at the table, 2026-11-21): smaller again, and their seats tighter, so the arc holds them
+     all without one covering the next. */
+  .game-packed .card-sm,
+  .game-packed .opponents .hand {
+    --w: clamp(20px, min(calc(var(--unit) * 0.36), 2.3vw), 44px);
+    --base: clamp(20px, min(calc(var(--unit) * 0.36), 2.3vw), 44px);
+  }
+
+  .game-packed .opponents .seat {
+    padding: 4px 6px 6px;
+  }
+
+  .game-packed .opponents .seat-head {
+    font-size: 0.78rem;
+  }
+
   .journal {
     top: 60px;
     right: 16px;

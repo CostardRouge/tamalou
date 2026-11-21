@@ -151,6 +151,19 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     return () => window.removeEventListener('resize', turn);
   });
 
+  // On a short phone a full table (ten players) leaves the opponents' band scrolling in its own box: the seat whose turn
+  // it is is brought into it, so whoever plays is always in sight.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run when the turn passes, read from the DOM
+  useLayoutEffect(() => {
+    const band = document.querySelector<HTMLElement>('.opponents');
+    const seat = band?.querySelector<HTMLElement>('.seat-turn');
+    if (!band || !seat || band.scrollHeight <= band.clientHeight) return;
+    const b = band.getBoundingClientRect();
+    const r = seat.getBoundingClientRect();
+    const by = r.top < b.top ? r.top - b.top : r.bottom > b.bottom ? r.bottom - b.bottom : 0;
+    if (by !== 0) band.scrollTo({ top: band.scrollTop + by, behavior: reduced ? 'auto' : 'smooth' });
+  }, [view.current, reduced]);
+
   // The spotlight: "À toi !" for a moment when my turn starts, once the last player's moves have played out on
   // screen (the owner: one player after the other, «un cloisonnement»).
   const myTurnNow = view.phase === 'play' && view.current === view.me && !handoff;
@@ -467,9 +480,11 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   }
 
   return (
-    // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
+    // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows). A
+    // third row (seven to nine opponents) is counted as a second: counted whole, it shrank my cards to nothing on a
+    // short phone, while the opponents' cards are already at their smallest.
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">

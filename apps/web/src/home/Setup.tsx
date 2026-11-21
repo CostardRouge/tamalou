@@ -7,7 +7,7 @@ import { createRoom } from '../connection/remote.ts';
 import { Overlay } from '../game/Overlay.tsx';
 import { currentLang, type Key, plural, presetText, t } from '../i18n/index.ts';
 import type { GameChoice } from './HomeScreen.tsx';
-import { MAX_SEATS, type Mode } from './modes.ts';
+import { fitsTable, MAX_SEATS, type Mode, seatsOf } from './modes.ts';
 import { aroundTop } from './table.ts';
 
 // The panel a mode opens on the launch screen (the owner's pick on the 2026-10-22 canvas: direction B with A's table
@@ -62,6 +62,7 @@ interface Props {
 
 export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, onRoom }: Props) {
   const preset = PRESETS.find((p) => p.id === c.preset);
+  const fits = c.mode === 'online' || fitsTable(c);
   return (
     <Overlay className="sheet-overlay" labelledBy="setup-title" onClose={onClose}>
       <div className="sheet">
@@ -81,7 +82,7 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
             className="setup-form"
             onSubmit={(e) => {
               e.preventDefault();
-              onPlay();
+              if (fits) onPlay();
             }}
           >
             {c.mode === 'pass' ? <small className="muted">{t('passHint')}</small> : null}
@@ -123,6 +124,7 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
                 ))}
               </div>
               {linked ? <p className="notice">{t('editorFromLink')}</p> : null}
+              {fits ? null : <p className="notice">{t('needDecks', { n: seatsOf(c) })}</p>}
               <button type="button" className="btn btn-secondary" onClick={onEdit}>
                 {t('editorCustomize')}
                 {changes > 0 ? <span className="tag">{plural('editorModified', changes)}</span> : null}
@@ -133,7 +135,7 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
                 {titleOf(c)}
                 {preset ? ` · ${presetText(preset.id, preset).name}` : ''}
               </p>
-              <button type="submit" className="btn btn-primary btn-big">
+              <button type="submit" className="btn btn-primary btn-big" disabled={!fits}>
                 {t('homePlay')}
               </button>
             </div>
@@ -151,8 +153,7 @@ function Table({ c, set }: { c: GameChoice; set: (patch: Partial<GameChoice>) =>
   const seats: Seat[] = [];
   if (c.mode === 'pass') for (let i = 1; i < c.players.length; i++) seats.push({ kind: 'human', i });
   for (let i = 0; i < c.bots; i++) seats.push({ kind: 'bot', i });
-  const total = (c.mode === 'pass' ? c.players.length : 1) + c.bots;
-  if (total < MAX_SEATS) {
+  if (seatsOf(c) < MAX_SEATS) {
     if (c.mode === 'pass') seats.push({ kind: 'add', what: 'human' });
     seats.push({ kind: 'add', what: 'bot' });
   }

@@ -139,7 +139,7 @@ describe('the online screens', () => {
     const server = new Server();
     render(<OnlineScreen code="ABCDE" name="Alice" onExit={() => {}} socket={server.open} />);
     await flush();
-    expect(screen.getByText('Joueurs (1/6)')).toBeTruthy();
+    expect(screen.getByText('Joueurs (1/10)')).toBeTruthy();
     const start = screen.getByRole('button', { name: 'Lancer la partie' }) as HTMLButtonElement;
     expect(start.disabled).toBe(true);
     expect(screen.getByRole('img', { name: 'QR code du lien de la salle' })).toBeTruthy();

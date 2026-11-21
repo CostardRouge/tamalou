@@ -1,6 +1,6 @@
 import { parseRules } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { apply, createGame, legalActions, viewFor } from '../src/index.ts';
+import { apply, createGame, legalActions, tableFits, viewFor } from '../src/index.ts';
 import { act, handOf, label, newGame, play, refuse, rig, rules, top } from './helpers.ts';
 
 const base = rules();
@@ -56,8 +56,13 @@ describe('setup', () => {
         rules: base,
       }),
     ).toThrow('duplicate');
-    // The schema's limits (6 players, 8 cards) always fit one deck: the guard in createGame is defensive.
-    expect(() => newGame(rules({ hand: { size: 8 } }), 6)).not.toThrow();
+    // Ten players with four cards fit one deck; with eight cards each they need a second one.
+    expect(() => newGame(base, 10)).not.toThrow();
+    expect(() => newGame(base, 11)).toThrow('2 to 10');
+    expect(tableFits(10, rules({ hand: { size: 8 } }))).toBe(false);
+    expect(() => newGame(rules({ hand: { size: 8 } }), 10)).toThrow('not enough cards');
+    expect(tableFits(10, rules({ hand: { size: 8 }, deck: { count: 2 } }))).toBe(true);
+    expect(() => newGame(rules({ hand: { size: 8 }, deck: { count: 2 } }), 10)).not.toThrow();
   });
 
   it('adds jokers and a second deck on request', () => {

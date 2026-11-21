@@ -10,6 +10,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- Play with up to ten at the table (six before), in every mode: nine bots in solo, ten names on one phone, ten seats
+  in a room. A table whose hands do not fit in one deck (ten players with large hands) says so before the game and
+  asks for two decks.
 - During your own power, drag one of your cards onto the discard (or use the bolt) to let the power go and make a
   quick discard.
 - Watch the others play: their moves are now played by their hand, a cursor with their name on a computer and a

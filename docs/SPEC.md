@@ -40,7 +40,7 @@ Toutes les valeurs ci-dessous sont des **défauts configurables** (voir §3).
 
 ### Matériel
 - Jeu de 52 cartes. Les jokers sont optionnels et désactivés par défaut.
-- 2 à 6 joueurs. Au-delà de 4, 2 paquets en option.
+- 2 à 10 joueurs (6 jusqu'au 2026-11-21, limite portée à 10 par le propriétaire). Au-delà de 4, 2 paquets en option ; une table dont les paquets ne suffisent pas (toutes les mains, la première carte de la défausse et une carte à piocher) ne démarre pas et demande deux paquets.
 
 ### Valeurs des cartes
 | Carte | Valeur |
