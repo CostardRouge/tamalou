@@ -2007,18 +2007,44 @@ html:has(.overlay) body {
 .room-card {
   display: grid;
   justify-items: center;
-  gap: 10px;
-  padding: 20px;
+  gap: 12px;
+  padding: 12px 14px;
   border-radius: var(--r-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
 
+/* The code and the ways to share it on one line (2026-11-21); the QR code under it, on demand. */
+.room-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 10px;
+  width: 100%;
+}
+
+.room-id {
+  display: grid;
+  margin: 0 auto 0 0;
+  text-align: left;
+  line-height: 1.1;
+}
+
+.room-id .muted {
+  font-size: 0.75rem;
+}
+
+.room-line .btn {
+  min-height: 44px;
+  padding-inline: 14px;
+}
+
 .room-code {
   margin: 0;
-  font-size: clamp(2.4rem, 13vw, 3.4rem);
+  font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   color: var(--a);
 }
 
@@ -2040,22 +2066,36 @@ html:has(.overlay) body {
 
 .lobby-seats {
   display: grid;
-  gap: 6px;
+  /* Tiles, two or three to a row (2026-11-21): ten players fit on a phone without a long list. */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .lobby-seats li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 8px;
-  min-height: 52px;
-  padding: 4px 4px 4px 14px;
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 10px;
   border-radius: var(--r-md);
   background: var(--surface);
+  text-align: left;
+  box-shadow: inset 0 0 0 2px transparent;
+}
+
+.lobby-seats li.is-ready {
+  box-shadow: inset 0 0 0 2px var(--good);
+}
+
+.lobby-seats .seat-name {
+  max-width: none;
+  padding-right: 36px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .lobby-seats li.offline .seat-name {
@@ -2066,7 +2106,7 @@ html:has(.overlay) body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 4px;
 }
 
@@ -2086,7 +2126,11 @@ html:has(.overlay) body {
 }
 
 .lobby-seats .ghost {
+  position: absolute;
+  top: 0;
+  right: 0;
   min-width: 44px;
+  min-height: 44px;
   font-size: 1.4rem;
 }
 
@@ -2098,6 +2142,18 @@ html:has(.overlay) body {
 .lobby-go {
   display: grid;
   gap: 10px;
+}
+
+/* Starting, or saying «Prêt», is always in reach (2026-11-21): a bar pinned at the bottom of the screen, never pushed
+   out of sight by a long table. */
+.lobby > .lobby-go {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 0 -16px calc(-1 * max(24px, env(safe-area-inset-bottom)));
+  padding: 12px 16px max(14px, env(safe-area-inset-bottom));
+  background: var(--bg);
+  box-shadow: 0 -10px 24px -16px rgb(0 0 0 / 0.35);
 }
 
 .lobby-go p {

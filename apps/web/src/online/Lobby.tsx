@@ -12,6 +12,9 @@ import { RulesPanel } from '../rules/RulesSummary.tsx';
 // The room before a game (docs/SPEC.md §5.3): its code, link and QR code to bring the others in, the players and
 // whether they are ready, the rules. The game master adds or removes bots, removes a player, edits the rules and
 // starts; the others say they are ready. Everything shown is the server's last lobby; every button sends a message.
+// Laid out for a full table (the owner, 2026-11-21): the sharing folds into one line with the QR code on demand (open
+// by itself only while the game master waits for a first player), the players are tiles in a grid, and the button to
+// start or to say «Prêt» stays in a bar pinned at the bottom of the screen.
 
 const LEVEL_KEY: Record<BotLevel, Key> = { easy: 'levelEasy', medium: 'levelMedium', hard: 'levelHard' };
 
@@ -32,12 +35,15 @@ export function Lobby({ client, onLeave }: Props) {
   const [showRules, setShowRules] = useState(false);
   const [copied, setCopied] = useState(false);
   const [name, setName] = useState('');
+  /** The QR code shown or folded by hand; null until then (see `qrOpen`). */
+  const [qrChoice, setQrChoice] = useState<boolean | null>(null);
   const link = roomLink(client.code);
   const qr = useMemo(() => renderSVG(link, { border: 2 }), [link]);
   if (!lobby) return null;
 
   const gm = client.isGameMaster;
   const me = lobby.seats.find((s) => s.id === client.seat);
+  const qrOpen = qrChoice ?? (gm && lobby.seats.filter((s) => s.kind === 'human').length < 2);
   const rules = rulesOf(lobby.rules);
   const preset = PRESETS.find((p) => p.id === lobby.rules.preset);
   const changes = countChanges(lobby.rules.overrides);
@@ -93,17 +99,31 @@ export function Lobby({ client, onLeave }: Props) {
       </div>
 
       <section className="room-card" aria-labelledby="room-code">
-        <span className="muted">{t('onlineCode')}</span>
-        <p id="room-code" className="room-code mono">
-          {/* Read letter by letter by a screen reader. */}
-          <span aria-hidden="true">{client.code}</span>
-          <span className="sr-only">{[...client.code].join(' ')}</span>
-        </p>
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: the SVG is generated locally from our own link */}
-        <div className="qr" role="img" aria-label={t('lobbyQr')} dangerouslySetInnerHTML={{ __html: qr }} />
-        <button type="button" className="btn btn-secondary" onClick={share}>
-          {copied ? t('lobbyCopied') : t('lobbyShare')}
-        </button>
+        <div className="room-line">
+          <p className="room-id">
+            <span className="muted">{t('onlineCode')}</span>
+            <span id="room-code" className="room-code mono">
+              {/* Read letter by letter by a screen reader. */}
+              <span aria-hidden="true">{client.code}</span>
+              <span className="sr-only">{[...client.code].join(' ')}</span>
+            </span>
+          </p>
+          <button type="button" className="btn btn-secondary" onClick={share}>
+            {copied ? t('lobbyCopied') : t('lobbyShare')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary qr-toggle"
+            aria-expanded={qrOpen}
+            onClick={() => setQrChoice(!qrOpen)}
+          >
+            {t(qrOpen ? 'lobbyQrHide' : 'lobbyQrShow')}
+          </button>
+        </div>
+        {qrOpen ? (
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: the SVG is generated locally from our own link
+          <div className="qr" role="img" aria-label={t('lobbyQr')} dangerouslySetInnerHTML={{ __html: qr }} />
+        ) : null}
       </section>
 
       <section className="field" aria-labelledby="players-title">
@@ -112,7 +132,7 @@ export function Lobby({ client, onLeave }: Props) {
         </h2>
         <ul className="lobby-seats">
           {lobby.seats.map((s) => (
-            <li key={s.id} className={s.connected ? '' : 'offline'}>
+            <li key={s.id} className={`${s.connected ? '' : 'offline'}${s.ready ? ' is-ready' : ''}`}>
               <span className="seat-name">
                 {s.name}
                 {s.id === client.seat ? <span className="muted"> ({t('lobbyYou')})</span> : null}
