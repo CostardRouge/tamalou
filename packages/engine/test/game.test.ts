@@ -1,6 +1,6 @@
 import { parseRules } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { apply, createGame, legalActions, viewFor } from '../src/index.ts';
+import { apply, createGame, legalActions, tableFits, viewFor } from '../src/index.ts';
 import { act, handOf, label, newGame, play, refuse, rig, rules, top } from './helpers.ts';
 
 const base = rules();
@@ -56,8 +56,13 @@ describe('setup', () => {
         rules: base,
       }),
     ).toThrow('duplicate');
-    // The schema's limits (6 players, 8 cards) always fit one deck: the guard in createGame is defensive.
-    expect(() => newGame(rules({ hand: { size: 8 } }), 6)).not.toThrow();
+    // Ten players with four cards fit one deck; with eight cards each they need a second one.
+    expect(() => newGame(base, 10)).not.toThrow();
+    expect(() => newGame(base, 11)).toThrow('2 to 10');
+    expect(tableFits(10, rules({ hand: { size: 8 } }))).toBe(false);
+    expect(() => newGame(rules({ hand: { size: 8 } }), 10)).toThrow('not enough cards');
+    expect(tableFits(10, rules({ hand: { size: 8 }, deck: { count: 2 } }))).toBe(true);
+    expect(() => newGame(rules({ hand: { size: 8 }, deck: { count: 2 } }), 10)).not.toThrow();
   });
 
   it('adds jokers and a second deck on request', () => {
@@ -237,7 +242,20 @@ describe('quick discard', () => {
       hands: { a: ['2H', '3H', '4H', '5H'], b: ['9S', '3S', '4S', '5S'], c: ['2D', '3D', '4D', '5D'] },
       discard: ['9C'],
       deck: ['KS', 'QS'],
+      window: true,
     });
+
+  it('opens no window on the card the deal turns over, unless the rules say so', () => {
+    // No peek in these rules: play starts with the deal.
+    const dealt = (r = base) => newGame(r, 2).state;
+    const s = rig(dealt(), { hands: { b: ['9S', '3S', '4S', '5S'] }, discard: ['9C'] });
+    expect(s.window).toBe(false);
+    const claim = { type: 'quickDiscard', by: 'b', target: { player: 'b', slot: 0 }, expectTop: top(s) } as const;
+    expect(refuse(s, claim, base)).toBe('windowClosed');
+    const on = rules({ quickDiscard: { onDealtCard: true } });
+    const t = rig(dealt(on), { hands: { b: ['9S', '3S', '4S', '5S'] }, discard: ['9C'] });
+    expect(act(t, { ...claim, expectTop: top(t) }, on).events[0]).toMatchObject({ type: 'quickDiscard', player: 'b' });
+  });
 
   it('lets anyone, out of turn, lay a card of the same rank', () => {
     const s = open();
@@ -479,6 +497,7 @@ describe('Tamalou and scoring', () => {
     const s = rig(newGame(r, 2).state, {
       hands: { a: ['9H', null, null, null], b: ['2S', '3S', '4S', '5S'] },
       discard: ['9C'],
+      window: true,
     });
     const { state } = act(s, { type: 'quickDiscard', by: 'a', target: { player: 'a', slot: 0 }, expectTop: top(s) }, r);
     expect(state.phase).toBe('roundEnding');

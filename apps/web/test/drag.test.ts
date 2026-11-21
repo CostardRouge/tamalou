@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { type Box, dropsFor, MY_ZONE, resolveDrop } from '../src/game/drag.ts';
 import { interaction, NONE } from '../src/game/interaction.ts';
 
-const rules = parseRules({ hand: { initialPeek: { count: 0 } } });
+// The dealt card opens a window in these rules (it does not by default), so the round starts with one open.
+const rules = parseRules({ hand: { initialPeek: { count: 0 } }, quickDiscard: { onDealtCard: true } });
 const start = () =>
   createGame({
     seed: 11,

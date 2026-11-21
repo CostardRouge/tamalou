@@ -37,7 +37,8 @@ export interface NewGame {
 }
 
 export const MIN_PLAYERS = 2;
-export const MAX_PLAYERS = 6;
+/** Raised from 6 to 10 on the owner's word (2026-11-21). Ten hands of four leave eleven cards in a single deck. */
+export const MAX_PLAYERS = 10;
 
 export function buildCards(rules: RuleSet): Card[] {
   const cards: Card[] = [];
@@ -51,6 +52,15 @@ export function buildCards(rules: RuleSet): Card[] {
   return cards;
 }
 
+/** Cards a table of `players` takes before the first draw: every hand, the first discard and one card left to draw. */
+export const cardsNeeded = (players: number, rules: RuleSet) => players * rules.hand.size + 2;
+
+/**
+ * Whether the rules' decks hold enough cards for this many players (a large table with large hands needs two decks).
+ * The setup screens ask it before a game starts; createGame refuses a table that fails it.
+ */
+export const tableFits = (players: number, rules: RuleSet) => cardsNeeded(players, rules) <= buildCards(rules).length;
+
 /** Creates a game and deals its first round. Throws on a setup that cannot be played (it is not a player's move). */
 export function createGame({ seed, players, rules }: NewGame): { state: GameState; events: GameEvent[] } {
   if (players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
@@ -58,8 +68,7 @@ export function createGame({ seed, players, rules }: NewGame): { state: GameStat
   }
   if (new Set(players.map((p) => p.id)).size !== players.length) throw new Error('duplicate player id');
   const cards = buildCards(rules);
-  // Every hand, the first discard, and at least one card left to draw.
-  if (players.length * rules.hand.size + 2 > cards.length) throw new Error('not enough cards for this table');
+  if (cardsNeeded(players.length, rules) > cards.length) throw new Error('not enough cards for this table');
 
   const state: GameState = {
     seed: seed >>> 0,
@@ -139,7 +148,7 @@ function dealRound(s: GameState, rules: RuleSet, events: GameEvent[]): void {
   s.phase = 'initialPeek';
   s.step = null;
   s.current = null;
-  maybeStartPlay(s, events);
+  maybeStartPlay(s, rules, events);
 }
 
 function showInitialPeek(s: GameState, player: PlayerId, slots: number[], events: GameEvent[]): void {
@@ -151,14 +160,15 @@ function showInitialPeek(s: GameState, player: PlayerId, slots: number[], events
   events.push({ type: 'initialPeek', to: player, cards });
 }
 
-function maybeStartPlay(s: GameState, events: GameEvent[]): void {
+function maybeStartPlay(s: GameState, rules: RuleSet, events: GameEvent[]): void {
   if (!activePlayers(s).every((p) => s.peek[p.id]?.ready)) return;
   const starter = s.players[s.starter] as (typeof s.players)[number];
   s.phase = 'play';
   s.step = 'draw';
   s.current = starter.id;
-  // The first face-up card opens a window, like any card landing on the discard.
-  s.window = true;
+  // The card turned over by the deal opens no window unless the game master says so (the owner, 2026-11-21: players
+  // threw a card on it by mistake before the game had begun, ADR-0021); every card landing afterwards does.
+  s.window = rules.quickDiscard.onDealtCard;
   events.push({ type: 'playStarted', current: starter.id });
   events.push({ type: 'turnStarted', player: starter.id });
 }
@@ -403,7 +413,7 @@ function step(s: GameState, a: Action, rules: RuleSet, events: GameEvent[]): Eng
       if (p.slots === null) return 'notChosen';
       p.ready = true;
       events.push({ type: 'playerReady', player: me });
-      maybeStartPlay(s, events);
+      maybeStartPlay(s, rules, events);
       return null;
     }
 

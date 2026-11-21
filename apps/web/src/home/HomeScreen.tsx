@@ -6,7 +6,7 @@ import { Overlay } from '../game/Overlay.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { VERSION } from '../version.ts';
-import { MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
+import { fitsTable, MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
 import { Settings } from './Settings.tsx';
 import { MODE_KEY, SetupSheet, titleOf } from './Setup.tsx';
 
@@ -77,7 +77,7 @@ export function loadChoice(): GameChoice {
       mode,
       name: typeof c.name === 'string' ? c.name.slice(0, 20) : '',
       players: players.length >= 2 && players.length <= MAX_SEATS ? players : DEFAULT.players,
-      bots: typeof c.bots === 'number' && c.bots >= 0 && c.bots <= 5 ? c.bots : DEFAULT.bots,
+      bots: typeof c.bots === 'number' && c.bots >= 0 && c.bots < MAX_SEATS ? c.bots : DEFAULT.bots,
       level: BOT_LEVELS.includes(c.level as BotLevel) ? (c.level as BotLevel) : DEFAULT.level,
       preset,
       overrides: {},
@@ -96,7 +96,7 @@ function saveChoice(c: GameChoice) {
   }
 }
 
-/** Keeps the table playable: solo needs a bot, and nobody plays at more than six. */
+/** Keeps the table playable: solo needs a bot, and nobody plays at more than MAX_SEATS. */
 function fit(c: GameChoice): GameChoice {
   if (c.mode === 'solo') return { ...c, bots: Math.min(Math.max(c.bots, 1), MAX_SEATS - 1) };
   return { ...c, bots: Math.min(c.bots, MAX_SEATS - c.players.length) };
@@ -149,6 +149,12 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
   const [settings, setSettings] = useState(false);
   const set = (patch: Partial<GameChoice>) => setC((prev) => fit({ ...prev, ...patch }));
   const start = (choice: GameChoice) => {
+    // A table the rules cannot deal opens its panel, which says why, instead of a game that cannot start.
+    if (!fitsTable(choice)) {
+      setC(choice);
+      setSheet(true);
+      return;
+    }
     saveChoice(choice);
     setSaved(choice);
     onPlay(choice);

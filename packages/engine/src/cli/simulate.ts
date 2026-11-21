@@ -1,6 +1,6 @@
 // Plays many random legal games and reports how they went: the engine's crash and deadlock detector (M1).
 //
-//   pnpm simulate                       # 1000 games, 2 to 6 players, the default rules
+//   pnpm simulate                       # 1000 games, 2 to 10 players, the default rules
 //   pnpm simulate --games 5000 --players 4 --preset quick --seed 42
 //
 // Exit code 1 if any game crashed, stalled or got stuck.
@@ -32,7 +32,7 @@ const problems: string[] = [];
 
 for (let g = 0; g < games; g++) {
   const seed = (baseSeed + g * 7919) >>> 0;
-  const players = values.players ? Number(values.players) : 2 + (g % 5);
+  const players = values.players ? Number(values.players) : 2 + (g % 9);
   try {
     const r = playRandomGame({ seed, players, rules });
     if (r.outcome !== 'finished') {

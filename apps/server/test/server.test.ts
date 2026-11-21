@@ -251,8 +251,10 @@ describe('LAN server rooms over WebSockets', () => {
   });
 
   it('applies the first of two simultaneous quick discards; the late one is cancelled without penalty', async () => {
-    // A seed where both humans hold a card of the first discard's rank, so both claims are good ones.
-    const rules = rulesOf({ preset: 'classic', overrides: {} });
+    // A seed where both humans hold a card of the first discard's rank, so both claims are good ones (on the dealt
+    // card, which the game master lets open a window).
+    const choice = { preset: 'classic', overrides: { quickDiscard: { onDealtCard: true } } };
+    const rules = rulesOf(choice);
     const players = [
       { id: 's1', name: 'Alice' },
       { id: 's2', name: 'Bob' },
@@ -273,6 +275,8 @@ describe('LAN server rooms over WebSockets', () => {
     const a = await enter(url, code, { name: 'Alice' });
     const b = await enter(url, code, { name: 'Bob' });
     await a.lobby((l) => l.seats.length === 2);
+    a.send({ t: 'setRules', choice });
+    await b.lobby((l) => l.rules.overrides.quickDiscard !== undefined);
     b.send({ t: 'ready', ready: true });
     await a.lobby((l) => l.seats.every((s) => s.ready));
     a.send({ t: 'start' });

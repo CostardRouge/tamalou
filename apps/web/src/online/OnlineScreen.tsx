@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { RemoteConnection, RoomClient, type SocketFactory, savedToken } from '../connection/remote.ts';
 import { GameScreen } from '../game/GameScreen.tsx';
+import { MAX_SEATS } from '../home/modes.ts';
 import { type Key, t } from '../i18n/index.ts';
 import { Lobby } from './Lobby.tsx';
 
@@ -71,7 +72,7 @@ function Room({
     return (
       <main className="home center-screen">
         <h1>{t('onlineJoinTitle', { code })}</h1>
-        <p className="notice">{t(`closed_${client.closedReason ?? 'notFound'}` as Key)}</p>
+        <p className="notice">{t(`closed_${client.closedReason ?? 'notFound'}` as Key, { max: MAX_SEATS })}</p>
         <button type="button" className="btn btn-primary" onClick={onExit} ref={(el) => el?.focus()}>
           {t('actHome')}
         </button>

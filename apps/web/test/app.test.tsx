@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pkg from '../../../package.json' with { type: 'json' };
 import { App } from '../src/App.tsx';
 import { updateSettings } from '../src/feedback/settings.ts';
-import { openMode, playFromPanel } from './launch.ts';
+import { openMode, panel, playFromPanel } from './launch.ts';
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -22,6 +22,25 @@ describe('the app', () => {
     expect(screen.getAllByRole('img', { name: /^Ta carte \d, (?!Carte face cachée)/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'C’est mémorisé' }));
     expect(screen.queryByRole('button', { name: 'C’est mémorisé' })).toBeNull();
+  });
+
+  it('seats up to ten, and asks for two decks when the cards cannot go round', () => {
+    render(<App />);
+    openMode('Seul contre des bots');
+    while (screen.queryByRole('button', { name: 'Ajouter un bot' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Ajouter un bot' }));
+    // Nine bots and me: the table is full.
+    expect(screen.getByText('Isidore')).toBeTruthy();
+    playFromPanel();
+    expect(screen.getAllByRole('img', { name: /Carte \d de .*Carte face cachée/ })).toHaveLength(36);
+    cleanup();
+    // Ten hands of eight do not fit one deck: "Rejouer" opens the panel, which says so, and "Jouer" waits.
+    const ten = { mode: 'solo', name: '', players: ['', ''], bots: 9, level: 'easy', preset: 'classic' };
+    localStorage.setItem('tamalou-solo', JSON.stringify({ ...ten, overrides: { hand: { size: 8 } } }));
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Rejouer' }));
+    expect(within(panel()).getByText(/Pas assez de cartes pour 10 joueurs/)).toBeTruthy();
+    expect(within(panel()).getByRole('button', { name: 'Jouer' }).hasAttribute('disabled')).toBe(true);
   });
 
   it('lays my hand out as picked in the settings, the opponents’ fans seen from across the table', () => {

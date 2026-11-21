@@ -7,8 +7,10 @@ import { type Rect, stageOf } from './front.ts';
 // discard. Placed by hand before the flights measure the table, like FrontCard.
 
 const CAPTION = 40;
+/** The power the card gives, said under the caption. */
+const NOTE = 44;
 
-export function DrawStage({ caption, children }: { caption: string; children: ReactNode }) {
+export function DrawStage({ caption, note, children }: { caption: string; note?: ReactNode; children: ReactNode }) {
   const el = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const place = () => {
@@ -24,7 +26,7 @@ export function DrawStage({ caption, children }: { caption: string; children: Re
           mine: rect(mine),
           screen: { w: window.innerWidth, h: window.innerHeight },
         },
-        CAPTION,
+        CAPTION + (note ? NOTE : 0),
       );
       node.style.left = `${at.x}px`;
       node.style.top = `${at.y}px`;
@@ -40,6 +42,7 @@ export function DrawStage({ caption, children }: { caption: string; children: Re
       <div ref={el} className="draw-stage drawn">
         {children}
         <p className="draw-caption">{caption}</p>
+        {note}
       </div>
     </>
   );

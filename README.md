@@ -20,7 +20,7 @@ Quatre modes sont prévus : solo contre des bots, pass-and-play sur un seul appa
 - `packages/bots` : trois niveaux de bots qui ne voient que leur propre vue. **Facile** joue au hasard (coups légaux), **moyen** a une mémoire imparfaite et une heuristique simple, **difficile** retient tout, estime les cartes inconnues, vise le joueur le plus dangereux et choisit son moment pour annoncer Tamalou.
 
 ```bash
-pnpm simulate                                  # 1000 parties aléatoires, de 2 à 6 joueurs
+pnpm simulate                                  # 1000 parties aléatoires, de 2 à 10 joueurs
 pnpm simulate --games 200 --players 4 --preset quick
 pnpm bots                                      # taux de victoire des niveaux, deux à deux
 pnpm bots --levels hard,medium,easy --games 500

@@ -2,11 +2,13 @@ export {
   type ApplyResult,
   apply,
   buildCards,
+  cardsNeeded,
   cardValue,
   createGame,
   MAX_PLAYERS,
   MIN_PLAYERS,
   type NewGame,
+  tableFits,
 } from './game.ts';
 export { hostAction, legalActions } from './legal.ts';
 export { type GameRecord, ReplayError, replay } from './replay.ts';

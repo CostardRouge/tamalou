@@ -134,6 +134,12 @@ export const SECTIONS: Section[] = [
         unit: 'ms',
         when: (r) => r.quickDiscard.enabled,
       },
+      {
+        id: 'dealtCard',
+        kind: 'toggle',
+        path: ['quickDiscard', 'onDealtCard'],
+        when: (r) => r.quickDiscard.enabled,
+      },
     ],
   },
   {

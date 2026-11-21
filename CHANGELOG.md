@@ -10,6 +10,12 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
+  regarde une de tes cartes"), before you choose. While a power is played, a label under the piles says whose power it
+  is and what it does, the discard that gave it lights up, and the player's seat carries its mark.
+- Play with up to ten at the table (six before), in every mode: nine bots in solo, ten names on one phone, ten seats
+  in a room. A table whose hands do not fit in one deck (ten players with large hands) says so before the game and
+  asks for two decks.
 - During your own power, drag one of your cards onto the discard (or use the bolt) to let the power go and make a
   quick discard.
 - Watch the others play: their moves are now played by their hand, a cursor with their name on a computer and a
@@ -25,6 +31,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The card turned over by the deal can no longer be quick-discarded on: nobody loses a card to a mistake before the
+  first move. The game master can allow it again in the rules ("On the dealt card", under quick discard).
 - Changing your mind is allowed until a card is put down. Tapping the discard, or "Prendre la défausse", lifts it
   without taking it: tap one of your cards to place it there, or tap beside it to put it back. Tapping the card you
   drew lifts it the same way and shows where it can go. Drawing from the deck is still final, since you have seen the

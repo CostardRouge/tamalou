@@ -32,7 +32,9 @@ import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
 import { describeEvent } from './log.ts';
 import { Overlay } from './Overlay.tsx';
+import { PowerMark, powerWords } from './PowerMark.tsx';
 import { handKind, PACE_FACTOR, SPEED_FACTOR } from './pace.ts';
+import { powerIfThrown, powerInPlay } from './power.ts';
 import { RevealStage } from './RevealStage.tsx';
 import { RoundOver } from './RoundOver.tsx';
 
@@ -150,6 +152,19 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     window.addEventListener('resize', turn);
     return () => window.removeEventListener('resize', turn);
   });
+
+  // On a short phone a full table (ten players) leaves the opponents' band scrolling in its own box: the seat whose turn
+  // it is is brought into it, so whoever plays is always in sight.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run when the turn passes, read from the DOM
+  useLayoutEffect(() => {
+    const band = document.querySelector<HTMLElement>('.opponents');
+    const seat = band?.querySelector<HTMLElement>('.seat-turn');
+    if (!band || !seat || band.scrollHeight <= band.clientHeight) return;
+    const b = band.getBoundingClientRect();
+    const r = seat.getBoundingClientRect();
+    const by = r.top < b.top ? r.top - b.top : r.bottom > b.bottom ? r.bottom - b.bottom : 0;
+    if (by !== 0) band.scrollTo({ top: band.scrollTop + by, behavior: reduced ? 'auto' : 'smooth' });
+  }, [view.current, reduced]);
 
   // The spotlight: "À toi !" for a moment when my turn starts, once the last player's moves have played out on
   // screen (the owner: one player after the other, «un cloisonnement»).
@@ -435,6 +450,11 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         ? lastDrawn.current
         : null;
   const big = holdingMine && settings.drawView === 'big';
+  // Powers made visible (the owner, 2026-11-21): the one my drawn card gives if I throw it, and the one being played,
+  // said by the discard and marked on its player's seat once its card has landed there.
+  const thrownPower = holdingMine ? powerIfThrown(view.drawn, rules) : null;
+  const inPlay = powerInPlay(view);
+  const livePower = inPlay && !fly.dealing && fly.inbound('discard') === 0 ? inPlay : null;
   const drawnCard = view.drawn
     ? carry(
         { kind: 'drawn' },
@@ -443,7 +463,9 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           card={view.drawn.card}
           place="drawn"
           ghost={fly.landing.has('drawn')}
-          label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}`}
+          label={`${t('drawn')}${view.drawn.card ? ` : ${cardName(view.drawn.card)}` : ''}${
+            thrownPower ? `, ${t('powerIfThrown')} : ${powerWords(thrownPower, true)}` : ''
+          }`}
           size="lg"
           // A touch lifts it and shows where it may go; a second touch, or one beside it, puts it back.
           selected={lifted === 'drawn'}
@@ -467,9 +489,11 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   }
 
   return (
-    // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows).
+    // More than three opponents wrap onto a second row on a phone: the cards make room for it (app.css, --opp-rows). A
+    // third row (seven to nine opponents) is counted as a second: counted whole, it shrank my cards to nothing on a
+    // short phone, while the opponents' cards are already at their smallest.
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -519,6 +543,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                 {view.current === p.id ? <span aria-hidden="true">▸ </span> : null}
                 {p.name}
               </span>
+              {livePower?.player === p.id ? <PowerMark power={livePower.power} /> : null}
               <span className="mono seat-total">{p.total}</span>
             </div>
             <Presence state={conn.presence?.(p.id) ?? null} />
@@ -586,6 +611,30 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
           )}
         </div>
+        {/* Out of the centre's grid: it comes and goes without moving the piles. */}
+        <AnimatePresence>
+          {livePower ? (
+            <motion.div
+              key={`${livePower.player}:${livePower.power}`}
+              className={`power-callout${livePower.player === view.me ? ' power-mine' : ''}`}
+              role="status"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+            >
+              <PowerMark power={livePower.power} />
+              <span className="power-words">
+                <small>
+                  {livePower.player === view.me
+                    ? t('powerKicker_you')
+                    : t('powerKicker', { name: nameOf(livePower.player) })}
+                </small>
+                <b>{powerWords(livePower.power, livePower.player === view.me)}</b>
+              </span>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </section>
 
       {me ? (
@@ -604,7 +653,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           {holdingMine && !big ? (
             <div className="held drawn">
               {drawnCard}
-              <span className="held-label">{t('drawnHeld')}</span>
+              <div className="held-words">
+                <span className="held-label">{t('drawnHeld')}</span>
+                {thrownPower ? <ThrownPower power={thrownPower} /> : null}
+              </div>
             </div>
           ) : null}
         </section>
@@ -742,7 +794,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         />
       ) : null}
       {big && view.drawn ? (
-        <DrawStage caption={view.drawn.card ? t('drawnCaption', { card: cardName(view.drawn.card) }) : t('drawn')}>
+        <DrawStage
+          caption={view.drawn.card ? t('drawnCaption', { card: cardName(view.drawn.card) }) : t('drawn')}
+          note={thrownPower ? <ThrownPower power={thrownPower} /> : null}
+        >
           {drawnCard}
         </DrawStage>
       ) : null}
@@ -777,6 +832,19 @@ const sameRef = (a: SlotRef, b: SlotRef) => a.player === b.player && a.slot === 
 /** A short tick under the finger when a card is picked up or taken, if the player wants vibrations. */
 function buzz(ms: number) {
   if (getSettings().haptics) navigator.vibrate?.(ms);
+}
+
+/** The power the card I hold gives if I throw it: said before I choose, not only once it is thrown. */
+function ThrownPower({ power }: { power: Parameters<typeof PowerMark>[0]['power'] }) {
+  return (
+    <span className="power-chip" aria-hidden="true">
+      <PowerMark power={power} />
+      <span className="power-words">
+        <small>{t('powerIfThrown')}</small>
+        <b>{powerWords(power, true)}</b>
+      </span>
+    </span>
+  );
 }
 
 /** A seat whose player lost the connection, or whose bot plays in their place (online). */

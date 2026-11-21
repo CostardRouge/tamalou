@@ -134,6 +134,11 @@ export const RuleSetSchema = z
          * window opened.
          */
         minWindowMs: z.number().int().min(0).max(30_000).default(3000),
+        /**
+         * Whether the card the deal turns over opens a window too. Off by default (the owner, 2026-11-21, ADR-0021):
+         * the first quick discard of a round is on a card a player has thrown, never before anyone has played.
+         */
+        onDealtCard: z.boolean().default(false),
       })
       .prefault({}),
 

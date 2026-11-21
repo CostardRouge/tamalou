@@ -1,4 +1,5 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
+import { tableFits } from '@tamalou/engine';
 import { PRESETS, rulesOf } from '@tamalou/shared';
 import { useMemo, useState } from 'react';
 import { renderSVG } from 'uqr';
@@ -41,7 +42,8 @@ export function Lobby({ client, onLeave }: Props) {
   const preset = PRESETS.find((p) => p.id === lobby.rules.preset);
   const changes = countChanges(lobby.rules.overrides);
   const everyoneReady = lobby.seats.every((s) => s.ready || s.away);
-  const canStart = lobby.seats.length >= 2 && everyoneReady;
+  const fits = tableFits(lobby.seats.length, rules);
+  const canStart = lobby.seats.length >= 2 && everyoneReady && fits;
 
   const share = async () => {
     const text = t('lobbyShareText', { code: client.code });
@@ -106,7 +108,7 @@ export function Lobby({ client, onLeave }: Props) {
 
       <section className="field" aria-labelledby="players-title">
         <h2 id="players-title" className="field-title">
-          {t('lobbyPlayers', { n: lobby.seats.length })}
+          {t('lobbyPlayers', { n: lobby.seats.length, max: MAX_SEATS })}
         </h2>
         <ul className="lobby-seats">
           {lobby.seats.map((s) => (
@@ -183,7 +185,13 @@ export function Lobby({ client, onLeave }: Props) {
         gm ? (
           <div className="lobby-go">
             {!canStart ? (
-              <p className="muted">{lobby.seats.length < 2 ? t('lobbyNeedTwo') : t('lobbyNeedReady')}</p>
+              <p className="muted">
+                {lobby.seats.length < 2
+                  ? t('lobbyNeedTwo')
+                  : !fits
+                    ? t('needDecks', { n: lobby.seats.length })
+                    : t('lobbyNeedReady')}
+              </p>
             ) : null}
             <button
               type="button"

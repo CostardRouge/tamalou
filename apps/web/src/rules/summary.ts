@@ -104,6 +104,7 @@ export function summarize(r: RuleSet): SummarySection[] {
           q.allowOpponentCards !== d.quickDiscard.allowOpponentCards,
         ),
         line(t('sum_quickWindow', { s: q.minWindowMs / 1000 }), q.minWindowMs !== d.quickDiscard.minWindowMs),
+        line(t(q.onDealtCard ? 'sum_quickDealt' : 'sum_quickNotDealt'), q.onDealtCard !== d.quickDiscard.onDealtCard),
       ]
     : [line(t('sum_quickOff'), true)];
 

@@ -34,7 +34,7 @@ const variants: RuleSetInput[] = [
 
 const arb = fc.record({
   seed: fc.integer({ min: 0, max: 2 ** 32 - 1 }),
-  players: fc.integer({ min: 2, max: 6 }),
+  players: fc.integer({ min: 2, max: 10 }),
   variant: fc.integer({ min: 0, max: variants.length - 1 }),
 });
 
@@ -139,7 +139,7 @@ describe('engine invariants over random games', () => {
   it('finishes random games without crashing or stalling', () => {
     for (let g = 0; g < 60; g++) {
       const rules = parseRules(variants[g % variants.length]);
-      const r = playRandomGame({ seed: 1000 + g, players: 2 + (g % 5), rules });
+      const r = playRandomGame({ seed: 1000 + g, players: 2 + (g % 9), rules });
       expect(r.outcome, `seed ${1000 + g}`).toBe('finished');
       expect(r.state.winners?.length).toBeGreaterThan(0);
     }

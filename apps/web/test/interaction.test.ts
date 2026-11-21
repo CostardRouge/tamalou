@@ -70,12 +70,14 @@ describe('table interaction', () => {
   });
 
   it('arms a quick discard, then claims the touched card', () => {
-    const s = game();
-    const view = viewFor(s, 'bot', noPeek);
-    const ui = interaction(view, noPeek, NONE);
+    // The dealt card opens no window by default: these rules let it, so the round starts with one open.
+    const dealt = parseRules({ hand: { initialPeek: { count: 0 } }, quickDiscard: { onDealtCard: true } });
+    expect(interaction(viewFor(game(), 'bot', noPeek), noPeek, NONE).canQuick).toBe(false);
+    const view = viewFor(game(dealt), 'bot', dealt);
+    const ui = interaction(view, dealt, NONE);
     expect(ui.canQuick).toBe(true);
     expect(ui.slot({ player: 'bot', slot: 0 })).toBeNull();
-    const armed = interaction(view, noPeek, { kind: 'quick' });
+    const armed = interaction(view, dealt, { kind: 'quick' });
     expect(armed.slot({ player: 'bot', slot: 0 })?.send).toMatchObject({ type: 'quickDiscard', target: { slot: 0 } });
   });
 

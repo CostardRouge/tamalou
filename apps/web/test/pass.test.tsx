@@ -56,6 +56,8 @@ describe('pass-and-play', () => {
     openMode('À plusieurs, un téléphone');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));
+    // The claim is made on the dealt card: the game master lets it open a window.
+    fireEvent.click(screen.getByRole('switch', { name: 'Sur la carte de la donne' }));
     fireEvent.click(screen.getByRole('button', { name: 'Terminé' }));
     fireEvent.click(screen.getByRole('button', { name: 'Retirer Basile' }));
     fireEvent.click(screen.getByRole('button', { name: 'Retirer Ada' }));
