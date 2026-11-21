@@ -17,6 +17,7 @@ import { useFeedback } from '../feedback/useFeedback.ts';
 import { tableSeats } from '../home/table.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
+import { BUILD } from '../version.ts';
 import { type Act, type ActIcon, ActionBar, Icon } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
 import { Draggable, measurePlaces } from './Draggable.tsx';
@@ -792,6 +793,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             </div>
             <HandPicker name="hand-table" />
             <HandWatch name="watch-table" />
+            {/* Which build this device runs, to tell a phone that kept an old version (2026-11-21). */}
+            <p className="version mono">{BUILD}</p>
           </div>
         </Overlay>
       ) : null}
