@@ -147,6 +147,45 @@ describe('table host', () => {
     expect(timed.t.events('h0').some((e) => e.type === 'cardGiven')).toBe(true);
   });
 
+  it('stops every clock while paused, and goes on from where it was', () => {
+    const { t, clock } = table(seats('human', 'medium', 'medium'), DEALT);
+    t.submit({ type: 'ready', by: 'h0' });
+    for (let i = 0; i < 60 && t.view('h0').phase !== 'play'; i++) clock.advance(100);
+    const left = t.windowRemaining();
+    expect(left).toBeGreaterThan(0);
+    t.pause('h0');
+    expect(t.paused()).toEqual({ by: 'h0' });
+    const before = t.events('h0').length;
+    clock.advance(60_000);
+    // Nothing moved: no bot, no window, no move accepted.
+    expect(t.events('h0').length).toBe(before);
+    expect(t.windowRemaining()).toBe(0);
+    expect(t.submit({ type: 'draw', by: 'h0', from: 'deck' })).toEqual({ ok: false, error: 'paused' });
+    t.resume();
+    expect(t.paused()).toBeNull();
+    expect(t.windowRemaining()).toBe(left);
+    // The game goes on: the bots play their turns, or my draw goes once the window has run.
+    const me = t.view('h0').current === 'h0';
+    if (me) expect(t.submit({ type: 'draw', by: 'h0', from: 'deck' }).ok).toBe(true);
+    for (let i = 0; i < 40 && t.events('h0').length === before; i++) clock.advance(500);
+    expect(t.events('h0').length).toBeGreaterThan(before);
+  });
+
+  it('keeps a held draw through a pause and plays it once the window has run', () => {
+    const { t, clock } = table(seats('human', 'human'), DEALT);
+    t.submit({ type: 'ready', by: 'h0' });
+    t.submit({ type: 'ready', by: 'h1' });
+    const current = t.view('h0').current as string;
+    expect(t.submit({ type: 'draw', by: current, from: 'deck' })).toEqual({ ok: true, deferred: true });
+    t.pause(current);
+    clock.advance(10_000);
+    expect(t.view(current).step).toBe('draw');
+    t.resume();
+    expect(t.drawPending()).toBe(true);
+    clock.advance(t.rules.quickDiscard.minWindowMs);
+    expect(t.view(current).step).toBe('place');
+  });
+
   it('holds the bots while the screen shows the last moves, and counts the window from then', () => {
     const { t, clock } = table(seats('medium', 'medium'), DEALT);
     clock.advance(1200);

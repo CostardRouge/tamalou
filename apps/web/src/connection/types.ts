@@ -18,6 +18,10 @@ export interface GameConnection {
   readyForNext(): PlayerId[];
   /** A draw waiting for the quick-discard window to run out. */
   drawPending(): boolean;
+  /** Who paused the game, while it is paused (ADR-0023). */
+  paused(): { by: PlayerId } | null;
+  /** Pause or resume; absent when this device may not (a room's players other than its game master). */
+  setPaused?(on: boolean): void;
   /** Called after every change; returns the unsubscribe function. */
   subscribe(listener: () => void): () => void;
   dispose(): void;

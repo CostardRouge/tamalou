@@ -116,6 +116,19 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const [queued, setQueued] = useState<Action | null>(null);
   const ui = interaction(view, rules, pending);
   const handoff = conn.handoff?.() ?? null;
+  // The pause (the owner's pick A on the 2026-11-21 canvas, ADR-0023): a curtain over the table, every clock stopped.
+  const paused = conn.paused();
+  const canPause = !!conn.setPaused && ['initialPeek', 'play', 'roundEnding'].includes(view.phase);
+  // A game on this device pauses by itself when the player leaves it (a call, another app); a room never does, since
+  // only its game master may pause it for everyone. `setShowing` is how a connection says it runs here.
+  useEffect(() => {
+    if (!conn.setShowing || !conn.setPaused) return;
+    const onHide = () => {
+      if (document.hidden && !conn.paused()) conn.setPaused?.(true);
+    };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, [conn]);
 
   // A selection that no longer applies (the turn moved on, the top card changed, the device changed hands) is dropped.
   const stepKey = `${view.me}:${view.phase}:${view.step}:${view.current}:${view.discardTop?.id}`;
@@ -491,7 +504,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     // third row (seven to nine opponents) is counted as a second: counted whole, it shrank my cards to nothing on a
     // short phone, while the opponents' cards are already at their smallest.
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}${paused ? ' paused' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -500,6 +513,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         </button>
         <span className="mono round">{t('roundShort', { n: view.round })}</span>
         <span className="bar-actions">
+          {canPause && !paused ? (
+            <button type="button" className="ghost" aria-label={t('pause')} onClick={() => conn.setPaused?.(true)}>
+              <svg className="bar-icon bar-fill" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="6" y="5" width="4" height="14" rx="1" />
+                <rect x="14" y="5" width="4" height="14" rx="1" />
+              </svg>
+            </button>
+          ) : null}
           <button
             type="button"
             className="ghost"
@@ -715,6 +736,16 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         </aside>
       ) : null}
 
+      {paused ? (
+        <PauseCurtain
+          by={paused.by === view.me || !conn.presence ? null : nameOf(paused.by)}
+          canResume={!!conn.setPaused}
+          onResume={() => conn.setPaused?.(false)}
+          onRules={() => setShowRules(true)}
+          onQuit={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}
+        />
+      ) : null}
+
       {showRules ? <RulesPanel rules={rules} onClose={() => setShowRules(false)} /> : null}
 
       {showDisplay ? (
@@ -842,6 +873,42 @@ function ThrownPower({ power }: { power: Parameters<typeof PowerMark>[0]['power'
         <b>{powerWords(power, true)}</b>
       </span>
     </span>
+  );
+}
+
+/**
+ * The paused table (ADR-0023): the table hidden, so the pause is not time to study it, what to do next, and in a room
+ * who paused it. `by` is null when this player paused it, or on this device.
+ */
+function PauseCurtain({
+  by,
+  canResume,
+  onResume,
+  onRules,
+  onQuit,
+}: {
+  by: string | null;
+  canResume: boolean;
+  onResume: () => void;
+  onRules: () => void;
+  onQuit: () => void;
+}) {
+  return (
+    <div className="pause-curtain" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <h2 id="pause-title">{by ? t('pausedBy', { name: by }) : t('paused')}</h2>
+      <p>{canResume ? t('pausedHint') : t('pausedWait')}</p>
+      {canResume ? (
+        <button type="button" className="btn btn-big pause-resume" onClick={onResume} ref={(el) => el?.focus()}>
+          {t('resume')}
+        </button>
+      ) : null}
+      <button type="button" className="btn pause-alt" onClick={onRules}>
+        {t('pauseRules')}
+      </button>
+      <button type="button" className="btn pause-alt" onClick={onQuit}>
+        {t('pauseQuit')}
+      </button>
+    </div>
   );
 }
 

@@ -22,7 +22,9 @@ import {
 // - the host actions: score a finished round once its window has run, deal the next one when every human is ready;
 // - the turn timer (pace.turnTimerSeconds): a human who runs out of time has their turn played by a bot;
 // - absent humans (setAway, a lost connection online): their stand-in bot plays their moves, never their claims, and
-//   the next round does not wait for them.
+//   the next round does not wait for them;
+// - a pause (the owner, 2026-11-21, ADR-0023): every clock stops, nothing is played, and the game goes on from where
+//   it was, the quick-discard window's minimum included.
 
 export interface Scheduler {
   now(): number;
@@ -91,6 +93,8 @@ export class Table {
   private botPace = 1;
   private showing = false;
   private showTimer: unknown = null;
+  /** Who paused the game and when, while it is paused. */
+  private pausedState: { by: PlayerId; at: number } | null = null;
 
   constructor({ seed, rules, seats, scheduler, botPace }: TableOptions) {
     this.rules = rules;
@@ -159,6 +163,43 @@ export class Table {
     return [...this.away];
   }
 
+  /** Who paused the game, while it is paused. */
+  paused(): { by: PlayerId } | null {
+    return this.pausedState ? { by: this.pausedState.by } : null;
+  }
+
+  /**
+   * Stops the game (ADR-0023): no move is accepted, no bot plays, no window, turn timer or round end runs. A held draw
+   * stays held. Resuming gives the window back the time it had left; a turn timer starts its count again.
+   */
+  pause(by: PlayerId): void {
+    if (this.disposed || this.pausedState) return;
+    this.pausedState = { by, at: this.scheduler.now() };
+    for (const plan of this.plans.values()) this.scheduler.clearTimeout(plan.handle);
+    this.plans.clear();
+    if (this.deferredDraw) this.scheduler.clearTimeout(this.deferredDraw.handle);
+    if (this.hostTimer !== null) this.scheduler.clearTimeout(this.hostTimer);
+    this.hostTimer = null;
+    if (this.turnTimer) this.scheduler.clearTimeout(this.turnTimer.handle);
+    this.turnTimer = null;
+    this.notify();
+  }
+
+  resume(): void {
+    const paused = this.pausedState;
+    if (this.disposed || !paused) return;
+    this.pausedState = null;
+    if (this.windowSince !== null) this.windowSince += this.scheduler.now() - paused.at;
+    const held = this.deferredDraw;
+    if (held) {
+      this.deferredDraw = null;
+      const action = held.action;
+      // Asked again: it waits out what is left of the window, or goes at once (refused if no longer legal).
+      this.submit(action);
+    }
+    this.after();
+  }
+
   /** Milliseconds left before a draw is allowed, 0 when the quick-discard window has run its minimum. */
   windowRemaining(): number {
     // No quick discard, nothing to wait for: draws and the end of a round go through at once.
@@ -188,6 +229,7 @@ export class Table {
   submit(action: Action): SubmitResult {
     if (this.disposed) return { ok: false, error: 'disposed' };
     if (action.by === 'host' || !this.isHuman(action.by)) return { ok: false, error: 'notYourSeat' };
+    if (this.pausedState) return { ok: false, error: 'paused' };
     if (action.type === 'draw') {
       if (this.deferredDraw) return { ok: false, error: 'alreadyDrawing' };
       // The window's minimum is there for the others: when nobody else may claim, the draw goes at once.
@@ -290,6 +332,7 @@ export class Table {
   /** Applies an action; returns the engine's error code, or null. */
   private play(action: Action): string | null {
     if (this.disposed) return 'disposed';
+    if (this.pausedState) return 'paused';
     const wasOpen = this.state.window;
     const r = apply(this.state, action, this.rules);
     if (!r.ok) return r.error;
@@ -329,6 +372,11 @@ export class Table {
   /** After every change: re-plan the bots, the host's next action and the turn timer, then tell the listeners. */
   private after(): void {
     if (this.disposed) return;
+    // Paused: nothing is planned; resume() plans again.
+    if (this.pausedState) {
+      this.notify();
+      return;
+    }
     this.planBots();
     this.planHost();
     this.planTurnTimer();

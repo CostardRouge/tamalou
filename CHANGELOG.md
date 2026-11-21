@@ -10,6 +10,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- Pause a game with the new button at the top of the table: the table hides behind a curtain and everything stops
+  (bots, the quick discard, the turn timer) until you resume. A game on your phone also pauses by itself when you
+  leave it for a call or another app. In a room, the game master pauses it for everyone and the others see who did.
 - Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
   regarde une de tes cartes"), before you choose. While a power is played, a label under the piles says whose power it
   is and what it does, the discard that gave it lights up, and the player's seat carries its mark.

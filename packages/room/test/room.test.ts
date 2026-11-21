@@ -251,6 +251,20 @@ describe('room game', () => {
     expect(bob.last('refused')).toMatchObject({ error: 'notInLobby' });
   });
 
+  it('lets the game master pause the game for everyone, and only them', () => {
+    const { gm, bob } = started();
+    bob.send({ t: 'pause', on: true });
+    expect(bob.last('refused')).toMatchObject({ about: 'pause', error: 'notGameMaster' });
+    gm.send({ t: 'pause', on: true });
+    expect(bob.game().paused).toBe('s1');
+    bob.send({ t: 'action', action: { type: 'ready' } });
+    expect(bob.last('refused')).toMatchObject({ about: 'action', error: 'paused' });
+    gm.send({ t: 'pause', on: false });
+    expect(bob.game().paused).toBeNull();
+    bob.send({ t: 'action', action: { type: 'ready' } });
+    expect(gm.game().view.ready).toContain('s2');
+  });
+
   it('holds back a draw sent during the quick-discard window, whatever the order of its fields', () => {
     const { gm, bob, clock } = lobbyOfThree();
     gm.send({ t: 'setRules', choice: { preset: 'classic', overrides: { quickDiscard: { onDealtCard: true } } } });
