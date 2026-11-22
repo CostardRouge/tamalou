@@ -2,6 +2,7 @@ import { useEffect, useMemo, useReducer, useState } from 'react';
 import { RemoteConnection, RoomClient, type SocketFactory, savedToken } from '../connection/remote.ts';
 import { GameScreen } from '../game/GameScreen.tsx';
 import { MAX_SEATS } from '../home/modes.ts';
+import { rememberedName, rememberName } from '../home/name.ts';
 import { type Key, t } from '../i18n/index.ts';
 import { Lobby } from './Lobby.tsx';
 
@@ -138,7 +139,7 @@ function JoinForm({
   onJoin: (j: { name?: string; spectate?: boolean }) => void;
   onExit: () => void;
 }) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(rememberedName);
   return (
     <main className="home">
       <div className="brand">
@@ -149,7 +150,9 @@ function JoinForm({
         className="setup"
         onSubmit={(e) => {
           e.preventDefault();
-          if (name.trim()) onJoin({ name: name.trim() });
+          if (!name.trim()) return;
+          rememberName(name);
+          onJoin({ name: name.trim() });
         }}
       >
         <p className="muted">{t('onlineJoinHint')}</p>

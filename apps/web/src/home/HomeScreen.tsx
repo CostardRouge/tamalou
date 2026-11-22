@@ -7,6 +7,7 @@ import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { BUILD } from '../version.ts';
 import { fitsTable, MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
+import { rememberedName, rememberName } from './name.ts';
 import { Settings } from './Settings.tsx';
 import { MODE_KEY, SetupSheet, titleOf } from './Setup.tsx';
 
@@ -66,7 +67,7 @@ function hasChoice(): boolean {
 export function loadChoice(): GameChoice {
   try {
     const raw = globalThis.localStorage?.getItem(KEY);
-    if (!raw) return DEFAULT;
+    if (!raw) return { ...DEFAULT, name: rememberedName() };
     const c = JSON.parse(raw) as Partial<GameChoice>;
     const mode: Mode = c.mode === 'pass' || c.mode === 'online' ? c.mode : 'solo';
     const players = Array.isArray(c.players)
@@ -75,7 +76,7 @@ export function loadChoice(): GameChoice {
     const preset = PRESETS.some((p) => p.id === c.preset) ? (c.preset as string) : DEFAULT.preset;
     const choice: GameChoice = {
       mode,
-      name: typeof c.name === 'string' ? c.name.slice(0, 20) : '',
+      name: (typeof c.name === 'string' && c.name.trim() ? c.name : rememberedName()).slice(0, 20),
       players: players.length >= 2 && players.length <= MAX_SEATS ? players : DEFAULT.players,
       bots: typeof c.bots === 'number' && c.bots >= 0 && c.bots < MAX_SEATS ? c.bots : DEFAULT.bots,
       level: BOT_LEVELS.includes(c.level as BotLevel) ? (c.level as BotLevel) : DEFAULT.level,
@@ -156,6 +157,7 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
       return;
     }
     saveChoice(choice);
+    if (choice.mode === 'solo') rememberName(choice.name);
     setSaved(choice);
     onPlay(choice);
   };
@@ -235,6 +237,7 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
           onEdit={() => setEditing(true)}
           onRoom={(code, name) => {
             saveChoice(c);
+            rememberName(name);
             onRoom?.(code, name);
           }}
         />

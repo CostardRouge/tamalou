@@ -10,6 +10,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- Your name is remembered on your phone: joining a room by its link, or sitting down after watching, starts with
+  it filled in.
 - The home screen and the table's Display panel show which build you run next to the version (v0.14.0 · 64ef767),
   so a phone still on an older build can be spotted.
 - Pause a game with the new button at the top of the table: the table hides behind a curtain and everything stops

@@ -35,7 +35,7 @@ const fr = {
 
   deviceTitle: 'Sur ton appareil',
   device1:
-    'Une partie seul ou à plusieurs sur un téléphone se joue entièrement dans ton navigateur&#160;: rien n’est envoyé. Le jeu garde dans le stockage local de ton navigateur, sur cet appareil seulement, la langue, les sons et vibrations, et ta dernière mise en place (mode, prénoms, nombre et niveau des bots, règles), pour la proposer la fois suivante&#160;; et, si tu joues en ligne, un jeton par salle pendant un jour, pour reprendre ta place après une coupure.',
+    'Une partie seul ou à plusieurs sur un téléphone se joue entièrement dans ton navigateur&#160;: rien n’est envoyé. Le jeu garde dans le stockage local de ton navigateur, sur cet appareil seulement, la langue, les sons et vibrations, et ta dernière mise en place (mode, prénoms, nombre et niveau des bots, règles), pour la proposer la fois suivante, ainsi que ton prénom, pour ne pas avoir à le retaper en rejoignant une salle&#160;; et, si tu joues en ligne, un jeton par salle pendant un jour, pour reprendre ta place après une coupure.',
   device2:
     'Ouvrir le jeu range aussi ses propres fichiers dans le cache du navigateur, pour qu’il marche hors ligne&#160;: des fichiers, jamais tes données. Pour tout effacer, efface les données de ce site dans les réglages de ton navigateur.',
 
@@ -108,7 +108,7 @@ const en: LegalText = {
 
   deviceTitle: 'On your device',
   device1:
-    'A game solo or around one phone is played entirely in your browser: nothing is sent. The game keeps in your browser’s local storage, on this device only, the language, sounds and vibrations, and your last setup (mode, names, number and level of bots, rules), to offer it next time; and, if you play online, one token per room for a day, to take your seat back after a dropout.',
+    'A game solo or around one phone is played entirely in your browser: nothing is sent. The game keeps in your browser’s local storage, on this device only, the language, sounds and vibrations, and your last setup (mode, names, number and level of bots, rules), to offer it next time, as well as your name, so you need not type it again to join a room; and, if you play online, one token per room for a day, to take your seat back after a dropout.',
   device2:
     'Opening the game also stores its own files in the browser’s cache, so that it works offline: files, never your data. To erase everything, clear this site’s data in your browser’s settings.',
 
