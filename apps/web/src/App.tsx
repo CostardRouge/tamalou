@@ -3,7 +3,7 @@ import { MotionConfig } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import { trackEvent, trackView } from './audience.ts';
 import { LocalConnection } from './connection/local.ts';
-import { roomsAvailable } from './connection/remote.ts';
+import { serverMode } from './connection/remote.ts';
 import type { GameConnection } from './connection/types.ts';
 import { getSettings } from './feedback/settings.ts';
 import { GameScreen } from './game/GameScreen.tsx';
@@ -13,6 +13,7 @@ import { MODE_DEFAULTS } from './home/modes.ts';
 import { onLangChange, t } from './i18n/index.ts';
 import { OnlineScreen } from './online/OnlineScreen.tsx';
 import { applyUpdate, dismissUpdate, readShortcut, usePwa } from './pwa.ts';
+import { reportUsage, setUsageAvailable, startGame } from './usage.ts';
 
 export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
@@ -38,10 +39,16 @@ function rulesFromLink(): RulesChoice | null {
   return decodeRulesChoice(m[1]);
 }
 
-/** The room an address names (`#room=ABCDE`): kept in the address while in the room, so a reload comes back. */
-function roomFromLink(): string | null {
-  const m = /^#room=([\w-]+)$/.exec(globalThis.location?.hash ?? '');
-  return m?.[1] ? normalizeRoomCode(m[1]) : null;
+/**
+ * The room an address names (`#room=ABCDE`): kept in the address while in the room, so a reload comes back. The QR
+ * code's link adds `&via=qr`, read once for the usage statistics (how people come in) and dropped from the address.
+ */
+function roomFromLink(): { code: string; via: 'qr' | 'link' } | null {
+  const m = /^#room=([\w-]+)(&via=qr)?$/.exec(globalThis.location?.hash ?? '');
+  const code = m?.[1] ? normalizeRoomCode(m[1]) : null;
+  if (!code) return null;
+  if (m?.[2]) setRoomLink(code);
+  return { code, via: m?.[2] ? 'qr' : 'link' };
 }
 
 function setRoomLink(code: string | null) {
@@ -54,10 +61,7 @@ export function App() {
   // The icon's shortcut that opened the game, if any (ADR-0020): "Partie solo" deals at once with the remembered
   // setup, "À plusieurs" opens the home screen on pass-and-play.
   const [shortcut] = useState(readShortcut);
-  const [room, setRoom] = useState<{ code: string; name?: string } | null>(() => {
-    const code = roomFromLink();
-    return code ? { code } : null;
-  });
+  const [room, setRoom] = useState<{ code: string; name?: string; via?: 'qr' | 'link' } | null>(roomFromLink);
   const [online, setOnline] = useState(false);
   // A language change draws everything again; games and rooms keep going.
   const [, setLang] = useState('');
@@ -65,14 +69,19 @@ export function App() {
   const { updateReady } = usePwa();
   useEffect(() => {
     let live = true;
-    roomsAvailable().then((ok) => live && setOnline(ok));
+    serverMode().then((mode) => {
+      // Usage statistics go to the online server only (ADR-0024): the LAN version counts nothing.
+      setUsageAvailable(mode === 'online');
+      if (live) setOnline(mode !== null);
+    });
     return () => {
       live = false;
     };
   }, []);
-  const enterRoom = useCallback((code: string, name?: string) => {
+  const enterRoom = useCallback((code: string, name?: string, made = false) => {
     setRoomLink(code);
     setRoom(name ? { code, name } : { code });
+    if (name) reportUsage({ kind: 'roomJoined', via: made ? 'created' : 'code' });
   }, []);
   const exitRoom = useCallback(() => {
     setRoomLink(null);
@@ -90,6 +99,19 @@ export function App() {
   const play = useCallback(
     (choice: GameChoice) => {
       replace({ id: Date.now(), conn: newGame(choice), choice });
+      const humans = choice.mode === 'solo' ? 1 : choice.players.length;
+      startGame(
+        {
+          mode: choice.mode === 'pass' ? 'pass' : 'solo',
+          players: humans + choice.bots,
+          humans,
+          bots: choice.bots,
+          level: choice.bots > 0 ? choice.level : null,
+          preset: choice.preset,
+          rulesChanged: Object.keys(choice.overrides).length > 0,
+        },
+        true,
+      );
       trackEvent('game-started', {
         mode: choice.mode,
         bots: choice.bots,
@@ -123,7 +145,13 @@ export function App() {
         </p>
       ) : null}
       {room ? (
-        <OnlineScreen key={room.code} code={room.code} {...(room.name ? { name: room.name } : {})} onExit={exitRoom} />
+        <OnlineScreen
+          key={room.code}
+          code={room.code}
+          {...(room.name ? { name: room.name } : {})}
+          {...(room.via ? { via: room.via } : {})}
+          onExit={exitRoom}
+        />
       ) : game ? (
         <GameScreen key={game.id} conn={game.conn} onQuit={() => replace(null)} onReplay={() => play(game.choice)} />
       ) : (

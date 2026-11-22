@@ -4,6 +4,7 @@ import { GameScreen } from '../game/GameScreen.tsx';
 import { MAX_SEATS } from '../home/modes.ts';
 import { rememberedName, rememberName } from '../home/name.ts';
 import { type Key, t } from '../i18n/index.ts';
+import { reportUsage, startGame } from '../usage.ts';
 import { Lobby } from './Lobby.tsx';
 
 // A room, from arriving to leaving: a name to sit down when this device has no seat there yet, then the lobby, the
@@ -14,16 +15,29 @@ interface Props {
   code: string;
   /** The name typed on the home screen (creating or joining from there). */
   name?: string;
+  /** How a link brought this device here: its QR code or the link itself (usage statistics, ADR-0024). */
+  via?: 'qr' | 'link';
   onExit: () => void;
   /** Tests hand in fake sockets. */
   socket?: SocketFactory;
 }
 
-export function OnlineScreen({ code, name, onExit, socket }: Props) {
+export function OnlineScreen({ code, name, via = 'link', onExit, socket }: Props) {
   const [joining, setJoining] = useState<{ name?: string; spectate?: boolean } | null>(() =>
     name || savedToken(code) ? (name ? { name } : {}) : null,
   );
-  if (!joining) return <JoinForm code={code} onJoin={setJoining} onExit={onExit} />;
+  if (!joining) {
+    return (
+      <JoinForm
+        code={code}
+        onJoin={(j) => {
+          if (j.name) reportUsage({ kind: 'roomJoined', via });
+          setJoining(j);
+        }}
+        onExit={onExit}
+      />
+    );
+  }
   return <Room code={code} joining={joining} onExit={onExit} socket={socket} />;
 }
 
@@ -52,6 +66,27 @@ function Room({
     };
   }, [code]);
   const conn = useMemo(() => (client ? new RemoteConnection(client) : null), [client]);
+  // A game that starts here (ADR-0024): told once per game by the game master's device, ended by the same.
+  const playing = client?.lobby?.phase === 'playing' && !!client.game;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per game, when it starts
+  useEffect(() => {
+    const lobby = client?.lobby;
+    if (!playing || !lobby || !client) return;
+    const humans = lobby.seats.filter((s) => s.kind === 'human').length;
+    const bots = lobby.seats.filter((s) => s.kind === 'bot');
+    startGame(
+      {
+        mode: 'online',
+        players: lobby.seats.length,
+        humans,
+        bots: bots.length,
+        level: bots[0]?.level ?? null,
+        preset: lobby.rules.preset,
+        rulesChanged: Object.keys(lobby.rules.overrides as object).length > 0,
+      },
+      client.isGameMaster,
+    );
+  }, [playing]);
   // A refusal shows for a few seconds.
   const [now, setNow] = useState(Date.now());
   useEffect(() => {

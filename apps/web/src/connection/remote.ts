@@ -71,15 +71,19 @@ export function apiUrl(path: string, base: string = globalThis.location?.href ??
   return new URL(`../api/${path}`, base).href;
 }
 
-/** Whether this page's server hosts rooms (it does on the LAN server and online; GitHub Pages does not). */
-export async function roomsAvailable(timeoutMs = 2500): Promise<boolean> {
+/**
+ * Which server this page comes from: `online` (the Worker), `lan` (the LAN server), or null when it hosts no rooms
+ * (GitHub Pages) or speaks another protocol. Rooms are offered on both; usage statistics go to the online one only.
+ */
+export async function serverMode(timeoutMs = 2500): Promise<'online' | 'lan' | null> {
   try {
     const res = await fetch(apiUrl('health'), { signal: AbortSignal.timeout(timeoutMs) });
-    if (!res.ok) return false;
-    const body = (await res.json()) as { ok?: unknown; v?: unknown };
-    return body.ok === true && body.v === PROTOCOL_VERSION;
+    if (!res.ok) return null;
+    const body = (await res.json()) as { ok?: unknown; v?: unknown; mode?: unknown };
+    if (body.ok !== true || body.v !== PROTOCOL_VERSION) return null;
+    return body.mode === 'lan' ? 'lan' : 'online';
   } catch {
-    return false;
+    return null;
   }
 }
 

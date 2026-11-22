@@ -49,7 +49,8 @@ export function Lobby({ client, onLeave }: Props) {
   /** The QR code shown large, to be scanned. */
   const [qrBig, setQrBig] = useState(false);
   const link = roomLink(client.code);
-  const qr = useMemo(() => renderSVG(link, { border: 2 }), [link]);
+  // The QR code's link says it came from the QR code (usage statistics, ADR-0024); App drops it from the address.
+  const qr = useMemo(() => renderSVG(`${link}&via=qr`, { border: 2 }), [link]);
   if (!lobby) return null;
 
   const gm = client.isGameMaster;

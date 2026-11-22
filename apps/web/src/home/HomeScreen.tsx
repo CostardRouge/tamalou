@@ -131,7 +131,7 @@ interface Props {
   /** This page's server hosts rooms (LAN server, online): the online mode is offered. */
   online?: boolean;
   /** Enter a room (made or typed here) under this name. */
-  onRoom?: (code: string, name: string) => void;
+  onRoom?: (code: string, name: string, made?: boolean) => void;
   /** Open on this mode's panel rather than on the last game (the icon's shortcuts). */
   mode?: Mode;
 }
@@ -235,10 +235,10 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
           onClose={() => setSheet(false)}
           onPlay={() => start(c)}
           onEdit={() => setEditing(true)}
-          onRoom={(code, name) => {
+          onRoom={(code, name, made) => {
             saveChoice(c);
             rememberName(name);
-            onRoom?.(code, name);
+            onRoom?.(code, name, made);
           }}
         />
       ) : null}

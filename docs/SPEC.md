@@ -197,6 +197,7 @@ Stack retenue :
 - **Durée de vie :** une session est **éphémère**. Elle vit en mémoire côté serveur, est détruite après une période d'inactivité (défaut 2 h) ou à la fin de la partie, et aucune donnée n'est persistée. *(Sur Durable Objects : l'état de la salle peut passer par le stockage de l'objet pour survivre à une éviction, et une alarme l'efface à l'expiration ; rien ne survit à la salle.)*
 - **Rejouer :** on peut enchaîner une nouvelle partie avec les mêmes joueurs et les mêmes règles.
 - Option : des spectateurs, qui ne voient que les informations publiques.
+- **[ADR-0024]** Statistiques d'usage anonymes (parties lancées et terminées, modes, réglages de l'appareil, façon d'entrer dans une salle), envoyées au serveur en ligne sous le même choix que la mesure d'audience, gardées 13 mois, lisibles par le propriétaire seul sur `/admin/`, connecté par son fournisseur OpenID Connect Sésame.
 
 ### 5.4 Multi LAN
 - Le même protocole que le mode en ligne, servi **localement** par `apps/server` (Node) :

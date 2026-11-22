@@ -50,6 +50,8 @@ const fr = {
     '<b>Ce qui est compté&#160;:</b> les pages vues (l’accueil, ces mentions, l’écran d’accueil du jeu, une partie, une salle en ligne, sans son code)&#160;; le site d’où tu viens&#160;; quelques événements anonymes (une partie lancée, avec son mode, le nombre et le niveau des bots, le préréglage et si des règles ont été changées&#160;; une partie terminée et son nombre de manches&#160;; une salle créée&#160;; des règles partagées et par quel moyen&#160;; une installation&#160;; sur l’accueil, la manche d’essai finie, gagnée ou non, avec le nombre de gestes essayés, et chaque réponse au test des valeurs, juste ou non)&#160;; ton navigateur, ton système, le type d’appareil, la taille d’écran, la langue et le pays.',
   count3:
     '<b>Ce qui ne l’est jamais&#160;:</b> les prénoms, le code d’une salle, le détail des règles, tes coups ou tes cartes, ton adresse IP (elle donne le pays, puis est oubliée), ni rien qui puisse te suivre d’un site à l’autre. Aucun cookie n’est déposé. La version pour le réseau local ne compte rien.',
+  count5:
+    '<b>Statistiques de jeu.</b> Le jeu en ligne envoie aussi au serveur de Tamalou, sur Cloudflare, un court rapport anonyme quand une partie commence ou finit et quand une salle est créée ou rejointe&#160;: le mode, le nombre de joueurs, d’humains et de bots, le niveau des bots, le préréglage et si des règles ont été changées, le nombre de manches, la durée en minutes, si tu as gagné une partie seul, la façon d’entrer dans une salle (QR code, lien ou code tapé), et comment ton appareil est réglé (langue, type d’appareil, orientation, type de connexion, jeu installé ou non, son, vibrations, disposition de la main, affichage de la carte piochée, rythme des bots, vitesse des cartes). Le serveur n’y ajoute que le jour&#160;: ni prénom, ni code de salle, ni adresse IP, ni rien qui distingue ton appareil d’un autre. Seul l’éditeur les lit, en chiffres d’ensemble, pour améliorer le jeu&#160;; ils sont effacés au bout de 13 mois. Le même choix les arrête&#160;: rien n’est envoyé quand le compteur est coupé ci-dessous, ou que ton navigateur demande à ne pas être suivi. Une partie sur GitHub Pages ou sur le réseau local n’envoie rien.',
   count4:
     'Le compteur n’est même pas chargé quand ton navigateur envoie <i>Do Not Track</i> ou <i>Global Privacy Control</i>, ou quand tu le coupes ci-dessous&#160;; ce choix est gardé dans ce navigateur.',
   countOn: 'Tes visites sont comptées, anonymement, dans ce navigateur.',
@@ -60,7 +62,8 @@ const fr = {
   countResume: 'Compter à nouveau mes visites',
 
   cookiesTitle: 'Cookies',
-  cookies1: 'Tamalou ne dépose aucun cookie, donc pas de bandeau de consentement&#160;: il n’y a rien à accepter.',
+  cookies1:
+    'Tamalou ne dépose aucun cookie chez ses joueurs, donc pas de bandeau de consentement&#160;: il n’y a rien à accepter. Seule la page d’administration de l’éditeur en pose un, pour sa propre session.',
 
   logsTitle: 'Hébergement et abus',
   logs1:
@@ -68,7 +71,7 @@ const fr = {
 
   rightsTitle: 'Tes droits',
   rights1:
-    'Le RGPD te permet de demander l’accès aux données qui te concernent ou leur effacement. Tamalou n’en garde aucune qui te nomme&#160;: tes réglages sont sur ton appareil, et une salle en ligne s’efface d’elle-même. Pour toute question ou demande, écris à {email}&#160;; tu peux aussi adresser une réclamation à la <a href="https://www.cnil.fr">CNIL</a>.',
+    'Le RGPD te permet de demander l’accès aux données qui te concernent ou leur effacement. Tamalou n’en garde aucune qui te nomme&#160;: tes réglages sont sur ton appareil, une salle en ligne s’efface d’elle-même, et les statistiques de jeu sont anonymes. Pour toute question ou demande, écris à {email}&#160;; tu peux aussi adresser une réclamation à la <a href="https://www.cnil.fr">CNIL</a>.',
 
   licenceTitle: 'Licence',
   licence1:
@@ -123,6 +126,8 @@ const en: LegalText = {
     '<b>What is counted:</b> page views (the home page, this notice, the game’s home screen, a game, an online room without its code); the site you came from; a few anonymous events (a game started, with its mode, the number and level of bots, the preset and whether rules were changed; a game finished and its number of rounds; a room created; rules shared and how; an install; on the home page, the practice round finished, won or not, with the number of moves tried, and each answer to the values test, right or not); your browser, system, device type, screen size, language and country.',
   count3:
     '<b>What never is:</b> names, a room’s code, the details of the rules, your moves or your cards, your IP address (it gives the country, then is forgotten), nor anything that could follow you from one site to another. No cookie is set. The local network version counts nothing.',
+  count5:
+    '<b>Game statistics.</b> The online game also sends Tamalou’s server, on Cloudflare, a short anonymous report when a game starts or ends and when a room is created or joined: the mode, the number of players, humans and bots, the bots’ level, the preset and whether rules were changed, the number of rounds, the length in minutes, whether you won a solo game, the way into a room (QR code, link or typed code), and how your device is set up (language, kind of device, orientation, connection type, game installed or not, sound, vibrations, hand layout, how the drawn card shows, the bots’ pace, the cards’ speed). The server adds only the day: no name, no room code, no IP address, nothing that tells your device from another. Only the publisher reads them, as overall figures, to improve the game; they are deleted after 13 months. The same choice stops them: nothing is sent when the counter is switched off below, or when your browser asks not to be tracked. A game on GitHub Pages or on the local network sends nothing.',
   count4:
     'The counter is not even loaded when your browser sends <i>Do Not Track</i> or <i>Global Privacy Control</i>, or when you switch it off below; that choice is kept in this browser.',
   countOn: 'Your visits are counted, anonymously, in this browser.',
@@ -133,7 +138,8 @@ const en: LegalText = {
   countResume: 'Count my visits again',
 
   cookiesTitle: 'Cookies',
-  cookies1: 'Tamalou sets no cookie, hence no consent banner: there is nothing to accept.',
+  cookies1:
+    'Tamalou sets no cookie on its players, hence no consent banner: there is nothing to accept. Only the publisher’s admin page sets one, for his own session.',
 
   logsTitle: 'Hosting and abuse',
   logs1:
@@ -141,7 +147,7 @@ const en: LegalText = {
 
   rightsTitle: 'Your rights',
   rights1:
-    'The GDPR lets you ask for access to the data about you, or for its deletion. Tamalou keeps none that names you: your settings are on your device, and an online room erases itself. For any question or request, write to {email}; you can also lodge a complaint with the <a href="https://www.cnil.fr">CNIL</a>.',
+    'The GDPR lets you ask for access to the data about you, or for its deletion. Tamalou keeps none that names you: your settings are on your device, an online room erases itself, and the game statistics are anonymous. For any question or request, write to {email}; you can also lodge a complaint with the <a href="https://www.cnil.fr">CNIL</a>.',
 
   licenceTitle: 'Licence',
   licence1:
