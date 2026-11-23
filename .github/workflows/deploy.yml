@@ -84,6 +84,20 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
+      # The admin page's two secrets (ADR-0024), from the repository's secrets: set or replaced on the Worker at each
+      # deploy, skipped while they are not there (the page then says it is not set up).
+      - name: Admin secrets
+        if: env.SESAME_CLIENT_SECRET != '' && env.ADMIN_SECRET != ''
+        working-directory: apps/worker
+        run: |
+          printf '%s' "$SESAME_CLIENT_SECRET" | pnpm exec wrangler secret put SESAME_CLIENT_SECRET
+          printf '%s' "$ADMIN_SECRET" | pnpm exec wrangler secret put ADMIN_SECRET
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          SESAME_CLIENT_SECRET: ${{ secrets.SESAME_CLIENT_SECRET }}
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+
   image:
     name: Publish the LAN server image
     runs-on: ubuntu-24.04

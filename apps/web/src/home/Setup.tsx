@@ -6,6 +6,7 @@ import { CardView } from '../cards/CardView.tsx';
 import { createRoom } from '../connection/remote.ts';
 import { Overlay } from '../game/Overlay.tsx';
 import { currentLang, type Key, plural, presetText, t } from '../i18n/index.ts';
+import { reportUsage } from '../usage.ts';
 import type { GameChoice } from './HomeScreen.tsx';
 import { fitsTable, MAX_SEATS, type Mode, seatsOf } from './modes.ts';
 import { aroundTop } from './table.ts';
@@ -57,7 +58,7 @@ interface Props {
   onClose: () => void;
   onPlay: () => void;
   onEdit: () => void;
-  onRoom: (code: string, name: string) => void;
+  onRoom: (code: string, name: string, made?: boolean) => void;
 }
 
 export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, onRoom }: Props) {
@@ -273,7 +274,7 @@ function OnlineForm({
 }: {
   name: string;
   onName: (name: string) => void;
-  onRoom: (code: string, name: string) => void;
+  onRoom: (code: string, name: string, made?: boolean) => void;
 }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<Key | null>(null);
@@ -286,7 +287,8 @@ function OnlineForm({
     setBusy(false);
     if (made) {
       trackEvent('room-created');
-      onRoom(made, typed);
+      reportUsage({ kind: 'roomCreated' });
+      onRoom(made, typed, true);
     } else setError('onlineCreateFailed');
   };
   const join = () => {

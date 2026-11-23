@@ -6,6 +6,7 @@ import { renderSVG } from 'uqr';
 import type { RoomClient } from '../connection/remote.ts';
 import { Overlay } from '../game/Overlay.tsx';
 import { MAX_SEATS } from '../home/modes.ts';
+import { rememberedName, rememberName } from '../home/name.ts';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
@@ -44,11 +45,12 @@ export function Lobby({ client, onLeave }: Props) {
   const [editing, setEditing] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(rememberedName);
   /** The QR code shown large, to be scanned. */
   const [qrBig, setQrBig] = useState(false);
   const link = roomLink(client.code);
-  const qr = useMemo(() => renderSVG(link, { border: 2 }), [link]);
+  // The QR code's link says it came from the QR code (usage statistics, ADR-0024); App drops it from the address.
+  const qr = useMemo(() => renderSVG(`${link}&via=qr`, { border: 2 }), [link]);
   if (!lobby) return null;
 
   const gm = client.isGameMaster;
@@ -261,7 +263,9 @@ export function Lobby({ client, onLeave }: Props) {
           className="lobby-go"
           onSubmit={(e) => {
             e.preventDefault();
-            if (name.trim()) client.sit(name.trim());
+            if (!name.trim()) return;
+            rememberName(name);
+            client.sit(name.trim());
           }}
         >
           <p className="muted">{t('lobbySpectator')}</p>

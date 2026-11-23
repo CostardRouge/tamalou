@@ -1,21 +1,42 @@
 import { DurableObject } from 'cloudflare:workers';
 import { Room, systemClock } from '@tamalou/room';
-import { newRoomCode, normalizeRoomCode, PROTOCOL_VERSION, parseClientMessage } from '@tamalou/shared';
+import {
+  MAX_USAGE_REPORT,
+  newRoomCode,
+  normalizeRoomCode,
+  PROTOCOL_VERSION,
+  parseClientMessage,
+  parseUsageReport,
+  type UsageRow,
+  usageCutoff,
+  usageDay,
+} from '@tamalou/shared';
+import { type AdminEnv, admin } from './admin.ts';
 
 // The online host (docs/SPEC.md §5.3, ADR-0004): the same API as the LAN server (apps/server), on Cloudflare.
-// One Durable Object per room code holds a packages/room Room in memory; the Worker only routes. Nothing is
-// persisted: a room lives while its object does, and closes after two idle hours or once a finished game is empty.
+// One Durable Object per room code holds a packages/room Room in memory; the Worker only routes. A room is never
+// persisted: it lives while its object does, and closes after two idle hours or once a finished game is empty. The one
+// thing kept is the anonymous usage statistics (ADR-0024), in one SQLite-backed object, read by the admin page.
 //
 //   GET  /api/health           → { ok, v, mode: 'online' }
 //   POST /api/rooms            → { code }
 //   GET  /api/rooms/:code      → { code, phase } or 404
 //   WS   /api/rooms/:code/ws   → the room's protocol
+//   POST /api/usage            → 204: one anonymous usage report (packages/shared usage.ts)
+//   /admin/…                   → the owner's statistics, signed in through Sésame (admin.ts)
 
-interface Env {
+type Limit = { limit(o: { key: string }): Promise<{ success: boolean }> };
+
+interface Env extends AdminEnv {
   ROOMS: DurableObjectNamespace<RoomObject>;
+  USAGE: DurableObjectNamespace<UsageObject>;
   ASSETS: Fetcher;
-  CREATE_LIMIT?: { limit(o: { key: string }): Promise<{ success: boolean }> };
+  CREATE_LIMIT?: Limit;
+  USAGE_LIMIT?: Limit;
 }
+
+/** The one object holding the statistics. */
+const usageStore = (env: Env) => env.USAGE.get(env.USAGE.idFromName('usage'));
 
 const ROOM_PATH = /^\/api\/rooms\/([^/]+)(\/ws)?$/;
 
@@ -31,6 +52,24 @@ export default {
     const path = url.pathname;
     if (path === '/api/health' && request.method === 'GET')
       return json(200, { ok: true, v: PROTOCOL_VERSION, mode: 'online' });
+    if (path === '/admin' || path.startsWith('/admin/')) return admin(request, env, usageStore(env));
+    if (path === '/api/usage' && request.method === 'POST') {
+      const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+      if (env.USAGE_LIMIT && !(await env.USAGE_LIMIT.limit({ key: ip })).success)
+        return new Response(null, { status: 429 });
+      const text = await request.text();
+      if (text.length > MAX_USAGE_REPORT) return new Response(null, { status: 413 });
+      let report: ReturnType<typeof parseUsageReport> = null;
+      try {
+        report = parseUsageReport(JSON.parse(text));
+      } catch {
+        report = null;
+      }
+      if (!report) return new Response(null, { status: 400 });
+      // Only the day is added: no address, no browser, no time of day.
+      await usageStore(env).record(usageDay(new Date()), JSON.stringify(report));
+      return new Response(null, { status: 204 });
+    }
     if (path === '/api/rooms' && request.method === 'POST') {
       const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
       if (env.CREATE_LIMIT && !(await env.CREATE_LIMIT.limit({ key: ip })).success)
@@ -131,5 +170,43 @@ export class RoomObject extends DurableObject<Env> {
     server.addEventListener('close', gone);
     server.addEventListener('error', gone);
     return new Response(null, { status: 101, webSocket: client });
+  }
+}
+
+/**
+ * The anonymous usage statistics (ADR-0024): one row per report, its day and its JSON, in this object's SQLite.
+ * Rows older than 13 months are deleted, at most once a day, when a report comes in.
+ */
+export class UsageObject extends DurableObject<Env> {
+  private pruned = '';
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS usage (day TEXT NOT NULL, report TEXT NOT NULL)');
+    ctx.storage.sql.exec('CREATE INDEX IF NOT EXISTS usage_day ON usage (day)');
+  }
+
+  async record(day: string, report: string): Promise<void> {
+    this.ctx.storage.sql.exec('INSERT INTO usage (day, report) VALUES (?, ?)', day, report);
+    if (this.pruned !== day) {
+      this.pruned = day;
+      this.ctx.storage.sql.exec('DELETE FROM usage WHERE day < ?', usageCutoff(day));
+    }
+  }
+
+  async rows(since: string): Promise<UsageRow[]> {
+    const out: UsageRow[] = [];
+    for (const r of this.ctx.storage.sql.exec<{ day: string; report: string }>(
+      'SELECT day, report FROM usage WHERE day >= ? ORDER BY day',
+      since,
+    )) {
+      try {
+        const report = parseUsageReport(JSON.parse(r.report));
+        if (report) out.push({ day: r.day, report });
+      } catch {
+        // A row that no longer reads is skipped.
+      }
+    }
+    return out;
   }
 }

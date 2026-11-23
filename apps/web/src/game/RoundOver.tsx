@@ -5,6 +5,7 @@ import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { cardName, t } from '../i18n/index.ts';
+import { endGame } from '../usage.ts';
 import { roundHeadline, type Seats, seatLabel } from './roundText.ts';
 
 // The end of a round (docs/SPEC.md §6): every hand turned over one card after the other, the points of the round and
@@ -25,8 +26,12 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
   const result = view.lastResult;
   const over = view.phase === 'gameOver';
   const rounds = result?.round ?? 0;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once, when the game is over
   useEffect(() => {
-    if (over) trackEvent('game-over', { rounds });
+    if (!over) return;
+    trackEvent('game-over', { rounds });
+    // Whether this device's player won: a shared screen is a table, not a person.
+    endGame(rounds, conn.handoff ? null : (view.winners ?? []).includes(view.me));
   }, [over, rounds]);
   if (!result) return null;
   const waiting = conn.readyForNext().includes(view.me);

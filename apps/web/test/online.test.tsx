@@ -151,6 +151,18 @@ describe('the online screens', () => {
     expect(screen.getByText('Mémorise tes 2 cartes, elles vont se retourner.')).toBeTruthy();
   });
 
+  it('fills in the name this device last played under when joining by link, and keeps a new one', async () => {
+    localStorage.setItem('tamalou-name', 'Zoé');
+    const server = new Server();
+    render(<OnlineScreen code="ABCDE" onExit={() => {}} socket={server.open} />);
+    const input = screen.getByRole('textbox', { name: 'Ton prénom' }) as HTMLInputElement;
+    expect(input.value).toBe('Zoé');
+    fireEvent.change(input, { target: { value: 'Zoé B' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Rejoindre' }));
+    await flush();
+    expect(localStorage.getItem('tamalou-name')).toBe('Zoé B');
+  });
+
   it('tells a player the room does not exist', async () => {
     const server = new Server();
     server.room.dispose();
