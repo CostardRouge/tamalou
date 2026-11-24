@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-24 — Piquet
+
 ### Changed
 
 - When another player takes the discard, the card in front of them now leans towards them, its face turned their
