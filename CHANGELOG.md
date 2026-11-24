@@ -34,7 +34,7 @@ code, though the game speaks French first. Codenames are French card words, in a
   it filled in.
 - The home screen and the table's Display panel show which build you run next to the version (v0.14.0 · 64ef767),
   so a phone still on an older build can be spotted.
-- Pause a game with the new button at the top of the table: the table hides behind a curtain and everything stops
+- Pause a game from the "⋯" menu at the top of the table: the table hides behind a curtain and everything stops
   (bots, the quick discard, the turn timer) until you resume. A game on your device also pauses by itself when you
   leave it for a call or another app. In a room, the game master pauses it for everyone and the others see who did.
 - Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
