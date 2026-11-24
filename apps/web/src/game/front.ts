@@ -27,6 +27,26 @@ export function towards(seat: Rect, middle: Rect): { dx: number; dy: number } {
 }
 
 /**
+ * How another player's drawn card is raised as they look at it, as a turn about a hinge. A hidden card is raised on
+ * their side, about the edge that faces the middle: its back comes up towards me, its face towards them. A card everyone
+ * has seen (taken from the discard) must turn its face to them too, not to me (the owner's pick B on the 2026-11-24
+ * canvas, "la carte visible piochée"): the hinge moves to their edge and the edge towards the middle comes up instead.
+ * `axis` and `angle` feed `rotate3d(x, y, 0, angle)`, `origin` the transform's origin.
+ */
+export function liftOf(seat: Rect, middle: Rect, open: boolean) {
+  const { dx, dy } = towards(seat, middle);
+  const side = open ? -1 : 1;
+  return {
+    axis: { x: -dy, y: dx },
+    origin: `${(50 + side * dx * 50).toFixed(1)}% ${(50 + side * dy * 50).toFixed(1)}%`,
+    angle: open ? -OPEN_LIFT : HIDDEN_LIFT,
+  };
+}
+
+const HIDDEN_LIFT = 28;
+const OPEN_LIFT = 40;
+
+/**
  * Which way a player's cards face (the owner, 2026-10-25: the T on the back of the others' cards turned their way),
  * in degrees clockwise from mine: turned round for a seat beyond the middle of the table, as mine for one on my side.
  * Never a quarter turn: the owner found a T lying on its side wrong even at the ends of a wide table, whose seats sit
