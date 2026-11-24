@@ -205,6 +205,11 @@ export const RuleSetSchema = z
          * The table's UI applies it; the engine does not read it.
          */
         log: z.enum(['full', 'recent', 'off']).default('recent'),
+        /**
+         * The discard laid out (ADR-0026): an icon by the discard shows the cards on it since the last reshuffle, who
+         * threw each and how, and which were taken back. Off by default, on in Débutant (the owner, 2026-11-24).
+         */
+        discardStory: z.boolean().default(false),
       })
       .prefault({}),
   })

@@ -178,6 +178,7 @@ export function summarize(r: RuleSet): SummarySection[] {
           t(r.assist.log === 'full' ? 'sum_logFull' : r.assist.log === 'off' ? 'sum_logOff' : 'sum_logRecent'),
           r.assist.log !== d.assist.log,
         ),
+        ...(r.assist.discardStory ? [line(t('sum_discardStory'), true)] : []),
       ],
     },
   ];

@@ -32,8 +32,10 @@ import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { BUILD } from '../version.ts';
 import { type Act, type ActIcon, ActionBar, Icon } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
+import { DiscardStoryPanel, StoryButton } from './DiscardStory.tsx';
 import { Draggable, measurePlaces } from './Draggable.tsx';
 import { DrawStage } from './DrawStage.tsx';
+import { discardStory } from './discardStory.ts';
 import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
 import { noteDrop, useFlights, type Voice } from './FlightLayer.tsx';
 import { FrontCard } from './FrontCard.tsx';
@@ -107,6 +109,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const [pending, setPending] = useState<Pending>(NONE);
   const lastDrawn = useRef<{ holder: PlayerId; card: Card | null } | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [showStory, setShowStory] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showDisplay, setShowDisplay] = useState(false);
   /** Pass-and-play quick discard: choosing who claims, then that player's card. */
@@ -274,6 +277,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const lines = played.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
   const logMode = rules.assist.log;
   const journalOpen = showLog && logMode !== 'off';
+  // The discard laid out, if the game master gives it (rules.assist.discardStory): from the moves the screen has played.
+  const story = rules.assist.discardStory ? discardStory(played) : null;
 
   // By hand (design D): a card picked up shows where it may land; let go, it plays that move, or asks when the drop
   // could mean two things; dropped nowhere, it springs back.
@@ -690,6 +695,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
           )}
         </div>
+        {/* Its own icon, in the column beside the discard: a touch on the discard takes it, so it cannot open this. */}
+        {story && story.cards.length > 0 ? (
+          <StoryButton count={story.cards.filter((c) => !c.takenBy).length} onOpen={() => setShowStory(true)} />
+        ) : null}
       </section>
 
       {me ? (
@@ -802,6 +811,16 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           onResume={() => conn.setPaused?.(false)}
           onRules={() => setShowRules(true)}
           onQuit={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}
+        />
+      ) : null}
+
+      {showStory && story ? (
+        <DiscardStoryPanel
+          story={story}
+          me={view.me}
+          nameOf={nameOf}
+          faceOf={faceOf}
+          onClose={() => setShowStory(false)}
         />
       ) : null}
 

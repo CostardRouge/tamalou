@@ -257,6 +257,7 @@ export const SECTIONS: Section[] = [
           { value: 'off', label: 'opt_logOff' },
         ],
       },
+      { id: 'discardStory', kind: 'toggle', path: ['assist', 'discardStory'] },
     ],
   },
 ];

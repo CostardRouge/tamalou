@@ -28,7 +28,7 @@ export const PRESETS: readonly Preset[] = [
     name: 'Débutant',
     description:
       'Les cartes déjà vues restent affichées et le journal raconte toute la manche : pour apprendre sans travailler sa mémoire.',
-    rules: { assist: { showKnownCards: true, log: 'full' } },
+    rules: { assist: { showKnownCards: true, log: 'full', discardStory: true } },
   },
 ];
 

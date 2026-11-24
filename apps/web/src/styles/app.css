@@ -1547,6 +1547,154 @@ html:has(.game) body {
   color: var(--a);
 }
 
+/* The discard laid out (DiscardStory.tsx): its icon in the centre's last column, beside the discard, so the piles do
+   not move when it comes or goes; the panel is an Overlay. */
+.center > .story-btn {
+  grid-column: 4;
+  justify-self: start;
+}
+
+.story-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.story-btn .bar-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.story-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.story .panel-head p {
+  margin: 2px 0 0;
+}
+
+.story-row {
+  --w: 52px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 2px 6px;
+  touch-action: pan-x;
+  overscroll-behavior: contain;
+}
+
+.story-card {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+.story-face {
+  --w: inherit;
+  display: block;
+  border-radius: calc(var(--w) * 0.12);
+  transition: translate 0.2s;
+}
+
+.story-face .card {
+  --w: inherit;
+}
+
+.story-card.on .story-face {
+  translate: 0 -6px;
+  box-shadow: 0 0 0 3px var(--a);
+}
+
+.story-card.taken .story-face {
+  opacity: 0.45;
+}
+
+.story-card:focus-visible {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.story-who {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 22px;
+}
+
+.story-deal {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--card-back);
+  color: var(--card-back-ink);
+  font-family: var(--f-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.story-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--b-ink);
+}
+
+.story-mark .icon {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.story-taken {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.story-line {
+  margin: 8px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
 /* The discard's "throw here" chip stands above a dragged card (z-index 41), not above the open journal. */
 .game.journal-open .pile-label.drop-hint {
   z-index: 5;

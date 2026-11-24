@@ -10,6 +10,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- The discard story: an icon beside the discard lays it out card by card, newest first, with who threw each one and
+  how, the power played with it, and the cards taken back. The game master turns it on in the rules (Pace and help);
+  it is off by default and on with the Beginner rules. Touching the discard itself still takes it.
 - Choose how your cards look, under «Tes cartes» in the settings or «Affichage» at the table: the back's colour, its
   pattern, one or two letters or an emoji in its middle (or nothing), and an effect — an oil-slick iridescent sheen,
   or a holographic foil like a rare card that also shines on the court cards and jokers. Both stay still and shift

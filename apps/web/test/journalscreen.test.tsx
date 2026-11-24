@@ -37,8 +37,8 @@ class Clock implements Scheduler {
 }
 
 /** A game where I start and have drawn and thrown one card. */
-function oneTurnPlayed(log: 'full' | 'recent' | 'off') {
-  const rules = rulesFromPreset('classic', { assist: { log } });
+function oneTurnPlayed(log: 'full' | 'recent' | 'off', discardStory = false) {
+  const rules = rulesFromPreset('classic', { assist: { log, discardStory } });
   for (let seed = 1; seed < 200; seed++) {
     const clock = new Clock();
     const conn = new LocalConnection({ humans: ['Moi'], bots: [{ name: 'Ada', level: 'easy' }], rules, seed }, clock);
@@ -71,5 +71,25 @@ describe('the journal on the table', () => {
   it('has no button when the game master plays without it', () => {
     render(<GameScreen conn={oneTurnPlayed('off')} onQuit={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Journal' })).toBeNull();
+  });
+});
+
+describe('the discard laid out', () => {
+  it('is not offered by default', () => {
+    render(<GameScreen conn={oneTurnPlayed('recent')} onQuit={() => {}} />);
+    expect(screen.queryByRole('button', { name: /^Raconter la défausse/ })).toBeNull();
+  });
+
+  it('opens from its icon beside the discard and tells each card', () => {
+    render(<GameScreen conn={oneTurnPlayed('recent', true)} onQuit={() => {}} />);
+    // The card the deal turned over, then mine.
+    fireEvent.click(screen.getByRole('button', { name: 'Raconter la défausse : 2 cartes' }));
+    const panel = screen.getByRole('dialog', { name: 'La défausse' });
+    const cards = within(panel).getAllByRole('button', { pressed: false });
+    expect(within(panel).getByText(/Tu l’as piochée puis jetée\./)).toBeTruthy();
+    fireEvent.click(cards.at(-1) as HTMLElement);
+    expect(within(panel).getByText(/Retournée à la donne\./)).toBeTruthy();
+    fireEvent.click(within(panel).getByRole('button', { name: 'Fermer' }));
+    expect(screen.queryByRole('dialog', { name: 'La défausse' })).toBeNull();
   });
 });
