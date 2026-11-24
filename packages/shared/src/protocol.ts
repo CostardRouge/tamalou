@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { PlayerId } from './actions.ts';
+import { type Avatar, AvatarSchema } from './avatar.ts';
 import type { GameEvent } from './events.ts';
 import type { RulesChoice } from './rulesIO.ts';
 import type { PlayerView } from './view.ts';
@@ -72,9 +73,11 @@ export const ClientMessageSchema = z.discriminatedUnion('t', [
     v: z.number().int(),
     token: z.string().max(100).optional(),
     name: name.optional(),
+    /** The avatar chosen on the device, for a new seat (packages/shared avatar.ts). */
+    avatar: AvatarSchema.optional(),
     spectate: z.boolean().optional(),
   }),
-  z.object({ t: z.literal('setName'), name }),
+  z.object({ t: z.literal('setName'), name, avatar: AvatarSchema.optional() }),
   z.object({ t: z.literal('ready'), ready: z.boolean() }),
   /** Game master: the table's rules (checked again with checkRulesChoice). */
   z.object({ t: z.literal('setRules'), choice: z.object({ preset: z.string().max(40), overrides: z.unknown() }) }),
@@ -116,6 +119,8 @@ export interface SeatInfo {
   name: string;
   kind: 'human' | 'bot';
   level?: (typeof BOT_LEVEL_NAMES)[number];
+  /** The avatar the player chose; absent for a bot or a player who chose none (avatarsFor gives them one). */
+  avatar?: Avatar;
   /** Lobby: ready to start (the game master is always ready). */
   ready: boolean;
   /** A human with an open connection. Bots are always connected. */

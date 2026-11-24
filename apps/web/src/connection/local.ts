@@ -1,6 +1,6 @@
 import type { BotLevel } from '@tamalou/bots';
 import { Handoff, type Scheduler, systemClock, Table } from '@tamalou/room';
-import type { Action, PlayerId, RuleSet } from '@tamalou/shared';
+import { type Action, type Avatar, avatarsFor, type PlayerId, type RuleSet } from '@tamalou/shared';
 import type { GameConnection, SendResult } from './types.ts';
 
 // The game in this browser: a room Table with the real clock. One human is solo; several humans share the device
@@ -9,6 +9,8 @@ import type { GameConnection, SendResult } from './types.ts';
 
 export interface LocalSetup {
   humans: string[];
+  /** The avatars the humans chose, by place in `humans` (this device's profile); the others are given one. */
+  avatars?: (Avatar | null)[];
   bots: { name: string; level: BotLevel }[];
   rules: RuleSet;
   seed?: number;
@@ -24,6 +26,7 @@ export class LocalConnection implements GameConnection {
   private readonly table: Table;
   private readonly humanIds: PlayerId[];
   private readonly names = new Map<PlayerId, string>();
+  private readonly faces: ReadonlyMap<PlayerId, Avatar>;
   /** Pass-and-play only. */
   private readonly passing: Handoff | null;
   /** The screen's listeners: told about the table's changes and about the device changing hands. */
@@ -39,6 +42,7 @@ export class LocalConnection implements GameConnection {
       ...setup.bots.map((b, i) => ({ id: `bot${i + 1}`, name: b.name, kind: 'bot' as const, level: b.level })),
     ];
     for (const s of seats) this.names.set(s.id, s.name);
+    this.faces = avatarsFor(seats.map((s, i) => ({ id: s.id, avatar: setup.avatars?.[i] ?? null })));
     this.table = new Table({
       seed: setup.seed ?? Math.floor(Math.random() * 2 ** 32),
       rules: setup.rules,
@@ -66,6 +70,9 @@ export class LocalConnection implements GameConnection {
   }
   continueRound() {
     for (const h of this.humanIds) this.table.continue(h);
+  }
+  avatars() {
+    return this.faces;
   }
   readyForNext() {
     return this.table.readyForNext();

@@ -2236,18 +2236,6 @@ html:has(.overlay) body {
   box-shadow: inset 0 0 0 2px var(--good);
 }
 
-.lobby-avatar {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-pill);
-  background: var(--avatar, var(--seat-1));
-  color: var(--on-seat);
-  font-family: var(--f-display);
-  font-weight: 800;
-}
-
 .lobby-seats .seat-name {
   max-width: 100%;
   font-size: 0.9rem;
@@ -3611,4 +3599,457 @@ html:has(.overlay) body {
   .draw-scrim {
     animation: none;
   }
+}
+
+/* ---------------------------------------------------------------- avatars (profile/Avatar.tsx) */
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--av-size, 26px);
+  height: var(--av-size, 26px);
+  border-radius: var(--r-pill);
+  background: var(--avatar, var(--seat-1));
+  color: var(--on-seat);
+}
+
+.avatar svg {
+  width: 54%;
+  height: 54%;
+  fill: currentColor;
+}
+
+.avatar-xs {
+  --av-size: 18px;
+}
+
+.avatar-md {
+  --av-size: 38px;
+}
+
+.avatar-lg {
+  --av-size: 56px;
+  box-shadow: 0 10px 20px -10px rgba(19, 21, 27, 0.5);
+}
+
+.seat-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  align-self: center;
+}
+
+/* The greeting on the launch screen (the owner's pick ProfilB on the 2026-11-24 canvas): the avatar, «Bonjour …»,
+   a touch opens «Mon profil». */
+.hello-card {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.hello-me,
+.hello-games {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+}
+
+.hello-me {
+  gap: 12px;
+  min-height: 72px;
+  padding: 10px 14px 10px 10px;
+}
+
+.hello-games {
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 10px 0 14px;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.hello-games .muted {
+  flex: 1;
+  text-align: right;
+}
+
+.hello-games svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hello-words {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.hello-words b {
+  font-family: var(--f-display);
+  font-size: 1.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hello-words small {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hello-edit {
+  flex: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--a);
+}
+
+/* «Mon profil» (ProfilA): the avatar large as it changes, the name, eight colours, twelve icons. */
+.profile {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--surface-2);
+}
+
+.profile-hero b {
+  display: block;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.profile-hero small {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.swatch {
+  position: relative;
+  height: 40px;
+  border-radius: var(--r-pill);
+  background: var(--swatch);
+  border: 3px solid transparent;
+  cursor: pointer;
+}
+
+.swatch.on {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--surface);
+}
+
+.swatch input,
+.icon-pick input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.swatch:has(input:focus-visible),
+.icon-pick:has(input:focus-visible) {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
+}
+
+.icon-picks {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.icon-pick {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 48px;
+  border-radius: var(--r-md);
+  border: 2px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.icon-pick svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.icon-pick.on {
+  border-color: var(--a);
+  color: var(--a);
+  background: color-mix(in srgb, var(--a) 12%, var(--surface));
+}
+
+.profile-save {
+  min-height: 52px;
+}
+
+.profile-note {
+  margin: -6px 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+/* «Mes parties» (HistoA): the counts, the last games, the warning that it lives on this phone, the file. */
+.history {
+  display: grid;
+  gap: 14px;
+}
+
+.history-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.history-who small {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kpi {
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.kpi b {
+  display: block;
+  font-family: var(--f-display);
+  font-size: 1.4rem;
+}
+
+.kpi span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.history-list h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.history-list ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-list li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.history-place {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.history-place.first {
+  color: var(--good-ink);
+}
+
+.history-game {
+  display: grid;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.history-names {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-game small {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.history-points {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.history-empty {
+  margin: 0;
+}
+
+.history-local {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, #e0a500 16%, var(--surface));
+  font-size: 0.82rem;
+}
+
+.history-local svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.history-file {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* «Tes cartes» (cards/DeckPicker.tsx): the cards drawn as the player picks, then colour, pattern, mark and effect. */
+.deck-picker {
+  gap: 10px;
+}
+
+.deck-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.deck-preview {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 8px;
+  border-radius: var(--r-md);
+  background: var(--felt);
+}
+
+.deck-preview .card {
+  --w: clamp(52px, 16vw, 76px);
+}
+
+.deck-colors {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.deck-colors .swatch {
+  justify-self: center;
+  width: min(100%, 44px);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.deck-patterns {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.deck-patterns label {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 2px 6px;
+  border: 1px solid var(--field);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deck-patterns label.on {
+  border-color: var(--a);
+  box-shadow: inset 0 0 0 1px var(--a);
+  color: var(--a);
+}
+
+.deck-patterns input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deck-patterns label:has(input:focus-visible) {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
+}
+
+.deck-patterns .card {
+  --w: 30px;
+}
+
+.deck-mark {
+  display: grid;
+  gap: 6px;
+}
+
+.deck-mark input {
+  width: 5.5em;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--field);
+  background: var(--bg);
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.segmented.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.deck-reset {
+  justify-self: start;
 }

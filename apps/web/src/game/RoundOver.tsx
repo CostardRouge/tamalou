@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import type { GameConnection } from '../connection/types.ts';
+import { rememberedName } from '../home/name.ts';
 import { cardName, t } from '../i18n/index.ts';
+import { gameLine, type PlayedMode, recordGame } from '../profile/history.ts';
 import { endGame } from '../usage.ts';
 import { roundHeadline, type Seats, seatLabel } from './roundText.ts';
 
@@ -32,6 +34,13 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
     trackEvent('game-over', { rounds });
     // Whether this device's player won: a shared screen is a table, not a person.
     endGame(rounds, conn.handoff ? null : (view.winners ?? []).includes(view.me));
+    // «Mes parties» (ADR-0025): the game as this device's player saw it. A shared table counts for the player who has
+    // the device's name, if one has; a spectator has no seat and nothing to keep.
+    const mode: PlayedMode = conn.handoff ? 'pass' : conn.presence ? 'online' : 'solo';
+    const owner = rememberedName().toLocaleLowerCase();
+    const me = conn.handoff ? view.players.find((p) => p.name.trim().toLocaleLowerCase() === owner)?.id : view.me;
+    const events = conn.events();
+    if (me) recordGame(gameLine(view, events, me, mode, Date.now()), events);
   }, [over, rounds]);
   if (!result) return null;
   const waiting = conn.readyForNext().includes(view.me);

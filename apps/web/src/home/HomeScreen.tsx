@@ -1,9 +1,21 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
-import { type Card, PRESETS, type RuleSetInput, type RulesChoice, rulesFromPreset } from '@tamalou/shared';
+import {
+  type Avatar as AvatarValue,
+  type Card,
+  PRESETS,
+  type RuleSetInput,
+  type RulesChoice,
+  rulesFromPreset,
+} from '@tamalou/shared';
 import { useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import { Overlay } from '../game/Overlay.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
+import { Avatar } from '../profile/Avatar.tsx';
+import { refreshProfile, useProfile } from '../profile/avatar.ts';
+import { HistoryScreen } from '../profile/HistoryScreen.tsx';
+import { summarize, useHistory } from '../profile/history.ts';
+import { ProfileEditor } from '../profile/ProfileEditor.tsx';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { BUILD } from '../version.ts';
 import { fitsTable, MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
@@ -122,6 +134,8 @@ const LEVEL_CHIP: Record<BotLevel, Key> = {
   medium: 'levelChip_medium',
   hard: 'levelChip_hard',
 };
+/** Before the player picks: the avatar a table would give the first seat. */
+const MY_FALLBACK: AvatarValue = { color: 'blue', icon: 'star' };
 const KING: Card = { id: -2, rank: 'K', suit: 'H', deck: 0 };
 
 interface Props {
@@ -148,6 +162,10 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
   const [sheet, setSheet] = useState(Boolean(mode || linked));
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const profile = useProfile();
+  const played = summarize(useHistory());
   const set = (patch: Partial<GameChoice>) => setC((prev) => fit({ ...prev, ...patch }));
   const start = (choice: GameChoice) => {
     // A table the rules cannot deal opens its panel, which says why, instead of a game that cannot start.
@@ -157,7 +175,10 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
       return;
     }
     saveChoice(choice);
-    if (choice.mode === 'solo') rememberName(choice.name);
+    if (choice.mode === 'solo') {
+      rememberName(choice.name);
+      refreshProfile();
+    }
     setSaved(choice);
     onPlay(choice);
   };
@@ -188,6 +209,26 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
           </svg>
         </button>
       </header>
+
+      <section className="hello-card" aria-label={t('profile')}>
+        <button type="button" className="hello-me" onClick={() => setProfileOpen(true)}>
+          <Avatar avatar={profile.avatar ?? MY_FALLBACK} size="lg" />
+          <span className="hello-words">
+            <b>{profile.name ? t('helloName', { name: profile.name }) : t('helloNobody')}</b>
+            <small>{profile.avatar && profile.name ? t('helloAgain') : t('helloPick')}</small>
+          </span>
+          <span className="hello-edit">{t('helloEdit')}</span>
+        </button>
+        <button type="button" className="hello-games" onClick={() => setHistoryOpen(true)}>
+          <b>{t('helloGames')}</b>
+          <span className="muted">
+            {played.games ? plural('helloGamesCount', played.games, { won: played.won }) : t('helloNoGames')}
+          </span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+      </section>
 
       {last ? <LastGame c={last} first={first} onPlay={() => start(last)} /> : null}
 
@@ -238,9 +279,37 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
           onRoom={(code, name, made) => {
             saveChoice(c);
             rememberName(name);
+            refreshProfile();
             onRoom?.(code, name, made);
           }}
         />
+      ) : null}
+
+      {profileOpen ? (
+        <Overlay labelledBy="profile-title" onClose={() => setProfileOpen(false)}>
+          <div className="panel profile-panel">
+            <ProfileEditor
+              profile={profile}
+              fallback={MY_FALLBACK}
+              onClose={() => setProfileOpen(false)}
+              onSaved={(name) => {
+                // The last game's setup plays under the new name too.
+                const renamed = (x: GameChoice) => ({ ...x, name });
+                if (hasChoice()) saveChoice(renamed(loadChoice()));
+                setSaved(renamed);
+                setC(renamed);
+              }}
+            />
+          </div>
+        </Overlay>
+      ) : null}
+
+      {historyOpen ? (
+        <Overlay labelledBy="history-title" onClose={() => setHistoryOpen(false)}>
+          <div className="panel history-panel">
+            <HistoryScreen avatar={profile.avatar ?? MY_FALLBACK} onClose={() => setHistoryOpen(false)} />
+          </div>
+        </Overlay>
       ) : null}
 
       {settings ? (

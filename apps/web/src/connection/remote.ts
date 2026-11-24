@@ -1,5 +1,7 @@
 import {
   type Action,
+  type Avatar,
+  avatarsFor,
   type ClientMessage,
   type CloseReason,
   type GameEvent,
@@ -104,6 +106,8 @@ export interface Joining {
   code: string;
   /** For a new seat. */
   name?: string;
+  /** The avatar chosen on this device, sent with the name. */
+  avatar?: Avatar | null;
   /** Watch instead of sitting down. */
   spectate?: boolean;
 }
@@ -162,8 +166,8 @@ export class RoomClient {
   }
 
   /** A spectator takes a seat: the socket is reopened as a new player. */
-  sit(name: string): void {
-    this.joining = { code: this.code, name };
+  sit(name: string, avatar?: Avatar | null): void {
+    this.joining = { code: this.code, name, avatar: avatar ?? null };
     this.reconnectNow();
   }
 
@@ -199,6 +203,7 @@ export class RoomClient {
       const hello: ClientMessage = { t: 'hello', v: PROTOCOL_VERSION };
       if (token && !this.joining.spectate) hello.token = token;
       if (this.joining.name) hello.name = this.joining.name;
+      if (this.joining.name && this.joining.avatar) hello.avatar = this.joining.avatar;
       if (this.joining.spectate) hello.spectate = true;
       socket.send(JSON.stringify(hello));
     };
@@ -277,6 +282,8 @@ export class RemoteConnection implements GameConnection {
   private readonly client: RoomClient;
   private rulesKey = '';
   private rulesCache: RuleSet | null = null;
+  private facesKey = '';
+  private faces: ReadonlyMap<PlayerId, Avatar> = new Map();
 
   constructor(client: RoomClient) {
     this.client = client;
@@ -337,6 +344,15 @@ export class RemoteConnection implements GameConnection {
   }
   dispose() {
     // The room client outlives a game (replays): its owner disposes it.
+  }
+  avatars() {
+    const seats = this.client.lobby?.seats ?? [];
+    const key = JSON.stringify(seats.map((s) => [s.id, s.avatar]));
+    if (key !== this.facesKey) {
+      this.facesKey = key;
+      this.faces = avatarsFor(seats);
+    }
+    return this.faces;
   }
   presence(seat: PlayerId): 'offline' | 'away' | null {
     const s = this.client.lobby?.seats.find((x) => x.id === seat);

@@ -1,3 +1,4 @@
+import { DeckPicker } from '../cards/DeckPicker.tsx';
 import { updateSettings, useSettings } from '../feedback/settings.ts';
 import { HandPicker } from '../game/HandPicker.tsx';
 import { HandWatch } from '../game/HandWatch.tsx';
@@ -48,6 +49,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
           />
         </label>
       ) : null}
+      <DeckPicker name="deck" />
       <HandPicker name="hand" />
       <HandWatch name="watch" />
       {canInstall ? (

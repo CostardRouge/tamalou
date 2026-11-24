@@ -51,6 +51,13 @@ export function plural(base: string, n: number, params: Record<string, string | 
   return t(`${base}_${one ? 'one' : 'other'}` as Key, { n, ...params });
 }
 
+/** A place: «1er», «2e» in French; "1st", "2nd" in English. */
+export function ordinal(n: number): string {
+  if (lang === 'fr') return n === 1 ? '1er' : `${n}e`;
+  const suffix: Record<string, string> = { one: 'st', two: 'nd', few: 'rd' };
+  return `${n}${suffix[new Intl.PluralRules('en', { type: 'ordinal' }).select(n)] ?? 'th'}`;
+}
+
 export function rankName(card: Pick<Card, 'rank'>): string {
   return t(`rank_${card.rank}` as Key);
 }

@@ -2,23 +2,33 @@ import { decodeRulesChoice, normalizeRoomCode, type RulesChoice, rulesOf } from 
 import { MotionConfig } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import { trackEvent, trackView } from './audience.ts';
+import { DeckStyleContext } from './cards/classic.tsx';
+import { useHoloTilt } from './cards/tilt.ts';
 import { LocalConnection } from './connection/local.ts';
 import { serverMode } from './connection/remote.ts';
 import type { GameConnection } from './connection/types.ts';
-import { getSettings } from './feedback/settings.ts';
+import { getSettings, useSettings } from './feedback/settings.ts';
 import { GameScreen } from './game/GameScreen.tsx';
 import { PACE_FACTOR } from './game/pace.ts';
 import { choiceFor, type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
 import { MODE_DEFAULTS } from './home/modes.ts';
+import { rememberedName } from './home/name.ts';
 import { onLangChange, t } from './i18n/index.ts';
 import { OnlineScreen } from './online/OnlineScreen.tsx';
+import { rememberedAvatar } from './profile/avatar.ts';
 import { applyUpdate, dismissUpdate, readShortcut, usePwa } from './pwa.ts';
 import { reportUsage, setUsageAvailable, startGame } from './usage.ts';
 
 export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
+  const humans = c.mode === 'solo' ? [c.name.trim() || t('homeNameDefault')] : c.players.map(playerName);
+  // This device's avatar goes to its player: the solo one, or the one at a shared table who has its name.
+  const owner = rememberedName().toLocaleLowerCase();
+  const ownerAt = c.mode === 'solo' ? 0 : humans.findIndex((h) => h.trim().toLocaleLowerCase() === owner);
+  const mine = rememberedAvatar();
   return new LocalConnection({
-    humans: c.mode === 'solo' ? [c.name.trim() || t('homeNameDefault')] : c.players.map(playerName),
+    humans,
+    avatars: humans.map((_, i) => (i === ownerAt ? mine : null)),
     bots: Array.from({ length: c.bots }, (_, i) => ({ name: names[i] ?? t('botName', { n: i + 1 }), level: c.level })),
     rules: rulesOf({ preset: c.preset, overrides: c.overrides }, MODE_DEFAULTS[c.mode]),
     botPace: PACE_FACTOR[getSettings().botPace],
@@ -130,39 +140,45 @@ export function App() {
     if (shortcut === 'solo' && !room) play(choiceFor('solo'));
   }, []);
 
+  // The player's cards (cards/deck.ts): every card on every screen is drawn in this style.
+  const deck = useSettings().deck;
+  useHoloTilt(deck.effect === 'holo');
+
   return (
     // Animations follow the system's "reduce motion" setting.
     <MotionConfig reducedMotion="user">
-      {updateReady && !game && !room ? (
-        <p className="banner update" role="status">
-          <span>{t('updateReady')}</span>
-          <button type="button" className="link" onClick={applyUpdate}>
-            {t('updateReload')}
-          </button>
-          <button type="button" className="link muted" onClick={dismissUpdate}>
-            {t('updateLater')}
-          </button>
-        </p>
-      ) : null}
-      {room ? (
-        <OnlineScreen
-          key={room.code}
-          code={room.code}
-          {...(room.name ? { name: room.name } : {})}
-          {...(room.via ? { via: room.via } : {})}
-          onExit={exitRoom}
-        />
-      ) : game ? (
-        <GameScreen key={game.id} conn={game.conn} onQuit={() => replace(null)} onReplay={() => play(game.choice)} />
-      ) : (
-        <HomeScreen
-          onPlay={play}
-          linked={linked}
-          online={online}
-          onRoom={enterRoom}
-          {...(shortcut === 'pass' ? { mode: 'pass' as const } : {})}
-        />
-      )}
+      <DeckStyleContext.Provider value={deck}>
+        {updateReady && !game && !room ? (
+          <p className="banner update" role="status">
+            <span>{t('updateReady')}</span>
+            <button type="button" className="link" onClick={applyUpdate}>
+              {t('updateReload')}
+            </button>
+            <button type="button" className="link muted" onClick={dismissUpdate}>
+              {t('updateLater')}
+            </button>
+          </p>
+        ) : null}
+        {room ? (
+          <OnlineScreen
+            key={room.code}
+            code={room.code}
+            {...(room.name ? { name: room.name } : {})}
+            {...(room.via ? { via: room.via } : {})}
+            onExit={exitRoom}
+          />
+        ) : game ? (
+          <GameScreen key={game.id} conn={game.conn} onQuit={() => replace(null)} onReplay={() => play(game.choice)} />
+        ) : (
+          <HomeScreen
+            onPlay={play}
+            linked={linked}
+            online={online}
+            onRoom={enterRoom}
+            {...(shortcut === 'pass' ? { mode: 'pass' as const } : {})}
+          />
+        )}
+      </DeckStyleContext.Provider>
     </MotionConfig>
   );
 }
