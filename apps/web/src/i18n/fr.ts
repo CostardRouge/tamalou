@@ -663,12 +663,11 @@ export const fr = {
   patternChecks: 'Damier',
   patternPlain: 'Uni',
   effectNone: 'Aucun',
-  effectShine: 'Éclat',
   effectIris: 'Irisé',
   effectHolo: 'Holo',
-  effectNoneHint: 'Des cartes sobres, sans rien qui bouge.',
-  effectShineHint: 'Un reflet de lumière passe de temps en temps sur le dos des cartes.',
-  effectIrisHint: 'Un reflet nacré aux couleurs de l’arc-en-ciel glisse doucement sur le dos des cartes.',
+  effectNoneHint: 'Des cartes sobres, sans reflet.',
+  effectIrisHint:
+    'Un reflet pétrole, comme une flaque irisée : les couleurs glissent quand tu bouges la souris ou inclines le téléphone (Android).',
   effectHoloHint:
     'Comme une carte rare : un film holographique qui suit la lumière (la souris, ou l’inclinaison du téléphone sur Android), aussi sur les figures et les jokers.',
   settings: 'Réglages',

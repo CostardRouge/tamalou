@@ -643,12 +643,11 @@ export const en: Messages = {
   patternChecks: 'Checks',
   patternPlain: 'Plain',
   effectNone: 'None',
-  effectShine: 'Glint',
   effectIris: 'Iridescent',
   effectHolo: 'Holo',
-  effectNoneHint: 'Plain cards, nothing moving.',
-  effectShineHint: 'A glint of light crosses the backs of the cards now and then.',
-  effectIrisHint: 'A pearly rainbow sheen drifts slowly over the backs of the cards.',
+  effectNoneHint: 'Plain cards, no sheen.',
+  effectIrisHint:
+    'An oil-slick sheen, like a rainbow puddle: the colours slide as you move the mouse or tilt the phone (Android).',
   effectHoloHint:
     'Like a rare card: a holographic foil that follows the light (the mouse, or the phone’s tilt on Android), on the court cards and jokers too.',
   settings: 'Settings',

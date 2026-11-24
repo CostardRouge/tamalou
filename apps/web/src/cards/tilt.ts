@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-// The holographic foil moves with the light (deck.ts, effect `holo`): the pointer on a computer, the phone's tilt where
+// The iridescent and holographic effects move with the light (deck.ts): the pointer on a computer, the phone's tilt where
 // the browser gives it without asking (Android; iPhone asks a permission, so the foil just drifts there). Two variables
 // on the page, --tilt-x and --tilt-y in [-1, 1], read by cards.css; nothing when the effect is off or motion reduced.
 

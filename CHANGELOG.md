@@ -11,8 +11,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 ### Added
 
 - Choose how your cards look, under «Tes cartes» in the settings or «Affichage» at the table: the back's colour, its
-  pattern, one or two letters or an emoji in its middle, and an effect — a glint, an iridescent sheen, or a
-  holographic foil, like a rare card, that follows the light and shines on the court cards and jokers too.
+  pattern, one or two letters or an emoji in its middle (or nothing), and an effect — an oil-slick iridescent sheen,
+  or a holographic foil like a rare card that also shines on the court cards and jokers. Both stay still and shift
+  only as you move the mouse or tilt the phone.
 - Your profile: tap the greeting on the home screen («Bonjour …») to pick your name, one of eight colours and one of
   twelve icons. Your avatar shows on your seat and your hand, in a room's waiting list for the others to see, and its
   colour marks your moves; the bots and anyone without one are given their own. Kept on your phone only.
