@@ -4,7 +4,7 @@ Le jeu de cartes Tamalou, jouable sur le web, d'abord sur téléphone : quatre c
 
 Quatre modes sont prévus : solo contre des bots, pass-and-play sur un seul appareil, LAN sans internet et en ligne (une salle temporaire qu'on rejoint par un code ou un lien, sans compte). Le maître de jeu configure toutes les règles avant la partie.
 
-**État** : M8, toutes les milestones du plan sont faites. On joue en solo contre 1 à 5 bots, à plusieurs sur un seul téléphone, en ligne (une salle, un code, un lien ou un QR code, chacun sur son téléphone) et sur le réseau local sans internet. Toutes les règles se règlent avant la partie, se consultent pendant, et se partagent par lien ou en fichier JSON. Le jeu s'installe comme une appli, marche hors ligne en solo, parle français ou anglais, avec sons et vibrations. Le plan complet est dans [`docs/SPEC.md`](docs/SPEC.md) §8.
+**État** : M8, toutes les milestones du plan sont faites. On joue en solo contre 1 à 5 bots, à plusieurs sur un seul appareil, en ligne (une salle, un code, un lien ou un QR code, chacun sur son appareil) et sur le réseau local sans internet. Toutes les règles se règlent avant la partie, se consultent pendant, et se partagent par lien ou en fichier JSON. Le jeu s'installe comme une appli, marche hors ligne en solo, parle français ou anglais, avec sons et vibrations. Le plan complet est dans [`docs/SPEC.md`](docs/SPEC.md) §8.
 
 - https://costardrouge.github.io/tamalou/ (publié depuis `main`) : solo et pass-and-play.
   La racine est la page d'accueil (français, `/en/` en anglais) ; le jeu est sous `play/`.
@@ -40,7 +40,7 @@ docker compose up -d    # puis http://<adresse du serveur>:8080/ ; les logs affi
 
 L'image de `main` est publiée sur `ghcr.io/costardrouge/tamalou:latest`.
 
-Les réglages (port, interface, adresse affichée pour les téléphones…) et ceux du build du jeu sont listés, avec leur valeur par défaut, dans [`.env.example`](.env.example). Le serveur ne lit aucun fichier `.env` : définissez-les dans `environment:` de `docker-compose.yml`, exportez-les, ou lancez `node --env-file=.env apps/server/src/main.ts`. Le build du jeu lit `apps/web/.env`, pas celui de la racine.
+Les réglages (port, interface, adresse affichée pour les autres appareils…) et ceux du build du jeu sont listés, avec leur valeur par défaut, dans [`.env.example`](.env.example). Le serveur ne lit aucun fichier `.env` : définissez-les dans `environment:` de `docker-compose.yml`, exportez-les, ou lancez `node --env-file=.env apps/server/src/main.ts`. Le build du jeu lit `apps/web/.env`, pas celui de la racine.
 
 ## Développer
 
@@ -48,7 +48,7 @@ Les réglages (port, interface, adresse affichée pour les téléphones…) et c
 npm install -g corepack@0.36.0   # Node 25+ ne le fournit plus
 corepack enable   # active la version de pnpm fixée dans package.json
 pnpm install
-pnpm dev          # le jeu sur http://localhost:5173 (et sur l'IP de la machine pour un téléphone du même réseau)
+pnpm dev          # le jeu sur http://localhost:5173 (et sur l'IP de la machine pour un autre appareil du même réseau)
 node apps/server/src/main.ts   # à côté de pnpm dev : les salles en ligne (pnpm dev relaie /api vers :8080)
 pnpm worker:dev   # le jeu et les salles sur workerd, comme en ligne (http://localhost:8787)
 pnpm check        # lint + typecheck + tests + build

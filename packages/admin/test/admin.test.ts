@@ -163,7 +163,7 @@ describe('the admin page', () => {
     expect(html).toContain('<dd>Ligne</dd>');
     expect(gamePage({ game: { ...base, end: null }, who: 'S' })).toContain('Heure inconnue');
     expect(gameTitle({ ...base, mode: 'online', humans: 4, bots: 1 })).toBe('En ligne, 4 humains + 1 bot');
-    expect(gameTitle({ ...base, mode: 'pass', humans: 3, bots: 0 })).toBe('Un téléphone, 3 joueurs');
+    expect(gameTitle({ ...base, mode: 'pass', humans: 3, bots: 0 })).toBe('Un appareil, 3 joueurs');
     expect(
       gamePage({
         game: { ...game, end: { ...game.end, won: false, day: '2026-11-23' } as UsageGame['end'] },

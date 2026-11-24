@@ -11,7 +11,7 @@ const esc = (s: string) =>
 /** What each value is called on the page; a value with no name here is shown as it is. */
 const NAMES: Record<string, string> = {
   solo: 'Seul contre des bots',
-  pass: 'Un téléphone à plusieurs',
+  pass: 'Un appareil à plusieurs',
   online: 'En ligne',
   bots: 'Contre des bots',
   humans: 'Entre humains',
@@ -91,7 +91,7 @@ export function gameTitle(g: UsageGame): string {
   const bots = g.bots > 0 ? plural(g.bots, 'bot', 'bots') : '';
   if (g.mode === 'solo') return `Seul contre ${bots || 'personne'}`;
   const people = g.mode === 'pass' ? plural(g.humans, 'joueur', 'joueurs') : plural(g.humans, 'humain', 'humains');
-  return `${g.mode === 'pass' ? 'Un téléphone' : 'En ligne'}, ${people}${bots ? ` + ${bots}` : ''}`;
+  return `${g.mode === 'pass' ? 'Un appareil' : 'En ligne'}, ${people}${bots ? ` + ${bots}` : ''}`;
 }
 
 /** How it ended: won or lost (solo), its rounds, or not finished. */

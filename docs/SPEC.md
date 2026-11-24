@@ -28,7 +28,7 @@ Le brief d'origine du projet (2026-10-16), tenu à jour au fil des décisions. C
 - Il y a **4 modes de jeu** :
   1. **Solo** contre des bots.
   2. **Écran partagé / pass-and-play** : plusieurs joueurs sur un même appareil, qu'on se passe.
-  3. **Multi LAN** : chacun sur son téléphone, sur le même réseau local, sans dépendre d'internet.
+  3. **Multi LAN** : chacun sur son appareil, sur le même réseau local, sans dépendre d'internet.
   4. **Multi en ligne** : sessions de jeu **temporaires**. On les rejoint via un code ou un lien, sans compte.
 - Les modes peuvent se mélanger. Par exemple, une partie en ligne peut combiner des humains et des bots.
 
@@ -177,8 +177,8 @@ Stack retenue :
 - Ses actions sont temporisées pour qu'on puisse suivre la partie, et ses défausses rapides ont un délai réaliste.
 
 ### 5.2 Écran partagé / pass-and-play
-- Les joueurs sont sur un seul appareil (téléphone ou tablette).
-- Un **écran de transition** s'affiche entre chaque tour : « Passe le téléphone à Vanessa », avec un tap pour révéler la vue du joueur. Rien de privé n'est visible pendant le passage de main.
+- Les joueurs sont sur un seul appareil (téléphone, tablette ou ordinateur).
+- Un **écran de transition** s'affiche entre chaque tour : « Passe l’appareil à Vanessa », avec un tap pour révéler la vue du joueur. Rien de privé n'est visible pendant le passage de main.
 - **[ADR-0005]** La défausse rapide y est désactivée par défaut ; le maître de jeu peut l'activer. **[ADR-0012]** Activée, on choisit qui réclame, puis sa carte, qui reste face cachée.
 - **[ADR-0012]** Pendant le tour d'un bot ou entre deux manches, l'écran montre la table sans aucune carte privée.
 - Les bots sont possibles dans ce mode aussi.

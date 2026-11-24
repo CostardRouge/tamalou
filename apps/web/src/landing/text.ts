@@ -8,7 +8,7 @@
 const fr = {
   title: 'Tamalou — le jeu de cartes de mémoire et de bluff, à jouer en ligne',
   description:
-    'Joue ta première manche de Tamalou en une minute, ici même : quatre cartes face cachée, de la mémoire et du bluff, le plus petit total gagne. Seul contre des bots, à plusieurs sur un téléphone, en Wi-Fi ou en ligne. Gratuit, sans compte.',
+    'Joue ta première manche de Tamalou en une minute, ici même : quatre cartes face cachée, de la mémoire et du bluff, le plus petit total gagne. Seul contre des bots, à plusieurs sur un seul appareil, en Wi-Fi ou en ligne. Gratuit, sans compte.',
   navAria: 'Sections',
   navRound: 'La manche',
   navValues: 'Les valeurs',
@@ -120,13 +120,13 @@ const fr = {
     },
     {
       icon: 'phone',
-      t: 'Sur un seul téléphone',
+      t: 'Sur un seul appareil',
       p: 'On se passe l’appareil. Un écran cache ton jeu entre deux joueurs.',
     },
     {
       icon: 'home',
       t: 'Sur le réseau de la maison',
-      p: 'Chacun sur son téléphone, sans internet : un petit serveur et un QR code.',
+      p: 'Chacun sur son appareil, sans internet : un petit serveur et un QR code.',
     },
     { icon: 'globe', t: 'En ligne', p: 'Une salle éphémère, un code ou un lien à partager. Pas de compte.' },
   ],
@@ -155,7 +155,7 @@ export type LandingText = typeof fr;
 const en: LandingText = {
   title: 'Tamalou — the memory and bluffing card game, to play online',
   description:
-    'Play your first round of Tamalou in one minute, right here: four face-down cards, memory and bluff, the lowest total wins. Solo against bots, around one phone, on your Wi-Fi or online. Free, no account.',
+    'Play your first round of Tamalou in one minute, right here: four face-down cards, memory and bluff, the lowest total wins. Solo against bots, around one device, on your Wi-Fi or online. Free, no account.',
   navAria: 'Sections',
   navRound: 'The round',
   navValues: 'Card values',
@@ -262,11 +262,11 @@ const en: LandingText = {
       t: 'Solo against bots',
       p: 'Three levels, from the bot who forgets everything to the one who counts cards.',
     },
-    { icon: 'phone', t: 'Around one phone', p: 'Pass the device around. A screen hides your hand between players.' },
+    { icon: 'phone', t: 'Around one device', p: 'Pass the device around. A screen hides your hand between players.' },
     {
       icon: 'home',
       t: 'On your home network',
-      p: 'Everyone on their own phone, no internet: a small server and a QR code.',
+      p: 'Everyone on their own device, no internet: a small server and a QR code.',
     },
     { icon: 'globe', t: 'Online', p: 'A short-lived room, a code or a link to share. No account.' },
   ],

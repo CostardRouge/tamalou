@@ -17,7 +17,7 @@ const faces = () =>
 
 const startPassAndPlay = () => {
   render(<App />);
-  openMode('À plusieurs, un téléphone');
+  openMode('À plusieurs, un seul appareil');
   fireEvent.change(screen.getByRole('textbox', { name: 'Joueur 1' }), { target: { value: 'Ana' } });
   fireEvent.change(screen.getByRole('textbox', { name: 'Joueur 2' }), { target: { value: 'Ben' } });
   // No bots: the two humans alone (the × sits on the last bot).
@@ -29,7 +29,7 @@ const startPassAndPlay = () => {
 describe('pass-and-play', () => {
   it('covers the screen between players and shows nothing private on the cover', () => {
     startPassAndPlay();
-    expect(screen.getByRole('heading', { name: 'Passe le téléphone à Ana' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Passe l’appareil à Ana' })).toBeTruthy();
     expect(faces()).toEqual([]);
     expect(screen.queryByText(/Ta carte/)).toBeNull();
 
@@ -38,13 +38,13 @@ describe('pass-and-play', () => {
     expect(screen.getAllByRole('img', { name: /^Ta carte \d, (?!Carte face cachée)/ })).toHaveLength(2);
 
     fireEvent.click(screen.getByRole('button', { name: 'C’est mémorisé' }));
-    expect(screen.getByRole('heading', { name: 'Passe le téléphone à Ben' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Passe l’appareil à Ben' })).toBeTruthy();
     expect(screen.queryAllByRole('img', { name: /^Ta carte/ })).toHaveLength(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'C’est moi, Ben' }));
     fireEvent.click(screen.getByRole('button', { name: 'C’est mémorisé' }));
     // Play starts with Ana: the device goes back to her.
-    expect(screen.getByRole('heading', { name: 'Passe le téléphone à Ana' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Passe l’appareil à Ana' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'C’est moi, Ana' }));
     expect(screen.getByRole('button', { name: 'Piocher' })).toBeTruthy();
     // Quick discard is off by default on a shared device.
@@ -53,7 +53,7 @@ describe('pass-and-play', () => {
 
   it('claims a quick discard for a named player, their cards staying face down', () => {
     render(<App />);
-    openMode('À plusieurs, un téléphone');
+    openMode('À plusieurs, un seul appareil');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     fireEvent.click(screen.getByRole('button', { name: 'Défausse rapide' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));
@@ -80,7 +80,7 @@ describe('pass-and-play', () => {
 
   it('starts with quick discard switched off in the rules, and lets the game master switch it back on', () => {
     render(<App />);
-    openMode('À plusieurs, un téléphone');
+    openMode('À plusieurs, un seul appareil');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     expect(screen.getAllByText(/Pas de défausse rapide\./).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'Défausse rapide' }));
