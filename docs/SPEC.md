@@ -214,7 +214,7 @@ Stack retenue :
 - **Table :** ma grille de cartes en bas ; les adversaires autour ; la pioche et la défausse au centre.
 - **Lisibilité :** les actions possibles sont toujours claires, les actions illégales désactivées ; un indicateur montre à qui c'est le tour.
 - **Peek** : la carte se retourne quelques secondes, **visible uniquement par le joueur concerné**. Les autres voient seulement qu'une carte a été regardée et laquelle.
-- **Journal de partie public** : « Steeve a pioché dans la défausse », « Vanessa a utilisé un Valet », etc.
+- **Journal de partie public** : « Steeve a pioché dans la défausse », « Vanessa a utilisé un Valet », etc. Le maître de jeu choisit ce qu'il raconte : toute la manche, le dernier tour de chacun (par défaut ; toute la manche en Débutant) ou rien, pour jouer de mémoire ; il peut aussi donner « la défausse racontée », une icône près de la défausse qui la montre carte par carte (non par défaut, oui en Débutant) **[ADR-0026]**.
 - **Fin de manche :** révélation animée des cartes, décompte des points, tableau des scores cumulés.
 - **Pas d'aide-mémoire** affichant les cartes vues. Option du maître de jeu : un mode « débutant » qui les affiche.
 - **Sons** légers, désactivables, et retours haptiques sur mobile.

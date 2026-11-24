@@ -75,7 +75,9 @@ describe('pass-and-play', () => {
     fireEvent.click(target);
     // The claim went through, right or wrong: the journal names Joueur 2.
     fireEvent.click(screen.getByRole('button', { name: 'Journal' }));
-    expect(screen.getByText(/Joueur 2 (défausse rapidement|se trompe)/)).toBeTruthy();
+    // Pass-and-play keeps the last lap of the table by default: the claim is in it, under Joueur 2's name.
+    const journal = screen.getByRole('complementary', { name: 'Journal' });
+    expect(journal.textContent).toMatch(/Joueur 2(Défausse rapidement|Se trompe)/);
   });
 
   it('starts with quick discard switched off in the rules, and lets the game master switch it back on', () => {

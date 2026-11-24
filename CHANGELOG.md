@@ -10,6 +10,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- The discard story: an icon beside the discard lays it out card by card, newest first, with who threw each one and
+  how, the power played with it, and the cards taken back. The game master turns it on in the rules (Pace and help);
+  it is off by default and on with the Beginner rules. Touching the discard itself still takes it.
 - Choose how your cards look, under «Tes cartes» in the settings or «Affichage» at the table: the back's colour, its
   pattern, one or two letters or an emoji in its middle (or nothing), and an effect — an oil-slick iridescent sheen,
   or a holographic foil like a rare card that also shines on the court cards and jokers. Both stay still and shift
@@ -31,7 +34,7 @@ code, though the game speaks French first. Codenames are French card words, in a
   it filled in.
 - The home screen and the table's Display panel show which build you run next to the version (v0.14.0 · 64ef767),
   so a phone still on an older build can be spotted.
-- Pause a game with the new button at the top of the table: the table hides behind a curtain and everything stops
+- Pause a game from the "⋯" menu at the top of the table: the table hides behind a curtain and everything stops
   (bots, the quick discard, the turn timer) until you resume. A game on your device also pauses by itself when you
   leave it for a call or another app. In a room, the game master pauses it for everyone and the others see who did.
 - Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
@@ -58,6 +61,13 @@ code, though the game speaks French first. Codenames are French card words, in a
 - The game no longer assumes you play on a phone: passing it round, «Mes parties», your profile, the home
   page, the legal notice and the link previews now speak of «un appareil» (a device), which may be a phone, a tablet
   or a computer. The pass-and-play mode is now called «À plusieurs, un seul appareil».
+- A lighter top bar at the table: a button to leave, the round in the middle, the log, and a "⋯" menu holding pause,
+  sound, vibrations, display, the rules and leaving the game. It fits the narrowest phones.
+- The game log is redrawn and the game master now decides what it tells: the whole round, everyone's last turn (the
+  default; the whole round with the Beginner rules) or nothing, to play from memory. Each player's turn is one block
+  with their avatar and the card they threw, and a move on one of your cards stands out. On a computer it opens as a
+  panel beside the table, which moves aside instead of being covered; on a phone it rises over your hand, half the
+  screen or almost all of it. Its button in the top bar is now an icon.
 - The rules screen is redrawn: the preset on top, then one illustrated tile per part of the rules with its rules
   in a line or two and a "changed" mark. Touch a tile to open it in place; on a computer the tiles stay in a column
   and the open one shows large beside them. Card points and powers are set on the cards themselves (touch a card,

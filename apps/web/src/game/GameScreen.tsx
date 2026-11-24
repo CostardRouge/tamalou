@@ -32,17 +32,22 @@ import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { BUILD } from '../version.ts';
 import { type Act, type ActIcon, ActionBar, Icon } from './ActionBar.tsx';
 import { confirmQuestion } from './confirm.ts';
+import { DiscardStoryPanel, StoryButton } from './DiscardStory.tsx';
 import { Draggable, measurePlaces } from './Draggable.tsx';
 import { DrawStage } from './DrawStage.tsx';
+import { discardStory } from './discardStory.ts';
 import { type DragSource, type Drop, dropsFor, MY_ZONE, resolveDrop } from './drag.ts';
 import { noteDrop, useFlights, type Voice } from './FlightLayer.tsx';
 import { FrontCard } from './FrontCard.tsx';
 import { dealToReplay, type Place, slotPlace } from './flights.ts';
 import { facing } from './front.ts';
+import { GameMenu } from './GameMenu.tsx';
 import { HandPicker } from './HandPicker.tsx';
 import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
+import { Journal } from './Journal.tsx';
+import { journalFor, journalOf } from './journal.ts';
 import { describeEvent } from './log.ts';
 import { Overlay } from './Overlay.tsx';
 import { PowerMark, powerWords } from './PowerMark.tsx';
@@ -105,6 +110,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const [pending, setPending] = useState<Pending>(NONE);
   const lastDrawn = useRef<{ holder: PlayerId; card: Card | null } | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [showStory, setShowStory] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showDisplay, setShowDisplay] = useState(false);
   /** Pass-and-play quick discard: choosing who claims, then that player's card. */
@@ -266,11 +272,15 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     go(a, null, () => setPending(NONE));
   };
 
-  // The journal tells a move once the screen plays it, not before its gesture has started.
-  const lines = events
-    .slice(0, fly.played)
-    .map((e) => describeEvent(e, nameOf, view.me))
-    .filter((l): l is string => l !== null);
+  // The journal tells a move once the screen plays it, not before its gesture has started. What it may tell is the
+  // game master's (rules.assist.log, ADR-0026); the band below the others always says the move being played.
+  const played = events.slice(0, fly.played);
+  const lines = played.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
+  const logMode = rules.assist.log;
+  const journalOpen = showLog && logMode !== 'off';
+  const quit = () => (window.confirm(t('confirmQuit')) ? onQuit() : null);
+  // The discard laid out, if the game master gives it (rules.assist.discardStory): from the moves the screen has played.
+  const story = rules.assist.discardStory ? discardStory(played) : null;
 
   // By hand (design D): a card picked up shows where it may land; let go, it plays that move, or asks when the drop
   // could mean two things; dropped nowhere, it springs back.
@@ -524,44 +534,47 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     // third row (seven to nine opponents) is counted as a second: counted whole, it shrank my cards to nothing on a
     // short phone, while the opponents' cards are already at their smallest.
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}${paused ? ' paused' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}${paused ? ' paused' : ''}${journalOpen ? ' journal-open' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
+      {/* The top bar (the owner's pick A on the 2026-11-24 header canvas): the way out, the round, the journal, and the
+          rest in the "⋯" menu (GameMenu.tsx). */}
       <header className="game-bar">
-        <button type="button" className="ghost" onClick={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}>
-          ← {t('actHome')}
+        <button type="button" className="bar-btn" aria-label={t('quitGame')} onClick={quit}>
+          <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
         </button>
         <span className="mono round">{t('roundShort', { n: view.round })}</span>
         <span className="bar-actions">
-          {canPause && !paused ? (
-            <button type="button" className="ghost" aria-label={t('pause')} onClick={() => conn.setPaused?.(true)}>
-              <svg className="bar-icon bar-fill" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="6" y="5" width="4" height="14" rx="1" />
-                <rect x="14" y="5" width="4" height="14" rx="1" />
+          {logMode !== 'off' ? (
+            <button
+              type="button"
+              className={`bar-btn${journalOpen ? ' on' : ''}`}
+              aria-label={t('journal')}
+              aria-expanded={journalOpen}
+              onClick={() => setShowLog((s) => !s)}
+            >
+              <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h10" />
               </svg>
             </button>
           ) : null}
-          <button
-            type="button"
-            className="ghost"
-            aria-label={t(settings.sound ? 'soundOn' : 'soundOff')}
-            onClick={() => updateSettings({ sound: !settings.sound })}
-          >
-            <span aria-hidden="true">{settings.sound ? '🔊' : '🔇'}</span>
-          </button>
-          <button type="button" className="ghost" aria-label={t('display')} onClick={() => setShowDisplay(true)}>
-            <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
-              <circle cx="15" cy="7" r="2" />
-              <circle cx="9" cy="17" r="2" />
-            </svg>
-          </button>
-          <button type="button" className="ghost" onClick={() => setShowRules(true)}>
-            {t('rules')}
-          </button>
-          <button type="button" className="ghost" aria-expanded={showLog} onClick={() => setShowLog((s) => !s)}>
-            {t('journal')}
-          </button>
+          <GameMenu
+            canPause={canPause && !paused}
+            sound={settings.sound}
+            haptics={settings.haptics}
+            onPause={() => conn.setPaused?.(true)}
+            onSound={() => updateSettings({ sound: !settings.sound })}
+            onHaptics={() => {
+              // Switched on, the phone says so in the hand (where it can vibrate at all).
+              if (!settings.haptics) navigator.vibrate?.(15);
+              updateSettings({ haptics: !settings.haptics });
+            }}
+            onDisplay={() => setShowDisplay(true)}
+            onRules={() => setShowRules(true)}
+            onQuit={quit}
+          />
         </span>
       </header>
       {banner}
@@ -677,6 +690,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             <span className={`pile-label${view.quickDiscardOpen ? ' open' : ''}`}>{t('discard')}</span>
           )}
         </div>
+        {/* Its own icon, in the column beside the discard: a touch on the discard takes it, so it cannot open this. */}
+        {story && story.cards.length > 0 ? (
+          <StoryButton count={story.cards.filter((c) => !c.takenBy).length} onOpen={() => setShowStory(true)} />
+        ) : null}
       </section>
 
       {me ? (
@@ -768,18 +785,18 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         />
       </footer>
 
-      {showLog ? (
-        <aside className="journal" aria-label={t('journal')}>
-          <ol>
-            {lines
-              .slice(-30)
-              .reverse()
-              .map((l, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: the log only grows
-                <li key={lines.length - i}>{l}</li>
-              ))}
-          </ol>
-        </aside>
+      {journalOpen ? (
+        <Journal
+          items={journalFor(
+            journalOf(played, nameOf, view.me),
+            logMode,
+            view.players.filter((p) => !p.eliminated).length,
+          )}
+          mode={logMode}
+          nameOf={nameOf}
+          faceOf={faceOf}
+          onClose={() => setShowLog(false)}
+        />
       ) : null}
 
       {paused ? (
@@ -789,6 +806,16 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           onResume={() => conn.setPaused?.(false)}
           onRules={() => setShowRules(true)}
           onQuit={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}
+        />
+      ) : null}
+
+      {showStory && story ? (
+        <DiscardStoryPanel
+          story={story}
+          me={view.me}
+          nameOf={nameOf}
+          faceOf={faceOf}
+          onClose={() => setShowStory(false)}
         />
       ) : null}
 
