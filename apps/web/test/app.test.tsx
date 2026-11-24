@@ -46,7 +46,8 @@ describe('the app', () => {
   it('pauses behind a curtain, by the button or when the player leaves the app, and resumes', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Mettre en pause' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Plus d’options' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Pause' }));
     const curtain = screen.getByRole('dialog', { name: 'Pause' });
     expect(within(curtain).getByRole('button', { name: 'Voir les règles' })).toBeTruthy();
     fireEvent.click(within(curtain).getByRole('button', { name: 'Reprendre' }));
@@ -65,7 +66,8 @@ describe('the app', () => {
     // A first visit: the default game, played from the big card in one touch.
     fireEvent.click(screen.getByRole('button', { name: 'Jouer' }));
     expect(mine()?.className).toBe('hand lay-row');
-    fireEvent.click(screen.getByRole('button', { name: 'Affichage' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Plus d’options' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Affichage' }));
     fireEvent.click(screen.getByRole('radio', { name: /Éventail/ }));
     expect(mine()?.className).toBe('hand lay-fan');
     expect(container.querySelector('.opponents fieldset')?.className).toBe('hand lay-fan lay-across');

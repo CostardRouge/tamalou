@@ -93,3 +93,32 @@ describe('the discard laid out', () => {
     expect(screen.queryByRole('dialog', { name: 'La défausse' })).toBeNull();
   });
 });
+
+describe('the top bar', () => {
+  it('keeps the way out, the round and the journal, and puts the rest in its menu', () => {
+    render(<GameScreen conn={oneTurnPlayed('recent')} onQuit={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Quitter la partie' })).toBeTruthy();
+    expect(screen.queryByRole('menu')).toBeNull();
+    const more = screen.getByRole('button', { name: 'Plus d’options' });
+    fireEvent.click(more);
+    const menu = screen.getByRole('menu', { name: 'Options de la partie' });
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((i) => i.textContent),
+    ).toEqual(['Pause', 'Affichage', 'Règles', 'Quitter la partie']);
+    // The sound switches in place, the menu stays open.
+    const sound = within(menu).getByRole('menuitemcheckbox', { name: /Son/ });
+    const was = sound.getAttribute('aria-checked');
+    fireEvent.click(sound);
+    expect(screen.getByRole('menuitemcheckbox', { name: /Son/ }).getAttribute('aria-checked')).not.toBe(was);
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: /Son/ }));
+    // Escape closes it, and only it.
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    fireEvent.click(more);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Règles' }));
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.getByRole('dialog', { name: /Règles/ })).toBeTruthy();
+  });
+});

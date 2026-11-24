@@ -41,6 +41,7 @@ import { noteDrop, useFlights, type Voice } from './FlightLayer.tsx';
 import { FrontCard } from './FrontCard.tsx';
 import { dealToReplay, type Place, slotPlace } from './flights.ts';
 import { facing } from './front.ts';
+import { GameMenu } from './GameMenu.tsx';
 import { HandPicker } from './HandPicker.tsx';
 import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
@@ -277,6 +278,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const lines = played.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
   const logMode = rules.assist.log;
   const journalOpen = showLog && logMode !== 'off';
+  const quit = () => (window.confirm(t('confirmQuit')) ? onQuit() : null);
   // The discard laid out, if the game master gives it (rules.assist.discardStory): from the moves the screen has played.
   const story = rules.assist.discardStory ? discardStory(played) : null;
 
@@ -535,42 +537,20 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}${paused ? ' paused' : ''}${journalOpen ? ' journal-open' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
+      {/* The top bar (the owner's pick A on the 2026-11-24 header canvas): the way out, the round, the journal, and the
+          rest in the "⋯" menu (GameMenu.tsx). */}
       <header className="game-bar">
-        <button type="button" className="ghost" onClick={() => (window.confirm(t('confirmQuit')) ? onQuit() : null)}>
-          ← {t('actHome')}
+        <button type="button" className="bar-btn" aria-label={t('quitGame')} onClick={quit}>
+          <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
         </button>
         <span className="mono round">{t('roundShort', { n: view.round })}</span>
         <span className="bar-actions">
-          {canPause && !paused ? (
-            <button type="button" className="ghost" aria-label={t('pause')} onClick={() => conn.setPaused?.(true)}>
-              <svg className="bar-icon bar-fill" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="6" y="5" width="4" height="14" rx="1" />
-                <rect x="14" y="5" width="4" height="14" rx="1" />
-              </svg>
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="ghost"
-            aria-label={t(settings.sound ? 'soundOn' : 'soundOff')}
-            onClick={() => updateSettings({ sound: !settings.sound })}
-          >
-            <span aria-hidden="true">{settings.sound ? '🔊' : '🔇'}</span>
-          </button>
-          <button type="button" className="ghost" aria-label={t('display')} onClick={() => setShowDisplay(true)}>
-            <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
-              <circle cx="15" cy="7" r="2" />
-              <circle cx="9" cy="17" r="2" />
-            </svg>
-          </button>
-          <button type="button" className="ghost" onClick={() => setShowRules(true)}>
-            {t('rules')}
-          </button>
           {logMode !== 'off' ? (
             <button
               type="button"
-              className={`ghost${journalOpen ? ' bar-on' : ''}`}
+              className={`bar-btn${journalOpen ? ' on' : ''}`}
               aria-label={t('journal')}
               aria-expanded={journalOpen}
               onClick={() => setShowLog((s) => !s)}
@@ -580,6 +560,15 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               </svg>
             </button>
           ) : null}
+          <GameMenu
+            canPause={canPause && !paused}
+            sound={settings.sound}
+            onPause={() => conn.setPaused?.(true)}
+            onSound={() => updateSettings({ sound: !settings.sound })}
+            onDisplay={() => setShowDisplay(true)}
+            onRules={() => setShowRules(true)}
+            onQuit={quit}
+          />
         </span>
       </header>
       {banner}
