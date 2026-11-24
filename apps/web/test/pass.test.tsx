@@ -55,6 +55,7 @@ describe('pass-and-play', () => {
     render(<App />);
     openMode('À plusieurs, un téléphone');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Défausse rapide' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));
     // The claim is made on the dealt card: the game master lets it open a window.
     fireEvent.click(screen.getByRole('switch', { name: 'Sur la carte de la donne' }));
@@ -82,6 +83,7 @@ describe('pass-and-play', () => {
     openMode('À plusieurs, un téléphone');
     fireEvent.click(screen.getByRole('button', { name: 'Personnaliser les règles' }));
     expect(screen.getAllByText(/Pas de défausse rapide\./).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Défausse rapide' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Défausse rapide' }));
     expect(screen.getByText(/Au moins 3 s pour réagir\./)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Terminé' }));
