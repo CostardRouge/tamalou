@@ -68,7 +68,13 @@ describe('the app', () => {
     expect(mine()?.className).toBe('hand lay-row');
     fireEvent.click(screen.getByRole('button', { name: 'Plus d’options' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Affichage' }));
-    fireEvent.click(screen.getByRole('radio', { name: /Éventail/ }));
+    // «Fermer» takes the focus when the panel opens, and only then: a setting changed further down keeps it, so
+    // a long panel does not jump back to its top (the owner's report, 2026-11-24).
+    expect(document.activeElement?.textContent).toBe('Fermer');
+    const fan = screen.getByRole('radio', { name: /Éventail/ });
+    fan.focus();
+    fireEvent.click(fan);
+    expect(document.activeElement).toBe(fan);
     expect(mine()?.className).toBe('hand lay-fan');
     expect(container.querySelector('.opponents fieldset')?.className).toBe('hand lay-fan lay-across');
     fireEvent.click(screen.getByRole('checkbox', { name: 'Les adversaires aussi' }));

@@ -49,7 +49,7 @@ import { interaction, NONE, type Pending } from './interaction.ts';
 import { Journal } from './Journal.tsx';
 import { journalFor, journalOf } from './journal.ts';
 import { describeEvent } from './log.ts';
-import { Overlay } from './Overlay.tsx';
+import { focusOnMount, Overlay } from './Overlay.tsx';
 import { PowerMark, powerWords } from './PowerMark.tsx';
 import { handKind, PACE_FACTOR, SPEED_FACTOR } from './pace.ts';
 import { powerIfThrown, powerInPlay } from './power.ts';
@@ -827,7 +827,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           <div className="panel">
             <div className="panel-head">
               <h2 id="display-title">{t('display')}</h2>
-              <button type="button" className="ghost" onClick={() => setShowDisplay(false)} ref={(el) => el?.focus()}>
+              <button type="button" className="ghost" onClick={() => setShowDisplay(false)} ref={focusOnMount}>
                 {t('close')}
               </button>
             </div>
@@ -960,7 +960,7 @@ function PauseCurtain({
       <h2 id="pause-title">{by ? t('pausedBy', { name: by }) : t('paused')}</h2>
       <p>{canResume ? t('pausedHint') : t('pausedWait')}</p>
       {canResume ? (
-        <button type="button" className="btn btn-big pause-resume" onClick={onResume} ref={(el) => el?.focus()}>
+        <button type="button" className="btn btn-big pause-resume" onClick={onResume} ref={focusOnMount}>
           {t('resume')}
         </button>
       ) : null}
@@ -1252,7 +1252,7 @@ function HandoffCover({ name, onReveal, onQuit }: { name: string; onReveal: () =
       </div>
       <h1>{t('handoffTitle', { name })}</h1>
       <p className="muted">{t('handoffHint', { name })}</p>
-      <button type="button" className="btn btn-primary btn-big" onClick={onReveal} ref={(el) => el?.focus()}>
+      <button type="button" className="btn btn-primary btn-big" onClick={onReveal} ref={focusOnMount}>
         {t('handoffReveal', { name })}
       </button>
     </main>

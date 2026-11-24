@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Fixed
+
+- Changing a setting in a panel (Affichage, the settings, the rules…) no longer sends the panel back to its top: it
+  stays where you scrolled.
+
 ## [0.16.0] - 2026-11-24 — Piquet
 
 ### Changed
