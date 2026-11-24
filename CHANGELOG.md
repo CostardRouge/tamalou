@@ -8,6 +8,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-24 — Oudler
+
 ### Added
 
 - The discard story: an icon beside the discard lays it out card by card, newest first, with who threw each one and
