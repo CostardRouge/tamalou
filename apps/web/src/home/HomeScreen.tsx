@@ -13,6 +13,8 @@ import { Overlay } from '../game/Overlay.tsx';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
 import { Avatar } from '../profile/Avatar.tsx';
 import { refreshProfile, useProfile } from '../profile/avatar.ts';
+import { HistoryScreen } from '../profile/HistoryScreen.tsx';
+import { summarize, useHistory } from '../profile/history.ts';
 import { ProfileEditor } from '../profile/ProfileEditor.tsx';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { BUILD } from '../version.ts';
@@ -161,7 +163,9 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const profile = useProfile();
+  const played = summarize(useHistory());
   const set = (patch: Partial<GameChoice>) => setC((prev) => fit({ ...prev, ...patch }));
   const start = (choice: GameChoice) => {
     // A table the rules cannot deal opens its panel, which says why, instead of a game that cannot start.
@@ -214,6 +218,15 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
             <small>{profile.avatar && profile.name ? t('helloAgain') : t('helloPick')}</small>
           </span>
           <span className="hello-edit">{t('helloEdit')}</span>
+        </button>
+        <button type="button" className="hello-games" onClick={() => setHistoryOpen(true)}>
+          <b>{t('helloGames')}</b>
+          <span className="muted">
+            {played.games ? plural('helloGamesCount', played.games, { won: played.won }) : t('helloNoGames')}
+          </span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
         </button>
       </section>
 
@@ -287,6 +300,14 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
                 setC(renamed);
               }}
             />
+          </div>
+        </Overlay>
+      ) : null}
+
+      {historyOpen ? (
+        <Overlay labelledBy="history-title" onClose={() => setHistoryOpen(false)}>
+          <div className="panel history-panel">
+            <HistoryScreen avatar={profile.avatar ?? MY_FALLBACK} onClose={() => setHistoryOpen(false)} />
           </div>
         </Overlay>
       ) : null}

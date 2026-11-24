@@ -3644,24 +3644,52 @@ html:has(.overlay) body {
 /* The greeting on the launch screen (the owner's pick ProfilB on the 2026-11-24 canvas): the avatar, «Bonjour …»,
    a touch opens «Mon profil». */
 .hello-card {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-
-.hello-me {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 72px;
-  padding: 10px 14px 10px 10px;
+  display: grid;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: var(--surface);
+}
+
+.hello-me,
+.hello-games {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: none;
   color: var(--ink);
   text-align: left;
+}
+
+.hello-me {
+  gap: 12px;
+  min-height: 72px;
+  padding: 10px 14px 10px 10px;
+}
+
+.hello-games {
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 10px 0 14px;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.hello-games .muted {
+  flex: 1;
+  text-align: right;
+}
+
+.hello-games svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .hello-words {
@@ -3789,4 +3817,137 @@ html:has(.overlay) body {
   margin: -6px 0 0;
   text-align: center;
   font-size: 0.8rem;
+}
+
+/* «Mes parties» (HistoA): the counts, the last games, the warning that it lives on this phone, the file. */
+.history {
+  display: grid;
+  gap: 14px;
+}
+
+.history-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.history-who small {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kpi {
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.kpi b {
+  display: block;
+  font-family: var(--f-display);
+  font-size: 1.4rem;
+}
+
+.kpi span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.history-list h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.history-list ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-list li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.history-place {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.history-place.first {
+  color: var(--good-ink);
+}
+
+.history-game {
+  display: grid;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.history-names {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-game small {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.history-points {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.history-empty {
+  margin: 0;
+}
+
+.history-local {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, #e0a500 16%, var(--surface));
+  font-size: 0.82rem;
+}
+
+.history-local svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.history-file {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }

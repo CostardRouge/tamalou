@@ -13,6 +13,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 - Your profile: tap the greeting on the home screen («Bonjour …») to pick your name, one of eight colours and one of
   twelve icons. Your avatar shows on your seat and your hand, in a room's waiting list for the others to see, and its
   colour marks your moves; the bots and anyone without one are given their own. Kept on your phone only.
+- «Mes parties»: every game you finish on your phone is listed under the greeting, with your place, who played,
+  when, how and your points, and counts of games, wins and successful Tamalous. It stays on your phone; save it to a
+  file and restore it on another one.
 - The publisher's statistics page now lists each day's games with their start time, length and outcome, opens a
   game on its own page, shows the hours and weekdays people play, and leads back to the site and the game. To do so
   the game statistics keep the time to the minute and a number drawn at random for each game (the legal notice says
