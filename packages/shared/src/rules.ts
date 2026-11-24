@@ -199,6 +199,12 @@ export const RuleSetSchema = z
          * staged and confirmed before it is sent. The table's UI applies it; the engine does not read it (ADR-0016).
          */
         confirmMoves: z.boolean().default(false),
+        /**
+         * What the journal tells during a game (ADR-0026): the whole round (`full`), what each player did on their
+         * last turn (`recent`), or nothing (`off`, played from memory; the table still says the move being played).
+         * The table's UI applies it; the engine does not read it.
+         */
+        log: z.enum(['full', 'recent', 'off']).default('recent'),
       })
       .prefault({}),
   })

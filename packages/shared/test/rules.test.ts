@@ -46,6 +46,7 @@ describe('RuleSet defaults', () => {
     expect(r.gameEnd).toMatchObject({ mode: 'threshold', threshold: 100, thresholdEnd: 'lastStanding' });
     expect(r.pace.turnTimerSeconds).toBe(0);
     expect(r.assist.showKnownCards).toBe(false);
+    expect(r.assist.log).toBe('recent');
   });
 
   it('fill everything a partial input leaves out, down to one rank', () => {
@@ -77,7 +78,7 @@ describe('presets', () => {
     const quick = rulesFromPreset('quick');
     expect(quick.gameEnd).toMatchObject({ threshold: 50, thresholdEnd: 'firstElimination' });
     expect(quick.hand).toEqual(DEFAULT_RULES.hand);
-    expect(rulesFromPreset('beginner').assist.showKnownCards).toBe(true);
+    expect(rulesFromPreset('beginner').assist).toMatchObject({ showKnownCards: true, log: 'full' });
     for (const p of PRESETS) expect(() => rulesFromPreset(p.id)).not.toThrow();
   });
 

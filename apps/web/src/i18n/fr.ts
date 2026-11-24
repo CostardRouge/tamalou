@@ -382,6 +382,21 @@ export const fr = {
   opt_endRounds: 'Manches',
   opt_lastStanding: 'Dernier en lice',
   opt_firstElimination: 'Premier éliminé',
+  rule_log: 'Journal',
+  rule_log_help: 'Ce que le journal raconte pendant la partie. Aucun : on joue de mémoire.',
+  opt_logFull: 'Complet',
+  opt_logRecent: 'Dernier tour',
+  opt_logOff: 'Aucun',
+  sum_logFull: 'Le journal raconte toute la manche.',
+  sum_logRecent: 'Le journal raconte le dernier tour de chacun.',
+  sum_logOff: 'Pas de journal : on joue de mémoire.',
+  journalRecent: 'Le dernier tour de chacun',
+  journalFull: 'Toute la manche',
+  journalClose: 'Fermer le journal',
+  journalGrow: 'Agrandir le journal',
+  journalShrink: 'Réduire le journal',
+  journalRound: 'Manche {round}',
+  journalEmpty: 'Rien pour l’instant.',
 
   // Rules: summary
   sum_deck_one: '{n} paquet de 52 cartes, sans joker.',
@@ -574,7 +589,8 @@ export const fr = {
   preset_quick: 'Rapide',
   presetDesc_quick: 'Une partie courte : éliminé à 50, et la partie s’arrête au premier éliminé.',
   preset_beginner: 'Débutant',
-  presetDesc_beginner: 'Les cartes déjà vues restent affichées : pour apprendre sans travailler sa mémoire.',
+  presetDesc_beginner:
+    'Les cartes déjà vues restent affichées et le journal raconte toute la manche : pour apprendre sans travailler sa mémoire.',
   opponents: 'Adversaires',
   // Profile (profile/): the name and avatar this device plays under
   profile: 'Mon profil',

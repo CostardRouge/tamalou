@@ -247,6 +247,16 @@ export const SECTIONS: Section[] = [
       },
       { id: 'beginner', kind: 'toggle', path: ['assist', 'showKnownCards'] },
       { id: 'confirmMoves', kind: 'toggle', path: ['assist', 'confirmMoves'] },
+      {
+        id: 'log',
+        kind: 'select',
+        path: ['assist', 'log'],
+        options: [
+          { value: 'full', label: 'opt_logFull' },
+          { value: 'recent', label: 'opt_logRecent' },
+          { value: 'off', label: 'opt_logOff' },
+        ],
+      },
     ],
   },
 ];

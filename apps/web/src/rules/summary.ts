@@ -174,6 +174,10 @@ export function summarize(r: RuleSet): SummarySection[] {
         ),
         ...(r.assist.showKnownCards ? [line(t('sum_beginner'), true)] : []),
         ...(r.assist.confirmMoves ? [line(t('sum_confirmMoves'), true)] : []),
+        line(
+          t(r.assist.log === 'full' ? 'sum_logFull' : r.assist.log === 'off' ? 'sum_logOff' : 'sum_logRecent'),
+          r.assist.log !== d.assist.log,
+        ),
       ],
     },
   ];

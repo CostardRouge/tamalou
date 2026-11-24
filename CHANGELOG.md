@@ -58,6 +58,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 - The game no longer assumes you play on a phone: passing it round, «Mes parties», your profile, the home
   page, the legal notice and the link previews now speak of «un appareil» (a device), which may be a phone, a tablet
   or a computer. The pass-and-play mode is now called «À plusieurs, un seul appareil».
+- The game log is redrawn and the game master now decides what it tells: the whole round, everyone's last turn (the
+  default; the whole round with the Beginner rules) or nothing, to play from memory. Each player's turn is one block
+  with their avatar and the card they threw, and a move on one of your cards stands out. On a computer it opens as a
+  panel beside the table, which moves aside instead of being covered; on a phone it rises over your hand, half the
+  screen or almost all of it. Its button in the top bar is now an icon.
 - The rules screen is redrawn: the preset on top, then one illustrated tile per part of the rules with its rules
   in a line or two and a "changed" mark. Touch a tile to open it in place; on a computer the tiles stay in a column
   and the open one shows large beside them. Card points and powers are set on the cards themselves (touch a card,

@@ -43,6 +43,8 @@ import { HandPicker } from './HandPicker.tsx';
 import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
 import { interaction, NONE, type Pending } from './interaction.ts';
+import { Journal } from './Journal.tsx';
+import { journalFor, journalOf } from './journal.ts';
 import { describeEvent } from './log.ts';
 import { Overlay } from './Overlay.tsx';
 import { PowerMark, powerWords } from './PowerMark.tsx';
@@ -266,11 +268,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     go(a, null, () => setPending(NONE));
   };
 
-  // The journal tells a move once the screen plays it, not before its gesture has started.
-  const lines = events
-    .slice(0, fly.played)
-    .map((e) => describeEvent(e, nameOf, view.me))
-    .filter((l): l is string => l !== null);
+  // The journal tells a move once the screen plays it, not before its gesture has started. What it may tell is the
+  // game master's (rules.assist.log, ADR-0026); the band below the others always says the move being played.
+  const played = events.slice(0, fly.played);
+  const lines = played.map((e) => describeEvent(e, nameOf, view.me)).filter((l): l is string => l !== null);
+  const logMode = rules.assist.log;
+  const journalOpen = showLog && logMode !== 'off';
 
   // By hand (design D): a card picked up shows where it may land; let go, it plays that move, or asks when the drop
   // could mean two things; dropped nowhere, it springs back.
@@ -524,7 +527,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
     // third row (seven to nine opponents) is counted as a second: counted whole, it shrank my cards to nothing on a
     // short phone, while the opponents' cards are already at their smallest.
     <div
-      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}${paused ? ' paused' : ''}`}
+      className={`game${opponents.length > 3 ? ' game-crowded' : ''}${opponents.length > 6 ? ' game-packed' : ''}${spot}${choosing ? ' choosing' : ''}${drag ? ' dragging' : ''}${quickOpen || throwing ? ' quick-open' : ''}${looking ? ' revealing' : ''}${big ? ' drawing-big' : ''}${livePower ? ' power-live' : ''}${paused ? ' paused' : ''}${journalOpen ? ' journal-open' : ''}`}
       style={{ '--opp-rows': opponents.length > 3 ? 2 : 1 } as CSSProperties}
     >
       <header className="game-bar">
@@ -559,9 +562,19 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           <button type="button" className="ghost" onClick={() => setShowRules(true)}>
             {t('rules')}
           </button>
-          <button type="button" className="ghost" aria-expanded={showLog} onClick={() => setShowLog((s) => !s)}>
-            {t('journal')}
-          </button>
+          {logMode !== 'off' ? (
+            <button
+              type="button"
+              className={`ghost${journalOpen ? ' bar-on' : ''}`}
+              aria-label={t('journal')}
+              aria-expanded={journalOpen}
+              onClick={() => setShowLog((s) => !s)}
+            >
+              <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h10" />
+              </svg>
+            </button>
+          ) : null}
         </span>
       </header>
       {banner}
@@ -768,18 +781,18 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
         />
       </footer>
 
-      {showLog ? (
-        <aside className="journal" aria-label={t('journal')}>
-          <ol>
-            {lines
-              .slice(-30)
-              .reverse()
-              .map((l, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: the log only grows
-                <li key={lines.length - i}>{l}</li>
-              ))}
-          </ol>
-        </aside>
+      {journalOpen ? (
+        <Journal
+          items={journalFor(
+            journalOf(played, nameOf, view.me),
+            logMode,
+            view.players.filter((p) => !p.eliminated).length,
+          )}
+          mode={logMode}
+          nameOf={nameOf}
+          faceOf={faceOf}
+          onClose={() => setShowLog(false)}
+        />
       ) : null}
 
       {paused ? (

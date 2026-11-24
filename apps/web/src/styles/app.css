@@ -879,8 +879,13 @@ html:has(.game) body {
 
 @media (prefers-reduced-motion: reduce) {
   .game.turn-other .opponents .seat-turn,
-  .game.choosing .card-hint:not(.card-selected) .card-side {
+  .game.choosing .card-hint:not(.card-selected) .card-side,
+  .journal {
     animation: none;
+  }
+
+  .journal {
+    transition: none;
   }
 }
 
@@ -1362,24 +1367,189 @@ html:has(.game) body {
 }
 
 .journal {
+  /* On a phone, a sheet over my hand (the owner's pick C, 2026-11-24): half the screen, or almost all of it. */
   position: fixed;
-  top: 52px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(560px, calc(100vw - 24px));
-  max-height: 50dvh;
-  overflow: auto;
-  padding: 12px 16px;
-  border-radius: var(--r-md);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  height: min(52dvh, 460px);
+  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 24px 24px 0 0;
   background: var(--surface);
-  box-shadow: var(--shadow);
-  z-index: 5;
-  font-size: 0.9rem;
+  box-shadow: 0 -14px 40px -12px rgb(19 21 27 / 0.35);
+  transition: height 0.25s;
+  animation: journal-up 0.25s ease-out;
+}
+
+@keyframes journal-up {
+  from {
+    translate: 0 40px;
+    opacity: 0;
+  }
+}
+
+.journal-tall {
+  height: 88dvh;
+}
+
+.journal-handle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.journal-handle span {
+  width: 44px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--line);
+}
+
+.journal-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.journal-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.journal-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.journal-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.journal-close .icon,
+.journal-lines .icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.journal-close .icon {
+  width: 18px;
+  height: 18px;
 }
 
 .journal ol {
+  flex: 1;
+  min-height: 0;
   margin: 0;
-  padding-left: 1.2em;
+  padding: 6px 8px 12px;
+  overflow: auto;
+  list-style: none;
+}
+
+.journal-turn {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 14px;
+}
+
+.journal-latest {
+  background: var(--surface-2);
+}
+
+.journal-lines {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
+.journal-lines span {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.journal-lines .icon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: var(--b-ink);
+}
+
+.journal-lines .about-me {
+  color: var(--b-ink);
+  font-weight: 600;
+}
+
+.journal-card {
+  --w: 30px;
+  flex: none;
+}
+
+.journal-card .card {
+  --w: inherit;
+}
+
+.journal-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.journal-note::before,
+.journal-note::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
+
+.journal-empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--muted);
+}
+
+.game-bar .bar-on {
+  color: var(--a);
+}
+
+/* The discard's "throw here" chip stands above a dragged card (z-index 41), not above the open journal. */
+.game.journal-open .pile-label.drop-hint {
+  z-index: 5;
 }
 
 /* The wide table (a desktop, a tablet held sideways): the others sit round the felt as at a real table, their
@@ -1477,13 +1647,31 @@ html:has(.game) body {
     font-size: 0.78rem;
   }
 
+  /* On a computer, a panel at the right that pushes the table aside (the owner's pick A): nothing of the table is
+     hidden while it is open. */
   .journal {
-    top: 60px;
-    right: 16px;
+    top: 0;
     left: auto;
-    transform: none;
     width: 300px;
-    max-height: calc(100dvh - 80px);
+    height: auto;
+    padding-bottom: 0;
+    border-radius: 0;
+    border-left: 1px solid var(--line);
+    box-shadow: none;
+    animation: none;
+  }
+
+  .journal-handle {
+    display: none;
+  }
+
+  .journal-head {
+    padding: 18px 16px 12px;
+  }
+
+  .game.journal-open {
+    right: 300px;
+    padding-inline: max(24px, calc((100vw - 300px - 1280px) / 2));
   }
 }
 
