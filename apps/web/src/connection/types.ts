@@ -1,4 +1,4 @@
-import type { Action, GameEvent, PlayerId, PlayerView, RuleSet } from '@tamalou/shared';
+import type { Action, Avatar, GameEvent, PlayerId, PlayerView, RuleSet } from '@tamalou/shared';
 
 // What the UI talks to (docs/SPEC.md §4.3): the same interface whether the game runs in this browser
 // (LocalConnection) or on a server (RemoteConnection, M6). The UI never sees anything but its seat's view and events.
@@ -12,6 +12,8 @@ export interface GameConnection {
   /** The events this seat received, oldest first. */
   events(): readonly GameEvent[];
   send(action: Action): SendResult;
+  /** Every seat's avatar (packages/shared avatar.ts); absent, the screen gives them from the seats' order. */
+  avatars?(): ReadonlyMap<PlayerId, Avatar>;
   /** Ready for the next round. */
   continueRound(): void;
   /** Players who asked for the next round. */

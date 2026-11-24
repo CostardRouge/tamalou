@@ -10,15 +10,23 @@ import { GameScreen } from './game/GameScreen.tsx';
 import { PACE_FACTOR } from './game/pace.ts';
 import { choiceFor, type GameChoice, HomeScreen, playerName } from './home/HomeScreen.tsx';
 import { MODE_DEFAULTS } from './home/modes.ts';
+import { rememberedName } from './home/name.ts';
 import { onLangChange, t } from './i18n/index.ts';
 import { OnlineScreen } from './online/OnlineScreen.tsx';
+import { rememberedAvatar } from './profile/avatar.ts';
 import { applyUpdate, dismissUpdate, readShortcut, usePwa } from './pwa.ts';
 import { reportUsage, setUsageAvailable, startGame } from './usage.ts';
 
 export function newGame(c: GameChoice): GameConnection {
   const names = t('botNames').split(',');
+  const humans = c.mode === 'solo' ? [c.name.trim() || t('homeNameDefault')] : c.players.map(playerName);
+  // This device's avatar goes to its player: the solo one, or the one at a shared table who has its name.
+  const owner = rememberedName().toLocaleLowerCase();
+  const ownerAt = c.mode === 'solo' ? 0 : humans.findIndex((h) => h.trim().toLocaleLowerCase() === owner);
+  const mine = rememberedAvatar();
   return new LocalConnection({
-    humans: c.mode === 'solo' ? [c.name.trim() || t('homeNameDefault')] : c.players.map(playerName),
+    humans,
+    avatars: humans.map((_, i) => (i === ownerAt ? mine : null)),
     bots: Array.from({ length: c.bots }, (_, i) => ({ name: names[i] ?? t('botName', { n: i + 1 }), level: c.level })),
     rules: rulesOf({ preset: c.preset, overrides: c.overrides }, MODE_DEFAULTS[c.mode]),
     botPace: PACE_FACTOR[getSettings().botPace],

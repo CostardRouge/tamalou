@@ -1,4 +1,13 @@
-import type { Action, Card, PlayerId, PlayerSeatView, PlayerView, SlotRef } from '@tamalou/shared';
+import {
+  type Action,
+  type Avatar as AvatarValue,
+  avatarsFor,
+  type Card,
+  type PlayerId,
+  type PlayerSeatView,
+  type PlayerView,
+  type SlotRef,
+} from '@tamalou/shared';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
   type CSSProperties,
@@ -16,6 +25,8 @@ import { getSettings, updateSettings, useSettings } from '../feedback/settings.t
 import { useFeedback } from '../feedback/useFeedback.ts';
 import { tableSeats } from '../home/table.ts';
 import { cardName, plural, t } from '../i18n/index.ts';
+import { Avatar } from '../profile/Avatar.tsx';
+import { COLOR_HEX } from '../profile/avatar.ts';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
 import { BUILD } from '../version.ts';
 import { type Act, type ActIcon, ActionBar, Icon } from './ActionBar.tsx';
@@ -70,15 +81,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   currentRef.current = view.current;
   // The others' moves played by their hand (game/pace.ts): a named cursor with a mouse, a fingertip on a touch screen.
   const [handKindHere] = useState(handKind);
-  const colorOf = (id: PlayerId) =>
-    `var(--seat-${
-      (Math.max(
-        0,
-        view.players.filter((p) => p.id !== view.me).findIndex((p) => p.id === id),
-      ) %
-        5) +
-      1
-    })`;
+  // Everyone's avatar (packages/shared avatar.ts): their colour also marks their hand, their bubbles, their drawn card.
+  const faces = conn.avatars?.() ?? avatarsFor(view.players);
+  const faceOf = (id: PlayerId) => faces.get(id) ?? FALLBACK_FACE;
+  const colorOf = (id: PlayerId) => COLOR_HEX[faceOf(id).color];
   const fly = useFlights(events, view.me, !reduced, {
     replayFrom,
     handOf: (id) => view.players.find((p) => p.id === id)?.slots.length ?? 4,
@@ -568,9 +574,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             style={{ '--sx': `${around[i]?.x ?? 50}%`, '--sy': `${around[i]?.y ?? 20}%` } as CSSProperties}
           >
             <div className="seat-head">
-              <span className="seat-name">
-                {view.current === p.id ? <span aria-hidden="true">▸ </span> : null}
-                {p.name}
+              <span className="seat-who">
+                <Avatar avatar={faceOf(p.id)} size="xs" />
+                <span className="seat-name">
+                  {view.current === p.id ? <span aria-hidden="true">▸ </span> : null}
+                  {p.name}
+                </span>
               </span>
               {livePower?.player === p.id ? (
                 <PowerMark power={livePower.power} />
@@ -677,7 +686,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           data-zone="mine"
         >
           <div className="seat-head">
-            <span className="seat-name">{me.name}</span>
+            <span className="seat-who">
+              <Avatar avatar={faceOf(me.id)} size="xs" />
+              <span className="seat-name">{me.name}</span>
+            </span>
             {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
             <span className="mono seat-total">{plural('points', me.total)}</span>
           </div>
@@ -873,6 +885,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 }
 
 /** What a tap on the table may land on without it being a tap on nothing. */
+const FALLBACK_FACE: AvatarValue = { color: 'slate', icon: 'star' };
+
 const INTERACTIVE = 'button, a, input, select, textarea, label, [role="dialog"], .draggable, .journal';
 
 const sameRef = (a: SlotRef, b: SlotRef) => a.player === b.player && a.slot === b.slot;

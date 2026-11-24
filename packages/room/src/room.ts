@@ -55,6 +55,7 @@ interface Seat {
   name: string;
   kind: 'human' | 'bot';
   level?: SeatInfo['level'];
+  avatar?: SeatInfo['avatar'];
   /** null once the player left for good. */
   token: string | null;
   ready: boolean;
@@ -109,6 +110,7 @@ export class Room {
         name: s.name,
         kind: s.kind,
         ...(s.level ? { level: s.level } : {}),
+        ...(s.avatar ? { avatar: s.avatar } : {}),
         ready: s.kind === 'bot' || s.id === this.gm || s.ready,
         connected: s.kind === 'bot' || s.conn !== null,
         away: s.away,
@@ -166,6 +168,7 @@ export class Room {
           return;
         }
         seat.name = msg.name;
+        if (msg.avatar) seat.avatar = msg.avatar;
         this.broadcastLobby();
         return;
       case 'ready':
@@ -257,6 +260,7 @@ export class Room {
         id: this.nextSeatId(),
         name: msg.name,
         kind: 'human',
+        ...(msg.avatar ? { avatar: msg.avatar } : {}),
         token: this.token(),
         ready: false,
         conn: c.id,

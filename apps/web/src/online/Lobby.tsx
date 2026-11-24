@@ -1,13 +1,15 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
 import { tableFits } from '@tamalou/engine';
-import { PRESETS, rulesOf, type SeatInfo } from '@tamalou/shared';
-import { type CSSProperties, useMemo, useState } from 'react';
+import { avatarsFor, PRESETS, rulesOf, type SeatInfo } from '@tamalou/shared';
+import { useMemo, useState } from 'react';
 import { renderSVG } from 'uqr';
 import type { RoomClient } from '../connection/remote.ts';
 import { Overlay } from '../game/Overlay.tsx';
 import { MAX_SEATS } from '../home/modes.ts';
 import { rememberedName, rememberName } from '../home/name.ts';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
+import { Avatar } from '../profile/Avatar.tsx';
+import { rememberedAvatar } from '../profile/avatar.ts';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { RulesPanel } from '../rules/RulesSummary.tsx';
 
@@ -17,6 +19,8 @@ import { RulesPanel } from '../rules/RulesSummary.tsx';
 // Laid out for a full table (the owner's pick A on the 2026-11-21 canvas): the way in is one ticket (the code, the QR
 // code as a thumbnail that opens large, «Inviter»), the players are tiles in a grid, and the button to start or to say
 // «Prêt» stays in a bar pinned at the bottom of the screen.
+
+const FALLBACK = { color: 'slate', icon: 'star' } as const;
 
 const LEVEL_KEY: Record<BotLevel, Key> = { easy: 'levelEasy', medium: 'levelMedium', hard: 'levelHard' };
 
@@ -58,6 +62,7 @@ export function Lobby({ client, onLeave }: Props) {
   const rules = rulesOf(lobby.rules);
   const preset = PRESETS.find((p) => p.id === lobby.rules.preset);
   const changes = countChanges(lobby.rules.overrides);
+  const faces = avatarsFor(lobby.seats);
   const everyoneReady = lobby.seats.every((s) => s.ready || s.away);
   const fits = tableFits(lobby.seats.length, rules);
   const canStart = lobby.seats.length >= 2 && everyoneReady && fits;
@@ -161,15 +166,9 @@ export function Lobby({ client, onLeave }: Props) {
           {t('lobbyPlayers', { n: lobby.seats.length, max: MAX_SEATS })}
         </h2>
         <ul className="lobby-seats">
-          {lobby.seats.map((s, i) => (
+          {lobby.seats.map((s) => (
             <li key={s.id} className={`${s.connected ? '' : 'offline'}${s.ready ? ' is-ready' : ''}`}>
-              <span
-                className="lobby-avatar"
-                style={{ '--avatar': `var(--seat-${(i % 5) + 1})` } as CSSProperties}
-                aria-hidden="true"
-              >
-                {s.name.slice(0, 1)}
-              </span>
+              <Avatar avatar={faces.get(s.id) ?? FALLBACK} size="md" />
               <span className="seat-name">
                 {s.name}
                 {s.id === client.seat ? <span className="muted"> ({t('lobbyYou')})</span> : null}
@@ -265,7 +264,7 @@ export function Lobby({ client, onLeave }: Props) {
             e.preventDefault();
             if (!name.trim()) return;
             rememberName(name);
-            client.sit(name.trim());
+            client.sit(name.trim(), rememberedAvatar());
           }}
         >
           <p className="muted">{t('lobbySpectator')}</p>

@@ -4,6 +4,7 @@ import { GameScreen } from '../game/GameScreen.tsx';
 import { MAX_SEATS } from '../home/modes.ts';
 import { rememberedName, rememberName } from '../home/name.ts';
 import { type Key, t } from '../i18n/index.ts';
+import { rememberedAvatar } from '../profile/avatar.ts';
 import { reportUsage, startGame } from '../usage.ts';
 import { Lobby } from './Lobby.tsx';
 
@@ -57,7 +58,7 @@ function Room({
   const [, bump] = useReducer((x: number) => x + 1, 0);
   // biome-ignore lint/correctness/useExhaustiveDependencies: one client per room code
   useEffect(() => {
-    const c = new RoomClient({ code, ...joining }, socket);
+    const c = new RoomClient({ code, ...joining, avatar: rememberedAvatar() }, socket);
     const off = c.subscribe(bump);
     setClient(c);
     return () => {

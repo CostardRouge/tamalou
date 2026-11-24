@@ -145,6 +145,16 @@ describe('room lobby', () => {
     expect(bob.lobby().seats.find((s) => s.id === 's2')?.ready).toBe(false);
     bob.send({ t: 'setName', name: 'Bobby' });
     expect(gm.lobby().seats[1]?.name).toBe('Bobby');
+    expect(gm.lobby().seats[1]?.avatar).toBeUndefined();
+    bob.send({ t: 'setName', name: 'Bobby', avatar: { color: 'teal', icon: 'moon' } });
+    expect(gm.lobby().seats[1]?.avatar).toEqual({ color: 'teal', icon: 'moon' });
+  });
+
+  it('seats a player with the avatar chosen on their device', () => {
+    const s = setup();
+    const gm = s.client('a');
+    gm.hello('Alice', { avatar: { color: 'rose', icon: 'heart' } });
+    expect(gm.lobby().seats[0]?.avatar).toEqual({ color: 'rose', icon: 'heart' });
   });
 
   it('starts only with two seats and every other human ready', () => {

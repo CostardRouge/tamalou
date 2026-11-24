@@ -2236,18 +2236,6 @@ html:has(.overlay) body {
   box-shadow: inset 0 0 0 2px var(--good);
 }
 
-.lobby-avatar {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-pill);
-  background: var(--avatar, var(--seat-1));
-  color: var(--on-seat);
-  font-family: var(--f-display);
-  font-weight: 800;
-}
-
 .lobby-seats .seat-name {
   max-width: 100%;
   font-size: 0.9rem;
@@ -3611,4 +3599,194 @@ html:has(.overlay) body {
   .draw-scrim {
     animation: none;
   }
+}
+
+/* ---------------------------------------------------------------- avatars (profile/Avatar.tsx) */
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--av-size, 26px);
+  height: var(--av-size, 26px);
+  border-radius: var(--r-pill);
+  background: var(--avatar, var(--seat-1));
+  color: var(--on-seat);
+}
+
+.avatar svg {
+  width: 54%;
+  height: 54%;
+  fill: currentColor;
+}
+
+.avatar-xs {
+  --av-size: 18px;
+}
+
+.avatar-md {
+  --av-size: 38px;
+}
+
+.avatar-lg {
+  --av-size: 56px;
+  box-shadow: 0 10px 20px -10px rgba(19, 21, 27, 0.5);
+}
+
+.seat-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  align-self: center;
+}
+
+/* The greeting on the launch screen (the owner's pick ProfilB on the 2026-11-24 canvas): the avatar, «Bonjour …»,
+   a touch opens «Mon profil». */
+.hello-card {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.hello-me {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 10px 14px 10px 10px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+}
+
+.hello-words {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.hello-words b {
+  font-family: var(--f-display);
+  font-size: 1.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hello-words small {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hello-edit {
+  flex: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--a);
+}
+
+/* «Mon profil» (ProfilA): the avatar large as it changes, the name, eight colours, twelve icons. */
+.profile {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--surface-2);
+}
+
+.profile-hero b {
+  display: block;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.profile-hero small {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.swatch {
+  position: relative;
+  height: 40px;
+  border-radius: var(--r-pill);
+  background: var(--swatch);
+  border: 3px solid transparent;
+  cursor: pointer;
+}
+
+.swatch.on {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--surface);
+}
+
+.swatch input,
+.icon-pick input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.swatch:has(input:focus-visible),
+.icon-pick:has(input:focus-visible) {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
+}
+
+.icon-picks {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.icon-pick {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 48px;
+  border-radius: var(--r-md);
+  border: 2px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.icon-pick svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.icon-pick.on {
+  border-color: var(--a);
+  color: var(--a);
+  background: color-mix(in srgb, var(--a) 12%, var(--surface));
+}
+
+.profile-save {
+  min-height: 52px;
+}
+
+.profile-note {
+  margin: -6px 0 0;
+  text-align: center;
+  font-size: 0.8rem;
 }
