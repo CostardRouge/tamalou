@@ -5,7 +5,7 @@
 
 export const BACK_COLORS = ['cobalt', 'vermilion', 'emerald', 'violet', 'night', 'bordeaux'] as const;
 export const PATTERNS = ['stripes', 'diamonds', 'dots', 'checks', 'plain'] as const;
-export const EFFECTS = ['none', 'shine', 'iris', 'holo'] as const;
+export const EFFECTS = ['none', 'iris', 'holo'] as const;
 
 export type BackColor = (typeof BACK_COLORS)[number];
 export type Pattern = (typeof PATTERNS)[number];

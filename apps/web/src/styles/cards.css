@@ -219,83 +219,77 @@
   background-size: calc(var(--gap-w) * 1.4) calc(var(--gap-w) * 1.4);
 }
 
-/* Effects. A glint that crosses the back now and then; an iridescent sheen that drifts; a holographic foil, rainbow
-   bands and sparkles that follow the light (--tilt-x/--tilt-y, cards/tilt.ts) and also cover the court cards. Each is a
-   layer moved by transform only, so many cards on a table stay smooth; nothing moves when motion is reduced. */
-.classic-back.fx-shine::after,
+/* Effects (cards/deck.ts). Nothing moves on its own: the light moves them. --tilt-x and --tilt-y, in [-1, 1], come
+   from the pointer or the phone's tilt (cards/tilt.ts) and are 0 without them, so the card simply shines, still. Each
+   layer is larger than the card by half its width on every side and moves by at most a third of it, so its edge never
+   shows. «Irisé» is an oil slick: soft pools of colour that slide over each other; «Holo» is a rainbow foil in bands,
+   which also covers the court cards and the jokers. Both carry a glare that follows the light. */
 .classic-back.fx-iris::after,
 .classic-back.fx-holo::after,
+.classic-back.fx-iris::before,
 .classic-back.fx-holo::before,
 .classic-face.foil::after {
   content: "";
   position: absolute;
+  inset: -50%;
   pointer-events: none;
-}
-
-.classic-back.fx-shine::after {
-  inset: -10% -150%;
-  background: linear-gradient(100deg, transparent 42%, rgb(255 255 255 / 0.55) 50%, transparent 58%);
-  animation: card-glint 5.5s ease-in-out infinite;
-}
-
-@keyframes card-glint {
-  0% {
-    transform: translateX(-40%);
-  }
-  35%,
-  100% {
-    transform: translateX(40%);
-  }
+  translate: calc(var(--tilt-x, 0) * var(--w) * 0.3) calc(var(--tilt-y, 0) * var(--w) * 0.3);
 }
 
 .classic-back.fx-iris::after {
-  inset: -60% -200%;
-  background: linear-gradient(115deg, #ff7ac6, #ffd36e, #8cff9e, #6ee7ff, #b18cff, #ff7ac6, #ffd36e, #8cff9e, #6ee7ff);
-  mix-blend-mode: soft-light;
-  opacity: 0.9;
-  animation: card-drift 9s ease-in-out infinite alternate;
+  --ring: calc(var(--w) * 0.075);
+  background:
+    repeating-radial-gradient(
+      ellipse 120% 90% at 32% 38%,
+      #ff3fa4 0,
+      #ffcf3f var(--ring),
+      #3dffa8 calc(var(--ring) * 2),
+      #2fd5ff calc(var(--ring) * 3),
+      #8a5cff calc(var(--ring) * 4),
+      #ff3fa4 calc(var(--ring) * 5)
+    ),
+    repeating-radial-gradient(
+      ellipse 90% 120% at 72% 68%,
+      #2fd5ff 0,
+      #8a5cff calc(var(--ring) * 1.3),
+      #ff3fa4 calc(var(--ring) * 2.6),
+      #ffcf3f calc(var(--ring) * 3.9),
+      #3dffa8 calc(var(--ring) * 5.2),
+      #2fd5ff calc(var(--ring) * 6.5)
+    );
+  background-blend-mode: hue;
+  -webkit-mask-image:
+    radial-gradient(ellipse 28% 24% at 40% 42%, #000 20%, transparent 100%),
+    radial-gradient(ellipse 26% 26% at 62% 60%, #000 15%, transparent 100%);
+  mask-image:
+    radial-gradient(ellipse 28% 24% at 40% 42%, #000 20%, transparent 100%),
+    radial-gradient(ellipse 26% 26% at 62% 60%, #000 15%, transparent 100%);
+  mix-blend-mode: color-dodge;
+  opacity: 0.55;
+  filter: blur(calc(var(--w) * 0.012));
 }
 
-@keyframes card-drift {
-  from {
-    transform: translateX(-25%);
-  }
-  to {
-    transform: translateX(25%);
-  }
-}
-
-.classic-back.fx-holo::after,
-.classic-face.foil::after {
-  inset: -80%;
+.classic-back.fx-holo::after {
   background: repeating-linear-gradient(
     115deg,
-    #ff5f9e 0%,
-    #ffc45f 6%,
-    #a8ff6a 12%,
-    #5ff4ff 18%,
-    #9f7bff 24%,
-    #ff5f9e 30%
+    #ff5f9e 0,
+    #ffc45f calc(var(--w) * 0.08),
+    #a8ff6a calc(var(--w) * 0.16),
+    #5ff4ff calc(var(--w) * 0.24),
+    #9f7bff calc(var(--w) * 0.32),
+    #ff5f9e calc(var(--w) * 0.4)
   );
   mix-blend-mode: color-dodge;
-  opacity: 0.28;
-  translate: calc(var(--tilt-x, 0) * 18%) calc(var(--tilt-y, 0) * 12%);
-  animation: card-drift 7s ease-in-out infinite alternate;
+  opacity: 0.3;
 }
 
+/* The glare: a soft light where the light falls, moving the other way from the colours. */
+.classic-back.fx-iris::before,
 .classic-back.fx-holo::before {
-  inset: 0;
   z-index: 1;
-  background:
-    radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 1.6px),
-    radial-gradient(circle at 70% 60%, #fff 0 1px, transparent 1.6px),
-    radial-gradient(circle at 45% 85%, #fff 0 0.8px, transparent 1.4px);
-  background-size:
-    calc(var(--gap-w) * 2.2) calc(var(--gap-w) * 2.6),
-    calc(var(--gap-w) * 3) calc(var(--gap-w) * 2.4),
-    calc(var(--gap-w) * 1.8) calc(var(--gap-w) * 2);
-  opacity: calc(0.35 + 0.35 * var(--tilt-x, 0));
-  mix-blend-mode: overlay;
+  background: radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.4), transparent 22%);
+  mix-blend-mode: soft-light;
+  translate: calc(var(--tilt-x, 0) * var(--w) * -0.3) calc(var(--tilt-y, 0) * var(--w) * -0.3);
 }
 
 /* On a light face, the foil is a pastel tint the inks stay readable through. */
@@ -304,19 +298,15 @@
 }
 
 .classic-face.foil::after {
+  background: repeating-linear-gradient(
+    115deg,
+    #ff5f9e 0,
+    #ffc45f calc(var(--w) * 0.1),
+    #a8ff6a calc(var(--w) * 0.2),
+    #5ff4ff calc(var(--w) * 0.3),
+    #9f7bff calc(var(--w) * 0.4),
+    #ff5f9e calc(var(--w) * 0.5)
+  );
   mix-blend-mode: multiply;
-  opacity: 0.32;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .classic-back.fx-iris::after,
-  .classic-back.fx-holo::after,
-  .classic-face.foil::after {
-    animation: none;
-    translate: none;
-  }
-
-  .classic-back.fx-shine::after {
-    display: none;
-  }
+  opacity: 0.3;
 }

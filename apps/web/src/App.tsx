@@ -142,7 +142,7 @@ export function App() {
 
   // The player's cards (cards/deck.ts): every card on every screen is drawn in this style.
   const deck = useSettings().deck;
-  useHoloTilt(deck.effect === 'holo');
+  useHoloTilt(deck.effect !== 'none');
 
   return (
     // Animations follow the system's "reduce motion" setting.

@@ -36,6 +36,8 @@ describe('the cards’ style', () => {
       mark: 'AB',
       effect: 'holo',
     });
+    // The glint that swept the backs is gone (the owner, 2026-11-24): a device that chose it gets plain cards.
+    expect(readDeck({ effect: 'shine' }).effect).toBe('none');
     expect(cleanMark(' 🃏♠x ')).toBe('🃏♠');
     expect(cleanMark('')).toBe('');
   });

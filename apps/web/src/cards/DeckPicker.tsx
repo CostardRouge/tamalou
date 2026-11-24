@@ -38,13 +38,11 @@ const PATTERN_NAME: Record<Pattern, Key> = {
 };
 const EFFECT_NAME: Record<Effect, Key> = {
   none: 'effectNone',
-  shine: 'effectShine',
   iris: 'effectIris',
   holo: 'effectHolo',
 };
 const EFFECT_HINT: Record<Effect, Key> = {
   none: 'effectNoneHint',
-  shine: 'effectShineHint',
   iris: 'effectIrisHint',
   holo: 'effectHoloHint',
 };
@@ -121,7 +119,7 @@ export function DeckPicker({ name }: { name: string }) {
       </label>
 
       <span className="deck-label">{t('deckEffect')}</span>
-      <div className="segmented four">
+      <div className="segmented">
         {EFFECTS.map((e) => (
           <label key={e} className={deck.effect === e ? 'on' : ''}>
             <input
