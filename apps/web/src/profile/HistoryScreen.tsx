@@ -1,5 +1,6 @@
 import type { Avatar as AvatarValue } from '@tamalou/shared';
 import { useRef, useState } from 'react';
+import { focusOnMount } from '../game/Overlay.tsx';
 import { currentLang, type Key, ordinal, plural, t } from '../i18n/index.ts';
 import { Avatar } from './Avatar.tsx';
 import { historyFile, type PlayedGame, restoreHistory, summarize, useHistory } from './history.ts';
@@ -76,7 +77,7 @@ export function HistoryScreen({ avatar, onClose }: { avatar: AvatarValue; onClos
             ) : null}
           </span>
         </div>
-        <button type="button" className="ghost" onClick={onClose} ref={(el) => el?.focus()}>
+        <button type="button" className="ghost" onClick={onClose} ref={focusOnMount}>
           {t('close')}
         </button>
       </div>

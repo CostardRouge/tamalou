@@ -4,7 +4,7 @@ import { avatarsFor, PRESETS, rulesOf, type SeatInfo } from '@tamalou/shared';
 import { useMemo, useState } from 'react';
 import { renderSVG } from 'uqr';
 import type { RoomClient } from '../connection/remote.ts';
-import { Overlay } from '../game/Overlay.tsx';
+import { focusOnMount, Overlay } from '../game/Overlay.tsx';
 import { MAX_SEATS } from '../home/modes.ts';
 import { rememberedName, rememberName } from '../home/name.ts';
 import { type Key, plural, presetText, t } from '../i18n/index.ts';
@@ -292,7 +292,7 @@ export function Lobby({ client, onLeave }: Props) {
               {client.code}
             </p>
             <p className="muted">{t('lobbyAccessHint')}</p>
-            <button type="button" className="btn btn-primary" onClick={() => setQrBig(false)} ref={(el) => el?.focus()}>
+            <button type="button" className="btn btn-primary" onClick={() => setQrBig(false)} ref={focusOnMount}>
               {t('close')}
             </button>
           </div>

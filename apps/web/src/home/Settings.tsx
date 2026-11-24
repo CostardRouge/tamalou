@@ -2,6 +2,7 @@ import { DeckPicker } from '../cards/DeckPicker.tsx';
 import { updateSettings, useSettings } from '../feedback/settings.ts';
 import { HandPicker } from '../game/HandPicker.tsx';
 import { HandWatch } from '../game/HandWatch.tsx';
+import { focusOnMount } from '../game/Overlay.tsx';
 import { currentLang, LANGS, type Lang, setLang, t } from '../i18n/index.ts';
 import { install, usePwa } from '../pwa.ts';
 
@@ -20,7 +21,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
         <h2 id="settings-title" className="field-title">
           {t('settings')}
         </h2>
-        <button type="button" className="ghost" onClick={onClose} ref={(el) => el?.focus()}>
+        <button type="button" className="ghost" onClick={onClose} ref={focusOnMount}>
           {t('close')}
         </button>
       </div>

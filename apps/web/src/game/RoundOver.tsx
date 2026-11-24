@@ -8,6 +8,7 @@ import { rememberedName } from '../home/name.ts';
 import { cardName, t } from '../i18n/index.ts';
 import { gameLine, type PlayedMode, recordGame } from '../profile/history.ts';
 import { endGame } from '../usage.ts';
+import { focusOnMount } from './Overlay.tsx';
 import { roundHeadline, type Seats, seatLabel } from './roundText.ts';
 
 // The end of a round (docs/SPEC.md §6): every hand turned over one card after the other, the points of the round and
@@ -20,9 +21,6 @@ interface Props {
   onQuit: () => void;
   onReplay?: (() => void) | undefined;
 }
-
-/** The panel's main button takes the focus when it appears, so a keyboard continues with Enter. */
-const focusOnMount = (el: HTMLButtonElement | null) => el?.focus();
 
 export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
   const result = view.lastResult;

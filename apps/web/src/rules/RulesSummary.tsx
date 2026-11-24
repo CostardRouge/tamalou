@@ -1,6 +1,6 @@
 import type { RuleSet } from '@tamalou/shared';
 import { useSettings } from '../feedback/settings.ts';
-import { Overlay } from '../game/Overlay.tsx';
+import { focusOnMount, Overlay } from '../game/Overlay.tsx';
 import { t } from '../i18n/index.ts';
 import { RulesCards } from './RulesCards.tsx';
 import { summarize } from './summary.ts';
@@ -35,7 +35,7 @@ export function RulesPanel({ rules, onClose }: { rules: RuleSet; onClose: () => 
       <div className="panel rc-panel">
         <div className="panel-head">
           <h2 id="rules-title">{t('editorTitle')}</h2>
-          <button type="button" className="ghost" onClick={onClose} ref={(el) => el?.focus()}>
+          <button type="button" className="ghost" onClick={onClose} ref={focusOnMount}>
             {t('close')}
           </button>
         </div>

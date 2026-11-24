@@ -11,6 +11,13 @@ interface Props {
   children: ReactNode;
 }
 
+/**
+ * A ref that focuses its element once, when it appears. Module-level, so its identity never changes: an inline
+ * `ref={(el) => el?.focus()}` is a new function at every render, which React calls again each time, moving the focus
+ * back to the button and scrolling a long panel to its top whenever a setting in it changed.
+ */
+export const focusOnMount = (el: HTMLElement | null) => el?.focus();
+
 export function Overlay({ labelledBy, className, onClose, children }: Props) {
   // On the document, not the dialog: a panel that focuses nothing (a mode's panel) must still close on Escape.
   useEffect(() => {

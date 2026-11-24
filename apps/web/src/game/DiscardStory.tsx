@@ -6,7 +6,7 @@ import { Avatar } from '../profile/Avatar.tsx';
 import { Icon } from './ActionBar.tsx';
 import type { DiscardStory as Story } from './discardStory.ts';
 import { storyLine } from './discardStory.ts';
-import { Overlay } from './Overlay.tsx';
+import { focusOnMount, Overlay } from './Overlay.tsx';
 
 // The discard laid out (the owner's pick E, rule assist.discardStory, ADR-0026): opened by its own icon beside the
 // discard, never by a touch on the discard, which takes it. The cards in a row, newest first, with who threw each; a
@@ -54,7 +54,7 @@ export function DiscardStoryPanel({ story, me, nameOf, faceOf, onClose }: Props)
               {taken ? ` · ${plural('storyTaken', taken)}` : ''}
             </p>
           </div>
-          <button type="button" className="ghost" onClick={onClose} ref={(el) => el?.focus()}>
+          <button type="button" className="ghost" onClick={onClose} ref={focusOnMount}>
             {t('close')}
           </button>
         </div>
