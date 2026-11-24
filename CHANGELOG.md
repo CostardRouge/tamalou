@@ -41,6 +41,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The rules screen is redrawn: the preset on top, then one illustrated tile per part of the rules with its rules
+  in a line or two and a "changed" mark. Touch a tile to open it in place; on a computer the tiles stay in a column
+  and the open one shows large beside them. Card points and powers are set on the cards themselves (touch a card,
+  then − / + or its power), the cards seen at the start by touching them in the hand, and switches and numbers are
+  easier to read.
 - A room's waiting screen is redone for a full table: one "room access" ticket with the code, a QR code you tap
   to enlarge and a single "Invite players" button; the players as tiles in a grid; the button to start or to say you
   are ready pinned at the bottom of the screen.

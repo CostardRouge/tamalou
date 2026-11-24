@@ -3,38 +3,26 @@ import {
   encodeRulesChoice,
   exportRulesJson,
   importRulesJson,
-  POWERS,
-  type Power,
   PRESETS,
-  RANKS,
-  type Rank,
-  type RuleSet,
   type RuleSetInput,
   type RulesChoice,
   rulesOf,
-  type Suit,
 } from '@tamalou/shared';
-import { type ReactNode, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { trackEvent } from '../audience.ts';
-import { type Key, plural, presetText, rankName, t } from '../i18n/index.ts';
-import { displayNumber, type Field, getAt, SECTIONS, setAt } from './fields.ts';
-import { RulesSummary } from './RulesSummary.tsx';
+import { plural, presetText, t } from '../i18n/index.ts';
+import { FieldRow } from './FieldRow.tsx';
+import { getAt, SECTIONS, setAt } from './fields.ts';
+import { summarize } from './summary.ts';
+import { TileArt } from './TileArt.tsx';
 
-// The game master's screen (docs/SPEC.md §3): a preset, then every setting with its French help, a live summary, and
-// the rules out and in as a JSON file or a link. The editor holds full rules; what it hands back is a preset and the
-// smallest set of changes from it.
+// The game master's screen (docs/SPEC.md §3), as the owner picked it on the 2026-11-24 canvas: the preset on top, then
+// one illustrated tile per section saying tonight's rules in a line or two (summary.ts) and marked "modifié" when the
+// game master changed it. On a phone the tiles are stacked and the one touched opens in place (H); on a wide screen
+// they stay in a column and the chosen one opens large beside them (I). The editor holds full rules; what it hands back
+// is a preset and the smallest set of changes from it.
 
-const SUIT_SETS: { id: string; suits: Suit[]; label: Key | null; symbol?: string }[] = [
-  { id: 'all', suits: [], label: 'suitsAll' },
-  { id: 'red', suits: ['H', 'D'], label: 'suitsRed' },
-  { id: 'black', suits: ['S', 'C'], label: 'suitsBlack' },
-  { id: 'S', suits: ['S'], label: null, symbol: '♠' },
-  { id: 'H', suits: ['H'], label: null, symbol: '♥' },
-  { id: 'D', suits: ['D'], label: null, symbol: '♦' },
-  { id: 'C', suits: ['C'], label: null, symbol: '♣' },
-];
-const suitSetOf = (suits: Suit[]) =>
-  SUIT_SETS.find((s) => JSON.stringify(s.suits) === JSON.stringify(suits))?.id ?? 'all';
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 const presetDescription = (id: string) => {
   const p = PRESETS.find((x) => x.id === id);
@@ -48,6 +36,15 @@ export function countChanges(overrides: object): number {
   );
 }
 
+/** The wide layout, from the width where a column of tiles and an open section fit side by side. */
+const WIDE = '(min-width: 960px)';
+const subscribeWide = (onChange: () => void) => {
+  const media = globalThis.matchMedia?.(WIDE);
+  media?.addEventListener('change', onChange);
+  return () => media?.removeEventListener('change', onChange);
+};
+const isWide = () => globalThis.matchMedia?.(WIDE).matches ?? false;
+
 interface Props {
   choice: RulesChoice;
   /** The mode's own defaults, under the game master's changes (rulesOf). */
@@ -58,8 +55,23 @@ interface Props {
 
 export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
   const rules = rulesOf(choice, base);
+  const preset = rulesOf({ preset: choice.preset, overrides: {} }, base);
   const [status, setStatus] = useState('');
+  const [opened, setOpened] = useState<string | null>(null);
+  const wide = useSyncExternalStore(subscribeWide, isWide, () => false);
+  // A wide screen always shows a section beside the tiles.
+  const open = opened ?? (wide ? (SECTIONS[0]?.id ?? null) : null);
   const file = useRef<HTMLInputElement>(null);
+  const tiles = useRef<HTMLDivElement>(null);
+
+  // On a phone, the tile just opened comes to the top: the one above may have closed and moved it.
+  useEffect(() => {
+    if (wide || !opened) return;
+    const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    tiles.current
+      ?.querySelector(`[data-section="${opened}"]`)
+      ?.scrollIntoView?.({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+  }, [opened, wide]);
 
   const update = (path: readonly string[], value: unknown) => {
     const next = setAt(rules, path, value);
@@ -103,9 +115,10 @@ export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
   };
 
   const changes = countChanges(choice.overrides);
+  const summary = summarize(rules);
 
   return (
-    <main className="editor">
+    <main className={`editor${wide ? ' editor-wide' : ''}`}>
       <header className="editor-head">
         <h1>{t('editorTitle')}</h1>
         <button type="button" className="btn btn-primary" onClick={onDone}>
@@ -113,9 +126,9 @@ export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
         </button>
       </header>
 
-      <fieldset className="field">
-        <legend>{t('homePreset')}</legend>
-        <div className="segmented" style={{ gridTemplateColumns: `repeat(${PRESETS.length}, 1fr)` }}>
+      <fieldset className="editor-presets">
+        <legend className="sr-only">{t('homePreset')}</legend>
+        <div className="pills big">
           {PRESETS.map((p) => (
             <label key={p.id} className={choice.preset === p.id ? 'on' : ''}>
               <input
@@ -138,21 +151,61 @@ export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
         </p>
       </fieldset>
 
-      {SECTIONS.map((section, i) => (
-        <details key={section.id} className="rule-section" open={i === 0}>
-          <summary>{t(section.title)}</summary>
-          {section.fields
-            .filter((f) => !f.when || f.when(rules))
-            .map((f) => (
-              <FieldRow key={f.id} field={f} rules={rules} update={update} />
-            ))}
-        </details>
-      ))}
-
-      <section className="editor-summary">
-        <h2>{t('editorSummary')}</h2>
-        <RulesSummary rules={rules} />
-      </section>
+      <div className="rule-tiles" ref={tiles}>
+        {SECTIONS.map((section) => {
+          const isOpen = open === section.id;
+          const title = t(section.title);
+          const lines = summary.find((s) => s.title === section.title)?.lines ?? [];
+          const changed = section.fields.some((f) => !same(getAt(rules, f.path), getAt(preset, f.path)));
+          const bodyId = `rules-${section.id}`;
+          return (
+            <Fragment key={section.id}>
+              <button
+                type="button"
+                className={`rule-tile${isOpen ? ' open' : ''}`}
+                data-section={section.id}
+                aria-label={title}
+                aria-describedby={`${bodyId}-sum`}
+                aria-expanded={isOpen}
+                aria-controls={isOpen ? bodyId : undefined}
+                onClick={() => setOpened(isOpen && !wide ? null : section.id)}
+              >
+                <span className="rt-art" aria-hidden="true">
+                  <TileArt section={section.id} rules={rules} />
+                </span>
+                <span className="rt-text">
+                  <span className="rt-title">
+                    {title}
+                    {changed ? <span className="tag">{t('editorChanged')}</span> : null}
+                  </span>
+                  <span className="rt-sum" id={`${bodyId}-sum`}>
+                    {lines.map((l) => (
+                      <span key={l.text}>{l.text} </span>
+                    ))}
+                  </span>
+                </span>
+                <svg className="rt-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {isOpen ? (
+                <section className="rule-body" id={bodyId} aria-label={title}>
+                  {wide ? (
+                    <div className="rule-hero" aria-hidden="true">
+                      <TileArt section={section.id} rules={rules} />
+                    </div>
+                  ) : null}
+                  {section.fields
+                    .filter((f) => !f.when || f.when(rules))
+                    .map((f) => (
+                      <FieldRow key={f.id} field={f} rules={rules} preset={preset} update={update} />
+                    ))}
+                </section>
+              ) : null}
+            </Fragment>
+          );
+        })}
+      </div>
 
       <div className="editor-actions">
         <button type="button" className="btn btn-secondary" onClick={share}>
@@ -179,232 +232,5 @@ export function RulesEditor({ choice, base = {}, onChange, onDone }: Props) {
         {status}
       </p>
     </main>
-  );
-}
-
-function FieldRow({
-  field: f,
-  rules,
-  update,
-}: {
-  field: Field;
-  rules: RuleSet;
-  update: (path: readonly string[], value: unknown) => void;
-}) {
-  const label = t(`rule_${f.id}` as Key);
-  const help = t(`rule_${f.id}_help` as Key);
-  const id = `rule-${f.id}`;
-  const value = getAt(rules, f.path);
-
-  let control: ReactNode = null;
-  switch (f.kind) {
-    case 'toggle':
-      control = (
-        <button
-          type="button"
-          role="switch"
-          id={id}
-          aria-checked={value === true}
-          aria-describedby={`${id}-help`}
-          className="switch"
-          onClick={() => update(f.path, !value)}
-        >
-          <span>{value ? t('yes') : t('no')}</span>
-        </button>
-      );
-      break;
-    case 'number': {
-      const n = value as number;
-      const unit = f.unit === 'points' ? t('unitPoints') : f.unit ? t('unitSeconds') : '';
-      control = (
-        <fieldset className="stepper small" aria-labelledby={`${id}-label`} aria-describedby={`${id}-help`}>
-          <button
-            type="button"
-            aria-label={t('minus')}
-            disabled={n <= f.min}
-            onClick={() => update(f.path, Math.max(f.min, n - f.step))}
-          >
-            −
-          </button>
-          <output className="mono" aria-live="polite">
-            {displayNumber(f, n)}
-            {unit ? <small> {unit}</small> : null}
-          </output>
-          <button
-            type="button"
-            aria-label={t('plus')}
-            disabled={n >= f.max}
-            onClick={() => update(f.path, Math.min(f.max, n + f.step))}
-          >
-            +
-          </button>
-        </fieldset>
-      );
-      break;
-    }
-    case 'select':
-      control = (
-        <div className="segmented" role="radiogroup" aria-labelledby={`${id}-label`} aria-describedby={`${id}-help`}>
-          {f.options.map((o) => (
-            <label key={o.value} className={value === o.value ? 'on' : ''}>
-              <input type="radio" name={id} checked={value === o.value} onChange={() => update(f.path, o.value)} />
-              {t(o.label)}
-            </label>
-          ))}
-        </div>
-      );
-      break;
-    case 'rankValues':
-      control = (
-        <div className="rank-grid">
-          {RANKS.filter((r) => r !== 'JOKER' || rules.deck.jokers).map((rank) => (
-            <label key={rank}>
-              <span>{rankName({ rank })}</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={-50}
-                max={50}
-                value={rules.values.byRank[rank]}
-                onChange={(e) => {
-                  const v = Number.parseInt(e.target.value, 10);
-                  if (Number.isFinite(v)) update([...f.path, rank], v);
-                }}
-              />
-            </label>
-          ))}
-        </div>
-      );
-      break;
-    case 'rankPowers':
-      control = (
-        <div className="rank-grid wide">
-          {RANKS.filter((r) => r !== 'JOKER' || rules.deck.jokers).map((rank) => (
-            <label key={rank}>
-              <span>{rankName({ rank })}</span>
-              <select
-                value={rules.powers.byRank[rank]}
-                onChange={(e) => update([...f.path, rank], e.target.value as Power)}
-              >
-                {POWERS.map((p) => (
-                  <option key={p} value={p}>
-                    {t(`power_${p}` as Key)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-        </div>
-      );
-      break;
-    case 'overrides': {
-      const list = rules.values.overrides;
-      const set = (i: number, patch: Partial<(typeof list)[number]>) =>
-        update(
-          f.path,
-          list.map((o, j) => (j === i ? { ...o, ...patch } : o)),
-        );
-      control = (
-        <div className="overrides">
-          {list.map((o, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: rows have no identity but their place
-            <div key={i} className="override">
-              <select
-                aria-label={t('overrideRank')}
-                value={o.rank}
-                onChange={(e) => set(i, { rank: e.target.value as Rank })}
-              >
-                {RANKS.map((rank) => (
-                  <option key={rank} value={rank}>
-                    {rankName({ rank })}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label={t('overrideSuits')}
-                value={suitSetOf(o.suits)}
-                onChange={(e) => set(i, { suits: SUIT_SETS.find((s) => s.id === e.target.value)?.suits ?? [] })}
-              >
-                {SUIT_SETS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label ? t(s.label) : s.symbol}
-                  </option>
-                ))}
-              </select>
-              <input
-                aria-label={t('overrideValue')}
-                type="number"
-                inputMode="numeric"
-                min={-50}
-                max={50}
-                value={o.value}
-                onChange={(e) => {
-                  const v = Number.parseInt(e.target.value, 10);
-                  if (Number.isFinite(v)) set(i, { value: v });
-                }}
-              />
-              <button
-                type="button"
-                className="ghost"
-                onClick={() =>
-                  update(
-                    f.path,
-                    list.filter((_, j) => j !== i),
-                  )
-                }
-              >
-                {t('removeOverride')}
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => update(f.path, [...list, { rank: 'K', suits: ['H', 'D'], value: 0 }])}
-          >
-            {t('addOverride')}
-          </button>
-        </div>
-      );
-      break;
-    }
-    case 'peekSlots': {
-      const slots = rules.hand.initialPeek.slots;
-      control = (
-        <div className="slot-picker" style={{ gridTemplateColumns: `repeat(${rules.hand.columns}, 44px)` }}>
-          {Array.from({ length: rules.hand.size }, (_, s) => (
-            <button
-              // biome-ignore lint/suspicious/noArrayIndexKey: a slot is its index
-              key={s}
-              type="button"
-              aria-pressed={slots.includes(s)}
-              aria-label={t('slotNumber', { n: s + 1 })}
-              onClick={() =>
-                update(f.path, slots.includes(s) ? slots.filter((x) => x !== s) : [...slots, s].sort((a, b) => a - b))
-              }
-            >
-              {s + 1}
-            </button>
-          ))}
-        </div>
-      );
-      break;
-    }
-  }
-
-  return (
-    <div className="rule-row">
-      <div className="rule-text">
-        {f.kind === 'toggle' ? (
-          <label htmlFor={id} id={`${id}-label`}>
-            {label}
-          </label>
-        ) : (
-          <span id={`${id}-label`}>{label}</span>
-        )}
-        <small id={`${id}-help`}>{help}</small>
-      </div>
-      {control}
-    </div>
   );
 }

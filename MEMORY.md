@@ -45,6 +45,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - The web UI offers only `legalActions(view)`; quick discard is an armed mode; lines about "you" (log, end-of-round panel) have `_you` keys, never «Toi» in a `{name}` slot — `web.md`.
 - Builds of `main` go to GitHub Pages (solo and pass-and-play only: no API there) — ADR-0010 — and, once configured, to Cloudflare with the rooms — ADR-0014.
 - The game master edits every RuleSet leaf on one screen (a test fails if a leaf has none); rules travel as a preset + diff, by `#rules=` link or a JSON file — ADR-0011, `rules.md`, `web.md`.
+- The rules screen (2026-11-24, the owner's picks H and I on a canvas): preset pills on top, one illustrated tile per section that opens in place on a phone, beside the column of tiles on a wide screen; card values and powers set on the cards — `web.md`, "The game master's screen".
 - Pass-and-play: a cover between players, the spectator table while bots play, quick discard off by default as a mode layer under the game master's changes, claims made for a named player — ADR-0012, `web.md`.
 - Rooms: one protocol and a pure `Room` (game master, tokens, away seats played by stand-ins, spectators, 2 h expiry) behind both servers — ADR-0013; online is one Worker with one in-memory Durable Object per room — ADR-0014.
 - Polish: synthesised sounds, vibrations, slot flashes and a Tamalou splash from events; language switch remembered on the device — ADR-0015, `web.md`.
@@ -93,6 +94,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-22 — Owner to judge the quick discard by hand on his phone: during a bot's turn, the glowing discard, the lifted cards, a drag onto it; the small bolt as the second way.
 - 2026-10-22 — Owner to judge the six hand layouts on his phone (the row by default, a fan with penalty cards, the opponents' turned arcs, the carousel's slide, a drag onto the laid-down hand).
 - 2026-10-23 — Owner to open a wrong address once deployed (e.g. `/projects/`): the styled 404 page with a 404 status, «Jouer» and «Accueil» working — `site.md`, "The 404 page".
+- 2026-11-24 — Owner to judge the new rules screen on his phone and his computer: the tiles, a tile opening in place, card points and powers set on the cards, the cards seen at the start.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.
 
