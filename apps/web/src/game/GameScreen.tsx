@@ -20,6 +20,7 @@ import {
   useState,
 } from 'react';
 import { CardView } from '../cards/CardView.tsx';
+import { DeckPicker } from '../cards/DeckPicker.tsx';
 import type { GameConnection } from '../connection/types.ts';
 import { getSettings, updateSettings, useSettings } from '../feedback/settings.ts';
 import { useFeedback } from '../feedback/useFeedback.ts';
@@ -805,6 +806,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
             </div>
             <HandPicker name="hand-table" />
             <HandWatch name="watch-table" />
+            <DeckPicker name="deck-table" />
             {/* Which build this device runs, to tell a phone that kept an old version (2026-11-21). */}
             <p className="version mono">{BUILD}</p>
           </div>

@@ -168,11 +168,15 @@
 }
 
 .classic-back {
+  --line-w: max(2px, calc(var(--w) * 0.05));
+  --gap-w: max(5px, calc(var(--w) * 0.12));
+  --veil: rgb(255 255 255 / 0.11);
   position: absolute;
   inset: 0;
+  overflow: hidden;
   display: grid;
   place-items: center;
-  background: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.1) 0 4px, transparent 4px 9px), var(--card-back);
+  background: var(--card-back);
   border: calc(var(--w) * 0.05) solid var(--card-face);
   border-radius: inherit;
   color: var(--card-back-ink);
@@ -183,5 +187,136 @@
 
 /* The mark turns towards the card's owner when the table says so (--back-turn: another player's cards). */
 .classic-back span {
+  position: relative;
+  z-index: 1;
   rotate: var(--back-turn, 0deg);
+  line-height: 1;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+/* The back's pattern (cards/deck.ts): faint light over the colour, sized by the card so a small card keeps it. */
+.classic-back.pat-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--veil) 0 var(--line-w),
+    transparent var(--line-w) var(--gap-w)
+  );
+}
+
+.classic-back.pat-diamonds {
+  background-image:
+    repeating-linear-gradient(45deg, var(--veil) 0 1.5px, transparent 1.5px var(--gap-w)),
+    repeating-linear-gradient(-45deg, var(--veil) 0 1.5px, transparent 1.5px var(--gap-w));
+}
+
+.classic-back.pat-dots {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.16) 22%, transparent 24%);
+  background-size: var(--gap-w) var(--gap-w);
+}
+
+.classic-back.pat-checks {
+  background-image: conic-gradient(var(--veil) 25%, transparent 0 50%, var(--veil) 0 75%, transparent 0);
+  background-size: calc(var(--gap-w) * 1.4) calc(var(--gap-w) * 1.4);
+}
+
+/* Effects. A glint that crosses the back now and then; an iridescent sheen that drifts; a holographic foil, rainbow
+   bands and sparkles that follow the light (--tilt-x/--tilt-y, cards/tilt.ts) and also cover the court cards. Each is a
+   layer moved by transform only, so many cards on a table stay smooth; nothing moves when motion is reduced. */
+.classic-back.fx-shine::after,
+.classic-back.fx-iris::after,
+.classic-back.fx-holo::after,
+.classic-back.fx-holo::before,
+.classic-face.foil::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.classic-back.fx-shine::after {
+  inset: -10% -150%;
+  background: linear-gradient(100deg, transparent 42%, rgb(255 255 255 / 0.55) 50%, transparent 58%);
+  animation: card-glint 5.5s ease-in-out infinite;
+}
+
+@keyframes card-glint {
+  0% {
+    transform: translateX(-40%);
+  }
+  35%,
+  100% {
+    transform: translateX(40%);
+  }
+}
+
+.classic-back.fx-iris::after {
+  inset: -60% -200%;
+  background: linear-gradient(115deg, #ff7ac6, #ffd36e, #8cff9e, #6ee7ff, #b18cff, #ff7ac6, #ffd36e, #8cff9e, #6ee7ff);
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+  animation: card-drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes card-drift {
+  from {
+    transform: translateX(-25%);
+  }
+  to {
+    transform: translateX(25%);
+  }
+}
+
+.classic-back.fx-holo::after,
+.classic-face.foil::after {
+  inset: -80%;
+  background: repeating-linear-gradient(
+    115deg,
+    #ff5f9e 0%,
+    #ffc45f 6%,
+    #a8ff6a 12%,
+    #5ff4ff 18%,
+    #9f7bff 24%,
+    #ff5f9e 30%
+  );
+  mix-blend-mode: color-dodge;
+  opacity: 0.28;
+  translate: calc(var(--tilt-x, 0) * 18%) calc(var(--tilt-y, 0) * 12%);
+  animation: card-drift 7s ease-in-out infinite alternate;
+}
+
+.classic-back.fx-holo::before {
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 70% 60%, #fff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 45% 85%, #fff 0 0.8px, transparent 1.4px);
+  background-size:
+    calc(var(--gap-w) * 2.2) calc(var(--gap-w) * 2.6),
+    calc(var(--gap-w) * 3) calc(var(--gap-w) * 2.4),
+    calc(var(--gap-w) * 1.8) calc(var(--gap-w) * 2);
+  opacity: calc(0.35 + 0.35 * var(--tilt-x, 0));
+  mix-blend-mode: overlay;
+}
+
+/* On a light face, the foil is a pastel tint the inks stay readable through. */
+.classic-face.foil {
+  overflow: hidden;
+}
+
+.classic-face.foil::after {
+  mix-blend-mode: multiply;
+  opacity: 0.32;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classic-back.fx-iris::after,
+  .classic-back.fx-holo::after,
+  .classic-face.foil::after {
+    animation: none;
+    translate: none;
+  }
+
+  .classic-back.fx-shine::after {
+    display: none;
+  }
 }

@@ -3951,3 +3951,105 @@ html:has(.overlay) body {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+
+/* «Tes cartes» (cards/DeckPicker.tsx): the cards drawn as the player picks, then colour, pattern, mark and effect. */
+.deck-picker {
+  gap: 10px;
+}
+
+.deck-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.deck-preview {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 8px;
+  border-radius: var(--r-md);
+  background: var(--felt);
+}
+
+.deck-preview .card {
+  --w: clamp(52px, 16vw, 76px);
+}
+
+.deck-colors {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.deck-colors .swatch {
+  justify-self: center;
+  width: min(100%, 44px);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.deck-patterns {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.deck-patterns label {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 2px 6px;
+  border: 1px solid var(--field);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deck-patterns label.on {
+  border-color: var(--a);
+  box-shadow: inset 0 0 0 1px var(--a);
+  color: var(--a);
+}
+
+.deck-patterns input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deck-patterns label:has(input:focus-visible) {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
+}
+
+.deck-patterns .card {
+  --w: 30px;
+}
+
+.deck-mark {
+  display: grid;
+  gap: 6px;
+}
+
+.deck-mark input {
+  width: 5.5em;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--field);
+  background: var(--bg);
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.segmented.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.deck-reset {
+  justify-self: start;
+}

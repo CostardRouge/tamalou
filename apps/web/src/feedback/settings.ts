@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { DEFAULT_DECK, type DeckStyle, readDeck } from '../cards/deck.ts';
 import { DEFAULT_DRAW_VIEW, type DrawView, isDrawView } from '../game/front.ts';
 import { DEFAULT_HAND, type HandLayout, isHandLayout } from '../game/hand.ts';
 import { type CardSpeed, isCardSpeed, isPace, type Pace } from '../game/pace.ts';
@@ -22,6 +23,8 @@ export interface Settings {
   cardSpeed: CardSpeed;
   /** My drawn card: held just above my hand, or large in the middle of the table. */
   drawView: DrawView;
+  /** How my cards look: the back's colour, pattern and mark, an effect (cards/deck.ts). */
+  deck: DeckStyle;
 }
 
 const KEY = 'tamalou-settings';
@@ -34,6 +37,7 @@ const DEFAULTS: Settings = {
   showHands: true,
   cardSpeed: 'normal',
   drawView: DEFAULT_DRAW_VIEW,
+  deck: DEFAULT_DECK,
 };
 
 function load(): Settings {
@@ -49,6 +53,7 @@ function load(): Settings {
       showHands: typeof data.showHands === 'boolean' ? data.showHands : DEFAULTS.showHands,
       cardSpeed: isCardSpeed(data.cardSpeed) ? data.cardSpeed : DEFAULTS.cardSpeed,
       drawView: isDrawView(data.drawView) ? data.drawView : DEFAULTS.drawView,
+      deck: data.deck ? readDeck(data.deck) : DEFAULTS.deck,
     };
   } catch {
     return DEFAULTS;

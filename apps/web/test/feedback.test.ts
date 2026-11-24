@@ -49,7 +49,7 @@ describe('cues', () => {
 });
 
 describe('settings', () => {
-  it('start with sounds and vibrations on, the hand in a row, the others’ hands shown and my drawn card held, and change one at a time', () => {
+  it('start with sounds and vibrations on, the hand in a row, the others’ hands shown, my drawn card held and the classic cards, and change one at a time', () => {
     const defaults = {
       sound: true,
       haptics: true,
@@ -59,6 +59,7 @@ describe('settings', () => {
       showHands: true,
       cardSpeed: 'normal',
       drawView: 'held',
+      deck: { color: 'cobalt', pattern: 'stripes', mark: 'T', effect: 'none' },
     };
     expect(getSettings()).toEqual(defaults);
     updateSettings({ sound: false });
