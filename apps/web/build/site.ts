@@ -81,16 +81,16 @@ export interface SocialCard {
  */
 export const OG_IMAGES: Record<Lang, SocialCard> = {
   fr: {
-    path: 'og.png',
+    path: 'og-v2.png',
     width: 1200,
     height: 630,
-    alt: 'Tamalou : quatre cartes, de la mémoire et du bluff. Le jeu de cartes, seul contre des bots, à plusieurs sur un téléphone ou en ligne.',
+    alt: 'Tamalou : quatre cartes, de la mémoire et du bluff. Le jeu de cartes, seul contre des bots, à plusieurs sur un seul appareil ou en ligne.',
   },
   en: {
-    path: 'og-en.png',
+    path: 'og-en-v2.png',
     width: 1200,
     height: 630,
-    alt: 'Tamalou: four cards, memory and bluff. The card game, solo against bots, around one phone or online.',
+    alt: 'Tamalou: four cards, memory and bluff. The card game, solo against bots, around one device or online.',
   },
 };
 
@@ -98,13 +98,13 @@ export const OG_IMAGES: Record<Lang, SocialCard> = {
 export const CARD_COPY: Record<Lang, { lines: [string, string, string]; body: string; cta: string; note: string }> = {
   fr: {
     lines: ['Quatre cartes,', 'de la mémoire', 'et du bluff.'],
-    body: 'Le plus petit total gagne. Seul contre des bots, à plusieurs sur un téléphone, en Wi-Fi ou en ligne.',
+    body: 'Le plus petit total gagne. Seul contre des bots, à plusieurs sur un appareil, en Wi-Fi ou en ligne.',
     cta: 'Jouer',
     note: 'Gratuit, sans compte',
   },
   en: {
     lines: ['Four cards,', 'memory', 'and bluff.'],
-    body: 'The lowest total wins. Solo against bots, around one phone, on your Wi-Fi or online.',
+    body: 'The lowest total wins. Solo against bots, around one device, on your Wi-Fi or online.',
     cta: 'Play',
     note: 'Free, no account',
   },
@@ -143,9 +143,9 @@ export const SHORTCUTS = [
   },
   {
     key: 'pass',
-    name: 'À plusieurs, un téléphone',
+    name: 'À plusieurs, un seul appareil',
     short: 'À plusieurs',
-    description: 'Le téléphone passe de main en main autour de la table',
+    description: 'L’appareil passe de main en main autour de la table',
     icon: 'shortcut-pass',
   },
 ] as const;
@@ -181,7 +181,7 @@ export const SCREENSHOTS: Screenshot[] = [
     file: 'screen-home-narrow.png',
     form: 'narrow',
     view: 'home',
-    label: 'Seul contre des bots, à plusieurs sur un téléphone ou en ligne',
+    label: 'Seul contre des bots, à plusieurs sur un seul appareil ou en ligne',
   },
   { file: 'screen-rules-narrow.png', form: 'narrow', view: 'rules', label: 'Les règles de la table, à feuilleter' },
   {
@@ -194,7 +194,7 @@ export const SCREENSHOTS: Screenshot[] = [
     file: 'screen-home-wide.png',
     form: 'wide',
     view: 'home',
-    label: 'Seul contre des bots, à plusieurs sur un téléphone ou en ligne',
+    label: 'Seul contre des bots, à plusieurs sur un seul appareil ou en ligne',
   },
 ];
 

@@ -16,9 +16,9 @@ code, though the game speaks French first. Codenames are French card words, in a
   only as you move the mouse or tilt the phone.
 - Your profile: tap the greeting on the home screen («Bonjour …») to pick your name, one of eight colours and one of
   twelve icons. Your avatar shows on your seat and your hand, in a room's waiting list for the others to see, and its
-  colour marks your moves; the bots and anyone without one are given their own. Kept on your phone only.
-- «Mes parties»: every game you finish on your phone is listed under the greeting, with your place, who played,
-  when, how and your points, and counts of games, wins and successful Tamalous. It stays on your phone; save it to a
+  colour marks your moves; the bots and anyone without one are given their own. Kept on your device only.
+- «Mes parties»: every game you finish on your device is listed under the greeting, with your place, who played,
+  when, how and your points, and counts of games, wins and successful Tamalous. It stays on your device; save it to a
   file and restore it on another one.
 - The publisher's statistics page now lists each day's games with their start time, length and outcome, opens a
   game on its own page, shows the hours and weekdays people play, and leads back to the site and the game. To do so
@@ -27,17 +27,17 @@ code, though the game speaks French first. Codenames are French card words, in a
 - Anonymous game statistics for the publisher, to improve the game: when a game starts or ends and when a room is
   created or joined, the online game sends a short report with no name, no room code and nothing that tells one
   device from another (the legal notice lists every field). The same switch as the audience counter turns them off.
-- Your name is remembered on your phone: joining a room by its link, or sitting down after watching, starts with
+- Your name is remembered on your device: joining a room by its link, or sitting down after watching, starts with
   it filled in.
 - The home screen and the table's Display panel show which build you run next to the version (v0.14.0 · 64ef767),
   so a phone still on an older build can be spotted.
 - Pause a game with the new button at the top of the table: the table hides behind a curtain and everything stops
-  (bots, the quick discard, the turn timer) until you resume. A game on your phone also pauses by itself when you
+  (bots, the quick discard, the turn timer) until you resume. A game on your device also pauses by itself when you
   leave it for a call or another app. In a room, the game master pauses it for everyone and the others see who did.
 - Powers are easier to see. The card you draw says what it would do if you throw it ("Pouvoir si tu la jettes :
   regarde une de tes cartes"), before you choose. While a power is played, a label under the piles says whose power it
   is and what it does, the discard that gave it lights up, and the player's seat carries its mark.
-- Play with up to ten at the table (six before), in every mode: nine bots in solo, ten names on one phone, ten seats
+- Play with up to ten at the table (six before), in every mode: nine bots in solo, ten names on one device, ten seats
   in a room. A table whose hands do not fit in one deck (ten players with large hands) says so before the game and
   asks for two decks.
 - During your own power, drag one of your cards onto the discard (or use the bolt) to let the power go and make a
@@ -55,6 +55,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The game no longer assumes you play on a phone: passing it round, «Mes parties», your profile, the home
+  page, the legal notice and the link previews now speak of «un appareil» (a device), which may be a phone, a tablet
+  or a computer. The pass-and-play mode is now called «À plusieurs, un seul appareil».
 - The rules screen is redrawn: the preset on top, then one illustrated tile per part of the rules with its rules
   in a line or two and a "changed" mark. Touch a tile to open it in place; on a computer the tiles stay in a column
   and the open one shows large beside them. Card points and powers are set on the cards themselves (touch a card,
@@ -93,7 +96,7 @@ code, though the game speaks French first. Codenames are French card words, in a
 ### Fixed
 
 - The end of a round speaks to you properly: "Tu as réussi ton Tamalou." instead of "Toi a réussi son Tamalou."
-  ("You made your Tamalou." in English), and the scores show your name followed by "(toi)". On a phone passed round
+  ("You made your Tamalou." in English), and the scores show your name followed by "(toi)". On a device passed round
   several players, everyone goes by name.
 - The deal: the deck counts down as it deals, your two cards to remember turn over together once it is done, and
   the discard's first card no longer flickers as it lands.

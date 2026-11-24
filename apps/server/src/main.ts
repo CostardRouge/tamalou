@@ -37,7 +37,9 @@ const urls = bases.map((base) => new URL('play/', base.endsWith('/') ? base : `$
 console.log('\nTamalou, sur le réseau local\n');
 for (const url of urls) console.log(`  ${url}`);
 if (urls[0]) console.log(`\n${renderUnicodeCompact(urls[0], { border: 1 })}`);
-console.log('\nScannez le code ou ouvrez l’adresse sur un téléphone du même Wi-Fi. Ctrl+C pour arrêter.\n');
+console.log(
+  '\nScannez le code ou ouvrez l’adresse sur un téléphone ou un ordinateur du même Wi-Fi. Ctrl+C pour arrêter.\n',
+);
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {

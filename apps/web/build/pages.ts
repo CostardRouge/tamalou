@@ -37,7 +37,7 @@ export const link = (from: Page, path: string) => `${toRoot(from)}${path}` || '.
 const PLAY_HEAD = {
   title: 'Tamalou',
   description:
-    'Le jeu de cartes Tamalou : quatre cartes, de la mémoire et du bluff. Seul contre des bots, à plusieurs sur un téléphone, en ligne ou sur le réseau local.',
+    'Le jeu de cartes Tamalou : quatre cartes, de la mémoire et du bluff. Seul contre des bots, à plusieurs sur un seul appareil, en ligne ou sur le réseau local.',
 };
 
 /**
