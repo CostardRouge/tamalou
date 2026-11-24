@@ -10,6 +10,10 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- The publisher's statistics page now lists each day's games with their start time, length and outcome, opens a
+  game on its own page, shows the hours and weekdays people play, and leads back to the site and the game. To do so
+  the game statistics keep the time to the minute and a number drawn at random for each game (the legal notice says
+  so); still no name and nothing that tells one device from another.
 - Anonymous game statistics for the publisher, to improve the game: when a game starts or ends and when a room is
   created or joined, the online game sends a short report with no name, no room code and nothing that tells one
   device from another (the legal notice lists every field). The same switch as the audience counter turns them off.

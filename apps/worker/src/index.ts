@@ -10,6 +10,7 @@ import {
   type UsageRow,
   usageCutoff,
   usageDay,
+  usageMinute,
 } from '@tamalou/shared';
 import { type AdminEnv, admin } from './admin.ts';
 
@@ -66,8 +67,9 @@ export default {
         report = null;
       }
       if (!report) return new Response(null, { status: 400 });
-      // Only the day is added: no address, no browser, no time of day.
-      await usageStore(env).record(usageDay(new Date()), JSON.stringify(report));
+      // Only the day and the minute are added: no address, no browser.
+      const now = new Date();
+      await usageStore(env).record(usageDay(now), usageMinute(now), JSON.stringify(report));
       return new Response(null, { status: 204 });
     }
     if (path === '/api/rooms' && request.method === 'POST') {
@@ -184,10 +186,13 @@ export class UsageObject extends DurableObject<Env> {
     super(ctx, env);
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS usage (day TEXT NOT NULL, report TEXT NOT NULL)');
     ctx.storage.sql.exec('CREATE INDEX IF NOT EXISTS usage_day ON usage (day)');
+    // The minute a report came (2026-11-24): rows kept before have none.
+    const columns = [...ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(usage)')].map((c) => c.name);
+    if (!columns.includes('at')) ctx.storage.sql.exec('ALTER TABLE usage ADD COLUMN at TEXT');
   }
 
-  async record(day: string, report: string): Promise<void> {
-    this.ctx.storage.sql.exec('INSERT INTO usage (day, report) VALUES (?, ?)', day, report);
+  async record(day: string, at: string, report: string): Promise<void> {
+    this.ctx.storage.sql.exec('INSERT INTO usage (day, at, report) VALUES (?, ?, ?)', day, at, report);
     if (this.pruned !== day) {
       this.pruned = day;
       this.ctx.storage.sql.exec('DELETE FROM usage WHERE day < ?', usageCutoff(day));
@@ -196,13 +201,13 @@ export class UsageObject extends DurableObject<Env> {
 
   async rows(since: string): Promise<UsageRow[]> {
     const out: UsageRow[] = [];
-    for (const r of this.ctx.storage.sql.exec<{ day: string; report: string }>(
-      'SELECT day, report FROM usage WHERE day >= ? ORDER BY day',
+    for (const r of this.ctx.storage.sql.exec<{ day: string; at: string | null; report: string }>(
+      'SELECT day, at, report FROM usage WHERE day >= ? ORDER BY day, at',
       since,
     )) {
       try {
         const report = parseUsageReport(JSON.parse(r.report));
-        if (report) out.push({ day: r.day, report });
+        if (report) out.push(r.at ? { day: r.day, at: r.at, report } : { day: r.day, report });
       } catch {
         // A row that no longer reads is skipped.
       }

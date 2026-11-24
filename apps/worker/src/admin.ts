@@ -1,6 +1,8 @@
 import {
   adminPage,
   cookie,
+  dayPage,
+  gamePage,
   messagePage,
   PERIODS,
   readSession,
@@ -9,7 +11,7 @@ import {
   sign,
   unsign,
 } from '@tamalou/admin';
-import { summarizeUsage, type UsageRow, usageCutoff, usageDay } from '@tamalou/shared';
+import { localTime, summarizeUsage, type UsageRow, usageCutoff, usageGames, usageMinute } from '@tamalou/shared';
 import * as oauth from 'oauth4webapi';
 import { version } from '../../../package.json';
 
@@ -19,6 +21,8 @@ import { version } from '../../../package.json';
 // is stored. Without its settings, the page says it is not set up and does nothing else.
 //
 //   GET  /admin/           → the statistics, or off to sign in
+//   GET  /admin/?day=…     → one day and its games (a Paris day, YYYY-MM-DD)
+//   GET  /admin/?game=…    → one game
 //   GET  /admin/login      → to Sésame
 //   GET  /admin/callback   → back from Sésame
 //   POST /admin/logout     → the cookie cleared
@@ -184,10 +188,42 @@ export async function admin(request: Request, env: AdminEnv, store: UsageStore):
     if (path === '/admin/' && request.method === 'GET') {
       const session = await readSession(cookie(request.headers.get('cookie'), SESSION) ?? '', cfg.secret, now);
       if (!session) return redirect('/admin/login');
+      // Days are Paris days: the owner reads the page in France (packages/shared usage.ts).
+      const today = localTime(usageMinute(new Date(now))).day;
+      const oldest = usageCutoff(today);
+      const day = url.searchParams.get('day');
+      if (day && /^\d{4}-\d{2}-\d{2}$/.test(day) && day >= oldest && day <= today) {
+        // A Paris day straddles two UTC days: read from the one before.
+        const rows = await store.rows(usageCutoff(day, 1));
+        const prev = usageCutoff(day, 1);
+        const next = usageCutoff(day, -1);
+        return html(
+          200,
+          dayPage({
+            day,
+            summary: summarizeUsage(rows, day, 1),
+            prev: prev >= oldest ? prev : null,
+            next: next <= today ? next : null,
+            who: session.name,
+          }),
+        );
+      }
+      const id = url.searchParams.get('game');
+      if (id && /^[A-Za-z0-9_-]{8,32}$/.test(id)) {
+        const game = usageGames(await store.rows(oldest)).find((g) => g.id === id);
+        return game
+          ? html(200, gamePage({ game, who: session.name }))
+          : html(
+              404,
+              messagePage('Partie introuvable', 'Elle a peut-être plus de 13 mois.', {
+                href: '/admin/',
+                label: 'Statistiques',
+              }),
+            );
+      }
       const asked = Number(url.searchParams.get('days'));
       const days = (PERIODS as readonly number[]).includes(asked) ? asked : 30;
-      const today = usageDay(new Date(now));
-      const rows = await store.rows(usageCutoff(today, days - 1));
+      const rows = await store.rows(usageCutoff(today, days));
       return html(200, adminPage({ summary: summarizeUsage(rows, today, days), days, who: session.name, version }));
     }
     return html(

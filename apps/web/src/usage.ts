@@ -15,7 +15,16 @@ let available: boolean | null = null;
 const waiting: UsageReport[] = [];
 
 /** The game on screen: what its end will report, if this device reports it. */
-let current: { mode: 'solo' | 'pass' | 'online'; players: number; at: number; report: boolean } | null = null;
+let current: { id: string; mode: 'solo' | 'pass' | 'online'; players: number; at: number; report: boolean } | null =
+  null;
+
+/** A number for one game (packages/shared usage.ts `gameId`): random, drawn again for every game. */
+function newGameId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return btoa(String.fromCharCode(...bytes))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_');
+}
 
 /** App says, once it knows, whether reports go anywhere (the online server only). */
 export function setUsageAvailable(ok: boolean): void {
@@ -82,12 +91,13 @@ export function reportUsage(event: UsageEvent): void {
 
 /** A game begins on this screen; `report` says whether this device tells it (a room's game master only). */
 export function startGame(
-  game: Omit<Extract<UsageEvent, { kind: 'gameStarted' }>, 'kind'>,
+  game: Omit<Extract<UsageEvent, { kind: 'gameStarted' }>, 'kind' | 'game'>,
   report: boolean,
   now = Date.now(),
 ): void {
-  current = { mode: game.mode, players: game.players, at: now, report };
-  if (report) reportUsage({ kind: 'gameStarted', ...game });
+  const id = newGameId();
+  current = { id, mode: game.mode, players: game.players, at: now, report };
+  if (report) reportUsage({ kind: 'gameStarted', game: id, ...game });
 }
 
 /** The game on screen is over: its length, and whether this device's player won (null for a table, not a person). */
@@ -97,6 +107,7 @@ export function endGame(rounds: number, won: boolean | null, now = Date.now()): 
   if (!game?.report) return;
   reportUsage({
     kind: 'gameEnded',
+    game: game.id,
     mode: game.mode,
     players: game.players,
     rounds: Math.min(rounds, 500),

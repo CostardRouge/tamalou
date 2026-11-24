@@ -53,7 +53,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - A legal notice (`/mentions-legales/`, `/en/legal/`) and Versus's anonymous Umami measurement, ported as is; the notice lists every event, a test holds the code to it — ADR-0018, `site.md`.
 - Security headers from one list (`build/security.ts`, C16): written into the build's `_headers` for Cloudflare, read back by the LAN server, the CSP Report-Only with every inline script named by hash; Zod runs jitless so the policy sees no `new Function` — `site.md`, `architecture.md`.
 - Nothing the table says sits over a card (2026-11-21, the owner's picks on a canvas): one band between the others and the piles (my turn, a power, what another says, else the journal), an icon by the speaker's name, and a power written in the prompt too — `web.md`, "The band".
-- Anonymous usage statistics (no name, no device id, 13 months, one Durable Object) and `/admin/` for the owner alone, signed in through his Sésame (OIDC, role `admin`) — ADR-0024, `architecture.md`.
+- Anonymous usage statistics (no name, no device id, 13 months, one Durable Object; since 2026-11-24 the minute and a random per-game number) and `/admin/` for the owner alone, signed in through his Sésame (OIDC, role `admin`): the period, a day, a game — ADR-0024, `architecture.md`.
 - A pause held by the host's `Table` (every clock stops, an opaque curtain), anyone on this device and automatic when the page hides, only the game master in a room (2026-11-21) — ADR-0023, `web.md`.
 - Readability: a spotlight on whose turn it is, always; confirming each move is the game master's choice (`assist.confirmMoves`, off by default) — ADR-0016, `web.md`.
 - The table's look, chosen by the owner on the 2026-10-17 canvas: one-line action bar (A), rules as cards to leaf through (B), cards flying on soft springs for every move with the others' moves told in bubbles, drag and drop with soft physics (D) and quick discard by dragging onto the discard (C) — `web.md`.
@@ -96,7 +96,6 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.
 
-- 2026-11-22 — **Admin page set-up, the owner's to do once online play is deployed**: in Sésame, the app `tamalou` (confidential, redirect `https://<domain>/admin/callback`, role `admin`) and himself a member with that role; in GitHub, the secrets `SESAME_CLIENT_SECRET` and `ADMIN_SECRET` — `architecture.md`, "Usage statistics and the admin page".
 
 ## Topic files
 

@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  localTime,
   MAX_USAGE_REPORT,
   parseUsageReport,
+  rowDay,
   summarizeUsage,
   type UsageContext,
   type UsageEvent,
   type UsageRow,
   usageCutoff,
   usageDay,
+  usageGames,
+  usageMinute,
+  weekday,
 } from '../src/index.ts';
 
 const ctx: UsageContext = {
@@ -112,5 +117,52 @@ describe('usage statistics', () => {
     expect(s.rulesChanged).toBe(0);
     expect(s.winRate).toBeNull();
     expect(s.rounds).toBe(0);
+  });
+
+  it('tells a stored minute in Paris time, winter and summer', () => {
+    expect(usageMinute(new Date('2026-11-24T20:42:31Z'))).toBe('2026-11-24T20:42');
+    expect(localTime('2026-11-24T20:42')).toEqual({ day: '2026-11-24', hour: 21, time: '21:42' });
+    expect(localTime('2026-11-24T23:30')).toEqual({ day: '2026-11-25', hour: 0, time: '00:30' });
+    expect(localTime('2026-07-14T10:05').time).toBe('12:05');
+    expect(
+      rowDay({ day: '2026-11-24', at: '2026-11-24T23:30', report: { v: 1, event: { kind: 'roomCreated' }, ctx } }),
+    ).toBe('2026-11-25');
+    expect(rowDay({ day: '2026-11-24', report: { v: 1, event: { kind: 'roomCreated' }, ctx } })).toBe('2026-11-24');
+    expect(weekday('2026-11-24')).toBe(1);
+    expect(weekday('2026-11-29')).toBe(6);
+  });
+
+  it('pairs each game start with its end by its number, newest first', () => {
+    const at = (day: string, at: string, event: UsageEvent): UsageRow => ({ day, at, report: { v: 1, event, ctx } });
+    const rows: UsageRow[] = [
+      at('2026-11-24', '2026-11-24T19:00', { ...solo, game: 'aaaaaaaa1' }),
+      at('2026-11-24', '2026-11-24T19:14', {
+        kind: 'gameEnded',
+        game: 'aaaaaaaa1',
+        mode: 'solo',
+        players: 4,
+        rounds: 6,
+        minutes: 14,
+        won: true,
+      }),
+      at('2026-11-24', '2026-11-24T20:10', { ...solo, game: 'bbbbbbbb2', mode: 'online', humans: 4, bots: 0 }),
+      // A game from before the numbers: listed, never paired.
+      row('2026-11-20', solo),
+    ];
+    const games = usageGames(rows);
+    expect(games.map((g) => g.id)).toEqual(['bbbbbbbb2', 'aaaaaaaa1', null]);
+    expect(games[1]).toMatchObject({
+      day: '2026-11-24',
+      start: '20:00',
+      end: { time: '20:14', rounds: 6, minutes: 14, won: true },
+    });
+    expect(games[0]?.end).toBeNull();
+    expect(games[2]).toMatchObject({ start: null, end: null, day: '2026-11-20' });
+    const s = summarizeUsage(rows, '2026-11-24', 7);
+    expect(s.hours[20]).toBe(1);
+    expect(s.hours[21]).toBe(1);
+    expect(s.weekdays[1]).toBe(2);
+    expect(s.weekdays[4]).toBe(1);
+    expect(s.games).toHaveLength(3);
   });
 });

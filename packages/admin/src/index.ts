@@ -1,4 +1,4 @@
-export { adminPage, messagePage, PERIODS } from './page.ts';
+export { adminPage, dayPage, gamePage, gameTitle, messagePage, PERIODS } from './page.ts';
 export {
   type AdminSession,
   cookie,
