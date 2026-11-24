@@ -1,6 +1,17 @@
-import { summarizeUsage, type UsageRow } from '@tamalou/shared';
+import { summarizeUsage, type UsageGame, type UsageRow, usageGames } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { adminPage, cookie, messagePage, readSession, sessionFor, sign, unsign } from '../src/index.ts';
+import {
+  adminPage,
+  cookie,
+  dayPage,
+  gamePage,
+  gameTitle,
+  messagePage,
+  readSession,
+  sessionFor,
+  sign,
+  unsign,
+} from '../src/index.ts';
 
 const SECRET = 'a-test-secret-of-at-least-32-characters';
 const NOW = Date.parse('2026-11-22T12:00:00Z');
@@ -93,5 +104,71 @@ describe('the admin page', () => {
     expect(html).toContain('<h1>Accès refusé</h1>');
     expect(html).toContain('href="login"');
     expect(messagePage('A', 'B')).not.toContain('class="button"');
+  });
+
+  it('leads home and to the game, each bar to its day, each game to its page', () => {
+    const timed: UsageRow[] = [
+      {
+        day: '2026-11-22',
+        at: '2026-11-22T20:42',
+        report: {
+          ...(rows[0] as UsageRow).report,
+          event: { ...((rows[0] as UsageRow).report.event as object), game: 'game0001' } as never,
+        },
+      },
+    ];
+    const html = adminPage({ summary: summarizeUsage(timed, '2026-11-22', 7), days: 7, who: 'S', version: '1' });
+    expect(html).toContain('<a href="/">Accueil</a>');
+    expect(html).toContain('<a href="/play/">Jouer</a>');
+    expect(html).toContain('href="?day=2026-11-22"');
+    expect(html).toContain('href="?game=game0001"');
+    expect(html).toContain('<span class="t">21:42</span>');
+    expect(html).toContain('Quand on joue');
+    // Without a time yet, the hours say when they will come.
+    expect(adminPage({ summary: summarizeUsage(rows, '2026-11-22', 7), days: 7, who: 'S', version: '1' })).toContain(
+      'Les heures arrivent',
+    );
+  });
+
+  it('shows one day, its neighbours and its games in order', () => {
+    const html = dayPage({
+      day: '2026-11-22',
+      summary: summarizeUsage(rows, '2026-11-22', 1),
+      prev: '2026-11-21',
+      next: null,
+      who: 'S',
+    });
+    expect(html).toContain('Dimanche 22 novembre');
+    expect(html).toContain('href="?day=2026-11-21"');
+    expect(html).toContain('<span class="step off">›</span>');
+    expect(html).toContain('Seul contre 2 bots');
+    expect(html).toContain('Pas finie');
+    expect(html).toContain('href="/admin/"');
+  });
+
+  it('tells one game: when, how long, the table, the device', () => {
+    const base = usageGames(rows)[0] as UsageGame;
+    const game: UsageGame = {
+      ...base,
+      id: 'game0001',
+      start: '21:42',
+      end: { day: '2026-11-22', time: '21:56', rounds: 6, minutes: 14, won: true },
+    };
+    const html = gamePage({ game, who: 'S' });
+    expect(html).toContain('Lancée à 21:42, finie à 21:56');
+    expect(html).toContain('Gagnée');
+    expect(html).toContain('<b>14 min</b>');
+    expect(html).toContain('1 humain, 2 bots');
+    expect(html).toContain('Téléphone, portrait');
+    expect(html).toContain('<dd>Ligne</dd>');
+    expect(gamePage({ game: { ...base, end: null }, who: 'S' })).toContain('Heure inconnue');
+    expect(gameTitle({ ...base, mode: 'online', humans: 4, bots: 1 })).toBe('En ligne, 4 humains + 1 bot');
+    expect(gameTitle({ ...base, mode: 'pass', humans: 3, bots: 0 })).toBe('Un téléphone, 3 joueurs');
+    expect(
+      gamePage({
+        game: { ...game, end: { ...game.end, won: false, day: '2026-11-23' } as UsageGame['end'] },
+        who: 'S',
+      }),
+    ).toContain('Perdue');
   });
 });

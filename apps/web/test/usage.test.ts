@@ -77,6 +77,11 @@ describe('usage reports from the browser', () => {
       { event: { kind: 'gameStarted', mode: 'solo', bots: 2 } },
       { event: { kind: 'gameEnded', mode: 'solo', players: 3, rounds: 5, minutes: 12, won: true } },
     ]);
+    // One number ties the start to the end, a new one for every game, and the server accepts it.
+    const [a, b] = sent as { event: { game: string } }[];
+    expect(a?.event.game).toMatch(/^[A-Za-z0-9_-]{16}$/);
+    expect(b?.event.game).toBe(a?.event.game);
+    expect(parseUsageReport(sent[0])).not.toBeNull();
     sent.length = 0;
     startGame({ ...game, mode: 'online', humans: 3, bots: 0, players: 3, level: null }, true, 0);
     endGame(2, true, 60_000);
