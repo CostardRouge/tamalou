@@ -1,10 +1,12 @@
 import type { Card } from '@tamalou/shared';
 import { type CSSProperties, useLayoutEffect, useRef } from 'react';
 import { CardView } from '../cards/CardView.tsx';
-import { facing, frontOf, towards } from './front.ts';
+import { facing, frontOf, liftOf } from './front.ts';
 
 // Another player's drawn card, in front of their seat (game/front.ts): face down for me, raised on their side as they
-// look at it (the edge towards the middle stays down), its back turned their way, with an eye. It carries the table's `drawn` place, so the draw lands here and the swap or
+// look at it (the edge towards the middle stays down), its back turned their way, with an eye; a card taken from the
+// discard stays face up and leans the other way, its face turned to them and a little in shadow. It carries the
+// table's `drawn` place, so the draw lands here and the swap or
 // the discard leaves from here. Placed by hand before the flights measure the table: its seat may sit anywhere (a row
 // on a phone, the oval on a wide table), and a seat in a scrolling row would clip a card drawn inside it.
 
@@ -38,11 +40,13 @@ export function FrontCard({ holder, name, named, color, card, label, ghost }: Pr
       );
       node.style.left = `${at.x}px`;
       node.style.top = `${at.y}px`;
-      // Raised about the edge that faces the middle: their side comes up towards me, its face towards them.
-      const d = towards(rect(seat), rect(middle));
-      node.style.setProperty('--lift-x', `${(-d.dy).toFixed(3)}`);
-      node.style.setProperty('--lift-y', `${d.dx.toFixed(3)}`);
-      node.style.setProperty('--lift-origin', `${50 + d.dx * 50}% ${50 + d.dy * 50}%`);
+      // Raised so that its face turns towards them: about the edge facing the middle when it is hidden, about their own
+      // edge when everyone has seen it (front.ts, liftOf).
+      const lift = liftOf(rect(seat), rect(middle), card !== null);
+      node.style.setProperty('--lift-x', lift.axis.x.toFixed(3));
+      node.style.setProperty('--lift-y', lift.axis.y.toFixed(3));
+      node.style.setProperty('--lift-origin', lift.origin);
+      node.style.setProperty('--lift-angle', `${lift.angle}deg`);
       node.style.setProperty('--back-turn', `${facing(rect(seat), rect(middle))}deg`);
     };
     place();
@@ -50,7 +54,12 @@ export function FrontCard({ holder, name, named, color, card, label, ghost }: Pr
     return () => window.removeEventListener('resize', place);
   });
   return (
-    <div ref={el} className="front-card" data-front-of={holder} style={{ '--who': color } as CSSProperties}>
+    <div
+      ref={el}
+      className={card ? 'front-card front-open' : 'front-card'}
+      data-front-of={holder}
+      style={{ '--who': color } as CSSProperties}
+    >
       <div className="front-tilt">
         <CardView card={card} place="drawn" ghost={ghost} label={label} size="md" />
       </div>

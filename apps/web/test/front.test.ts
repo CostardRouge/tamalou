@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { facing, frontOf, isDrawView, stageOf } from '../src/game/front.ts';
+import { facing, frontOf, isDrawView, liftOf, stageOf } from '../src/game/front.ts';
 
 const card = { w: 50, h: 70 };
 
@@ -26,6 +26,33 @@ describe('a drawn card in front of its player', () => {
     const at = frontOf({ x: 0, y: 0, w: 40, h: 40 }, { x: -500, y: -500, w: 10, h: 10 }, card, { w: 390, h: 844 });
     expect(at.x).toBeGreaterThanOrEqual(0);
     expect(at.y).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('how a drawn card in front of its player is raised', () => {
+  const middle = { x: 12, y: 149, w: 366, h: 415 };
+  const top = { x: 140, y: 20, w: 109, h: 69 };
+
+  it('raises a hidden card on its player’s side, its hinge towards the middle', () => {
+    const lift = liftOf(top, middle, false);
+    expect(lift.origin).toMatch(/% 100\.0%$/);
+    expect(lift.angle).toBeGreaterThan(0);
+    // rotate3d(-1, 0, 0, +a) is rotateX(-a): the top edge (their side) comes towards me.
+    expect(lift.axis.x).toBeLessThan(0);
+  });
+
+  it('leans a card everyone has seen the other way, its hinge on its player’s side', () => {
+    const lift = liftOf(top, middle, true);
+    expect(lift.origin).toMatch(/% 0\.0%$/);
+    expect(lift.angle).toBeLessThan(0);
+    expect(lift.axis).toEqual(liftOf(top, middle, false).axis);
+  });
+
+  it('turns about an upright hinge for a seat at the end of a wide table', () => {
+    const wide = { x: 24, y: 300, w: 1232, h: 157 };
+    const left = { x: 24, y: 330, w: 120, h: 100 };
+    expect(liftOf(left, wide, false).origin).toMatch(/^100\.0% /);
+    expect(liftOf(left, wide, true).origin).toMatch(/^0\.0% /);
   });
 });
 

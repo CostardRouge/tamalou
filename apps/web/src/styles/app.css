@@ -4495,7 +4495,17 @@ html:has(.overlay) body {
 }
 
 .front-card:not(:has(.card-ghost)) .front-tilt {
-  transform: perspective(420px) rotate3d(var(--lift-x, -1), var(--lift-y, 0), 0, 28deg);
+  transform: perspective(420px) rotate3d(var(--lift-x, -1), var(--lift-y, 0), 0, var(--lift-angle, 28deg));
+}
+
+/* A card everyone has seen leans towards its player (front.ts, liftOf): its face, turned away from me, in shadow. */
+.front-open .front-tilt .card {
+  filter: brightness(0.86);
+  transition: filter 0.35s ease;
+}
+
+.front-open:has(.card-ghost) .front-tilt .card {
+  filter: none;
 }
 
 .front-eye {

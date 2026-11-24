@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Changed
+
+- When another player takes the discard, the card in front of them now leans towards them, its face turned their
+  way and slightly shaded, instead of rising towards you as a hidden card does; you can still read it.
+
 ## [0.15.0] - 2026-11-24 — Oudler
 
 ### Added
