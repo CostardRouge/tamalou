@@ -113,6 +113,12 @@ describe('the top bar', () => {
     fireEvent.click(sound);
     expect(screen.getByRole('menuitemcheckbox', { name: /Son/ }).getAttribute('aria-checked')).not.toBe(was);
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: /Son/ }));
+    // The vibrations too.
+    const haptics = screen.getByRole('menuitemcheckbox', { name: /Vibrations/ });
+    const before = haptics.getAttribute('aria-checked');
+    fireEvent.click(haptics);
+    expect(screen.getByRole('menuitemcheckbox', { name: /Vibrations/ }).getAttribute('aria-checked')).not.toBe(before);
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: /Vibrations/ }));
     // Escape closes it, and only it.
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();

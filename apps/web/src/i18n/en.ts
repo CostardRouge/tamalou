@@ -747,6 +747,8 @@ export const en: Messages = {
   menuSound: 'Sound',
   menuSoundOn: 'on',
   menuSoundOff: 'off',
+  menuHapticsOn: 'on',
+  menuHapticsOff: 'off',
   quitGame: 'Leave the game',
   install: 'Install the game',
   installHint: 'It opens like an app, and solo works without a network.',

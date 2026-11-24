@@ -2,13 +2,18 @@ import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 
 import { t } from '../i18n/index.ts';
 
 // The table's "⋯" menu (the owner's pick A on the 2026-11-24 header canvas): what the top bar no longer holds — the
-// pause, the sound, the display, the rules and leaving the game — in a list under the button, so the bar keeps only the
+// pause, the sound, the vibrations, the display, the rules and leaving the game — in a list under the button, so the bar keeps only the
 // way out, the round, the journal and this button. Closed by a choice, Escape, or a touch beside it.
 
-const ICONS: Record<'pause' | 'sound' | 'muted' | 'display' | 'rules' | 'quit' | 'more', ReactNode> = {
+const ICONS: Record<
+  'pause' | 'sound' | 'muted' | 'haptics' | 'still' | 'display' | 'rules' | 'quit' | 'more',
+  ReactNode
+> = {
   pause: <path d="M9 5v14M15 5v14" />,
   sound: <path d="M3 10v4h3l7 5V5L6 10H3z M17 9a4 4 0 0 1 0 6" />,
   muted: <path d="M3 10v4h3l7 5V5L6 10H3z M17 9l5 6M22 9l-5 6" />,
+  haptics: <path d="M8 4h8v16H8z M4 9v6 M20 9v6" />,
+  still: <path d="M8 4h8v16H8z M4 9v6 M20 9v6 M3 3l18 18" />,
   display: (
     <>
       <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
@@ -37,14 +42,16 @@ interface Props {
   /** Pausing is offered (this device, or the game master in a room) and the game is not paused yet. */
   canPause: boolean;
   sound: boolean;
+  haptics: boolean;
   onPause: () => void;
   onSound: () => void;
+  onHaptics: () => void;
   onDisplay: () => void;
   onRules: () => void;
   onQuit: () => void;
 }
 
-export function GameMenu({ canPause, sound, onPause, onSound, onDisplay, onRules, onQuit }: Props) {
+export function GameMenu({ canPause, sound, haptics, onPause, onSound, onHaptics, onDisplay, onRules, onQuit }: Props) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -110,6 +117,11 @@ export function GameMenu({ canPause, sound, onPause, onSound, onDisplay, onRules
             <BarIcon name={sound ? 'sound' : 'muted'} />
             {t('menuSound')}
             <small>{t(sound ? 'menuSoundOn' : 'menuSoundOff')}</small>
+          </button>
+          <button type="button" role="menuitemcheckbox" aria-checked={haptics} onClick={onHaptics}>
+            <BarIcon name={haptics ? 'haptics' : 'still'} />
+            {t('settingsHaptics')}
+            <small>{t(haptics ? 'menuHapticsOn' : 'menuHapticsOff')}</small>
           </button>
           <button type="button" role="menuitem" onClick={pick(onDisplay)}>
             <BarIcon name="display" />

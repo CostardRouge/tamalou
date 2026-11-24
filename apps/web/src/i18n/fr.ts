@@ -768,6 +768,8 @@ export const fr = {
   menuSound: 'Son',
   menuSoundOn: 'activé',
   menuSoundOff: 'coupé',
+  menuHapticsOn: 'activées',
+  menuHapticsOff: 'coupées',
   quitGame: 'Quitter la partie',
   install: 'Installer le jeu',
   installHint: 'Il s’ouvrira comme une appli, et le solo marche sans réseau.',

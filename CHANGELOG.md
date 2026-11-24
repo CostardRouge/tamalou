@@ -62,7 +62,7 @@ code, though the game speaks French first. Codenames are French card words, in a
   page, the legal notice and the link previews now speak of «un appareil» (a device), which may be a phone, a tablet
   or a computer. The pass-and-play mode is now called «À plusieurs, un seul appareil».
 - A lighter top bar at the table: a button to leave, the round in the middle, the log, and a "⋯" menu holding pause,
-  sound, display, the rules and leaving the game. It fits the narrowest phones.
+  sound, vibrations, display, the rules and leaving the game. It fits the narrowest phones.
 - The game log is redrawn and the game master now decides what it tells: the whole round, everyone's last turn (the
   default; the whole round with the Beginner rules) or nothing, to play from memory. Each player's turn is one block
   with their avatar and the card they threw, and a move on one of your cards stands out. On a computer it opens as a

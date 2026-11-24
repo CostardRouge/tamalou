@@ -563,8 +563,14 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
           <GameMenu
             canPause={canPause && !paused}
             sound={settings.sound}
+            haptics={settings.haptics}
             onPause={() => conn.setPaused?.(true)}
             onSound={() => updateSettings({ sound: !settings.sound })}
+            onHaptics={() => {
+              // Switched on, the phone says so in the hand (where it can vibrate at all).
+              if (!settings.haptics) navigator.vibrate?.(15);
+              updateSettings({ haptics: !settings.haptics });
+            }}
             onDisplay={() => setShowDisplay(true)}
             onRules={() => setShowRules(true)}
             onQuit={quit}
