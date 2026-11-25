@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Changed
+
+- The journal's button at the top of the table is now a history clock, the same as the one beside the discard,
+  instead of three lines that looked like a menu.
+
 ## [0.16.1] - 2026-11-25 — Piquet
 
 ### Fixed
