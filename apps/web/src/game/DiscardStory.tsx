@@ -6,23 +6,18 @@ import { Avatar } from '../profile/Avatar.tsx';
 import { Icon } from './ActionBar.tsx';
 import type { DiscardStory as Story } from './discardStory.ts';
 import { storyLine } from './discardStory.ts';
+import { BarIcon } from './GameMenu.tsx';
 import { focusOnMount, Overlay } from './Overlay.tsx';
 
 // The discard laid out (the owner's pick E, rule assist.discardStory, ADR-0026): opened by its own icon beside the
 // discard, never by a touch on the discard, which takes it. The cards in a row, newest first, with who threw each; a
 // card taken back is faded; a touch on one tells its story.
 
-const HISTORY = (
-  <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5 M12 8v4l3 2" />
-  </svg>
-);
-
 /** The icon beside the discard, with the number of cards on it. */
 export function StoryButton({ count, onOpen }: { count: number; onOpen: () => void }) {
   return (
     <button type="button" className="story-btn" aria-label={plural('storyOpen', count)} onClick={onOpen}>
-      {HISTORY}
+      <BarIcon name="history" />
       <span className="story-count mono" aria-hidden="true">
         {count}
       </span>

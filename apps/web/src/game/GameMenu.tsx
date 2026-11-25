@@ -6,9 +6,11 @@ import { t } from '../i18n/index.ts';
 // way out, the round, the journal and this button. Closed by a choice, Escape, or a touch beside it.
 
 const ICONS: Record<
-  'pause' | 'sound' | 'muted' | 'haptics' | 'still' | 'display' | 'rules' | 'quit' | 'more',
+  'pause' | 'sound' | 'muted' | 'haptics' | 'still' | 'display' | 'rules' | 'quit' | 'more' | 'history',
   ReactNode
 > = {
+  // A clock and the arrow turning back: the journal in the bar, the discard laid out beside the discard.
+  history: <path d="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5 M12 8v4l3 2" />,
   pause: <path d="M9 5v14M15 5v14" />,
   sound: <path d="M3 10v4h3l7 5V5L6 10H3z M17 9a4 4 0 0 1 0 6" />,
   muted: <path d="M3 10v4h3l7 5V5L6 10H3z M17 9l5 6M22 9l-5 6" />,

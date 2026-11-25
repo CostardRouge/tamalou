@@ -41,7 +41,7 @@ import { noteDrop, useFlights, type Voice } from './FlightLayer.tsx';
 import { FrontCard } from './FrontCard.tsx';
 import { dealToReplay, type Place, slotPlace } from './flights.ts';
 import { facing } from './front.ts';
-import { GameMenu } from './GameMenu.tsx';
+import { BarIcon, GameMenu } from './GameMenu.tsx';
 import { HandPicker } from './HandPicker.tsx';
 import { HandWatch } from './HandWatch.tsx';
 import { handFrame, opponentLayout, slotStyle } from './hand.ts';
@@ -555,9 +555,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               aria-expanded={journalOpen}
               onClick={() => setShowLog((s) => !s)}
             >
-              <svg className="bar-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h10" />
-              </svg>
+              <BarIcon name="history" />
             </button>
           ) : null}
           <GameMenu
