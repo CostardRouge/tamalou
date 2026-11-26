@@ -354,12 +354,16 @@ button {
   padding: 0;
 }
 
+/* Three bands: the handle and the title, the middle that scrolls, "Jouer". Only the middle is a scroll container, so
+   the title and the button never move, not even in iOS's bounce, which carried a sticky footer along with the content
+   (the owner's report, 2026-11-26). */
 .sheet {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: min(560px, 100%);
   max-height: 94dvh;
-  overflow: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
   padding: 10px 18px 0;
   border-radius: 28px 28px 0 0;
   background: var(--surface);
@@ -380,16 +384,40 @@ button {
   font-size: 1.5rem;
 }
 
-.setup-form,
-.setup-online {
+.sheet::before,
+.sheet .panel-head {
+  flex: none;
+}
+
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sheet-body {
   display: grid;
+  align-content: start;
   gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 -18px;
+  padding: 4px 18px 18px;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+}
+
+.overlay .sheet-body {
+  touch-action: pan-x pan-y;
+}
+
+.setup-online.sheet-body {
   padding-bottom: max(18px, env(safe-area-inset-bottom));
 }
 
 .setup-go {
-  position: sticky;
-  bottom: 0;
+  flex: none;
   display: grid;
   gap: 6px;
   margin: 0 -18px;

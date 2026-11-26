@@ -74,7 +74,7 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
           </button>
         </div>
         {c.mode === 'online' ? (
-          <div className="setup-online">
+          <div className="setup-online sheet-body">
             <p className="muted">{t('onlineHint')}</p>
             <OnlineForm name={c.name} onName={(name) => set({ name })} onRoom={onRoom} />
           </div>
@@ -86,51 +86,54 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
               if (fits) onPlay();
             }}
           >
-            {c.mode === 'pass' ? <small className="muted">{t('passHint')}</small> : null}
-            <Table c={c} set={set} />
-            {c.bots > 0 ? (
+            {/* The middle scrolls on its own: the title and "Jouer" stay where they are (the owner, 2026-11-26). */}
+            <div className="sheet-body">
+              {c.mode === 'pass' ? <small className="muted">{t('passHint')}</small> : null}
+              <Table c={c} set={set} />
+              {c.bots > 0 ? (
+                <fieldset className="field">
+                  <legend>{t('homeLevel')}</legend>
+                  <div className="segmented">
+                    {BOT_LEVELS.map((l) => (
+                      <label key={l} className={c.level === l ? 'on' : ''}>
+                        <input
+                          type="radio"
+                          name="level"
+                          value={l}
+                          checked={c.level === l}
+                          onChange={() => set({ level: l })}
+                        />
+                        {t(LEVEL_KEY[l])}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ) : null}
               <fieldset className="field">
-                <legend>{t('homeLevel')}</legend>
-                <div className="segmented">
-                  {BOT_LEVELS.map((l) => (
-                    <label key={l} className={c.level === l ? 'on' : ''}>
+                <legend>{t('homePreset')}</legend>
+                <div className="preset-cards">
+                  {PRESETS.map((p) => (
+                    <label key={p.id} className={c.preset === p.id ? 'on' : ''}>
                       <input
                         type="radio"
-                        name="level"
-                        value={l}
-                        checked={c.level === l}
-                        onChange={() => set({ level: l })}
+                        name="preset"
+                        value={p.id}
+                        checked={c.preset === p.id}
+                        onChange={() => set({ preset: p.id, overrides: {} })}
                       />
-                      {t(LEVEL_KEY[l])}
+                      <b>{presetText(p.id, p).name}</b>
+                      <small>{presetText(p.id, p).description}</small>
                     </label>
                   ))}
                 </div>
+                {linked ? <p className="notice">{t('editorFromLink')}</p> : null}
+                {fits ? null : <p className="notice">{t('needDecks', { n: seatsOf(c) })}</p>}
+                <button type="button" className="btn btn-secondary" onClick={onEdit}>
+                  {t('editorCustomize')}
+                  {changes > 0 ? <span className="tag">{plural('editorModified', changes)}</span> : null}
+                </button>
               </fieldset>
-            ) : null}
-            <fieldset className="field">
-              <legend>{t('homePreset')}</legend>
-              <div className="preset-cards">
-                {PRESETS.map((p) => (
-                  <label key={p.id} className={c.preset === p.id ? 'on' : ''}>
-                    <input
-                      type="radio"
-                      name="preset"
-                      value={p.id}
-                      checked={c.preset === p.id}
-                      onChange={() => set({ preset: p.id, overrides: {} })}
-                    />
-                    <b>{presetText(p.id, p).name}</b>
-                    <small>{presetText(p.id, p).description}</small>
-                  </label>
-                ))}
-              </div>
-              {linked ? <p className="notice">{t('editorFromLink')}</p> : null}
-              {fits ? null : <p className="notice">{t('needDecks', { n: seatsOf(c) })}</p>}
-              <button type="button" className="btn btn-secondary" onClick={onEdit}>
-                {t('editorCustomize')}
-                {changes > 0 ? <span className="tag">{plural('editorModified', changes)}</span> : null}
-              </button>
-            </fieldset>
+            </div>
             <div className="setup-go">
               <p className="muted">
                 {titleOf(c)}
