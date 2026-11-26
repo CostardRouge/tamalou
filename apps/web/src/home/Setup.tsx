@@ -1,5 +1,5 @@
 import { BOT_LEVELS, type BotLevel } from '@tamalou/bots';
-import { type Card, normalizeRoomCode, PRESETS } from '@tamalou/shared';
+import { type Card, normalizeRoomCode, PRESETS, rulesFromPreset } from '@tamalou/shared';
 import { useState } from 'react';
 import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
@@ -9,6 +9,7 @@ import { currentLang, type Key, plural, presetText, t } from '../i18n/index.ts';
 import { reportUsage } from '../usage.ts';
 import type { GameChoice } from './HomeScreen.tsx';
 import { fitsTable, MAX_SEATS, type Mode, seatsOf } from './modes.ts';
+import { presetFacts } from './presetFacts.ts';
 import { aroundTop } from './table.ts';
 
 // The panel a mode opens on the launch screen (the owner's pick on the 2026-10-22 canvas: direction B with A's table
@@ -18,6 +19,10 @@ import { aroundTop } from './table.ts';
 
 export const LEVEL_KEY: Record<BotLevel, Key> = { easy: 'levelEasy', medium: 'levelMedium', hard: 'levelHard' };
 export const MODE_KEY: Record<Mode, Key> = { solo: 'homeModeSolo', pass: 'homeModePass', online: 'homeModeOnline' };
+
+/** Each preset's own rules, and Classique's to compare them with (presetFacts.ts). */
+const PRESET_RULES = new Map(PRESETS.map((p) => [p.id, rulesFromPreset(p.id)]));
+const CLASSIC = rulesFromPreset('classic');
 
 /** A player's name as typed, or "Joueur n" when left empty. */
 export const playerName = (typed: string, i: number) => typed.trim() || t('playerN', { n: i + 1 });
@@ -122,7 +127,15 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
                         onChange={() => set({ preset: p.id, overrides: {} })}
                       />
                       <b>{presetText(p.id, p).name}</b>
-                      <small>{presetText(p.id, p).description}</small>
+                      <small>{t(`presetTag_${p.id}` as Key)}</small>
+                      <ul className="preset-facts">
+                        {presetFacts(PRESET_RULES.get(p.id) ?? CLASSIC, CLASSIC).map((f) => (
+                          <li key={f.id} className={f.changed ? 'changed' : undefined}>
+                            <span>{f.label}</span>
+                            <strong>{f.value}</strong>
+                          </li>
+                        ))}
+                      </ul>
                     </label>
                   ))}
                 </div>

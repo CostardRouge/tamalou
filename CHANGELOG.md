@@ -14,6 +14,8 @@ code, though the game speaks French first. Codenames are French card words, in a
   instead of three lines that looked like a menu.
 - On a phone, panels rising from the bottom (the end of a round, the rules…) now reach the screen's edges and its
   bottom, so they follow the phone's own rounded corners.
+- Each set of rules offered before a game now reads as a short list: the number of cards, when a player is out, how
+  the game ends, the cost of a failed Tamalou…, with the values in bold and what differs from Classique highlighted.
 
 ### Fixed
 

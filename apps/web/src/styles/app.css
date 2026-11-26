@@ -751,6 +751,9 @@ button {
   outline-offset: 2px;
 }
 
+/* The presets as cards in a row that slides sideways. The snap keeps the sheet's 18px margin (scroll-padding): without
+   it, a snapped card stuck to the sheet's left edge (the owner, 2026-11-26). Each card: the name, a tagline, then its
+   facts as a list, the values in bold, those that differ from Classique in the accent (home/presetFacts.ts). */
 .preset-cards {
   display: flex;
   gap: 10px;
@@ -758,6 +761,7 @@ button {
   padding: 2px 18px 6px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
+  scroll-padding-inline: 18px;
   scrollbar-width: none;
 }
 
@@ -765,11 +769,15 @@ button {
   flex: none;
   display: grid;
   align-content: start;
-  gap: 4px;
-  width: 168px;
-  padding: 12px 14px;
+  gap: 2px;
+  width: 184px;
+  padding: 14px 14px 12px;
   border-radius: 18px;
   scroll-snap-align: start;
+}
+
+.preset-cards b {
+  font-size: 1.05rem;
 }
 
 .preset-cards label.on b {
@@ -779,6 +787,35 @@ button {
 .preset-cards small {
   color: var(--muted);
   line-height: 1.35;
+}
+
+.preset-facts {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.preset-facts li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+
+.preset-facts span {
+  color: var(--muted);
+}
+
+.preset-facts strong {
+  text-align: right;
+}
+
+.preset-facts .changed strong {
+  color: var(--a);
 }
 
 /* ------------------------------------------------------------ table */
