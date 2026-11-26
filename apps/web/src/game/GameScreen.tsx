@@ -406,9 +406,10 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
 
   const myTurn = view.current === view.me;
   // The quick discard, by hand (the owner's pick, 2026-10-22): while another player's discard is open and one of my
-  // cards may go on it, the discard glows and says so, my cards lift to be taken, and the bolt is only a second way.
-  // On my own turn too, until I draw (my draw closes it: 2026-10-25, the owner had missed it there). A shared screen
-  // keeps its "who claims" button: the cards there are not the holder's to drag.
+  // cards may go on it, the discard glows and says so, and my cards lift to be taken. On my own turn too, until I draw
+  // (my draw closes it: 2026-10-25, the owner had missed it there). The bolt that was a second way left the bar
+  // (the owner, 2026-11-26: it took too much room; a long press on a card may bring the move back as a menu). A shared
+  // screen keeps its "who claims" button: the cards there are not the holder's to drag.
   const quickOpen =
     view.phase === 'play' &&
     view.quickDiscardOpen &&
@@ -777,13 +778,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
                   : claim
                     ? [cancelAct(() => setClaim(null))]
                     : [
-                        ...actsFor(ui, pending, view, rules.hand.initialPeek.count, send, setPending, !!claimers),
+                        ...actsFor(ui, pending, view, rules.hand.initialPeek.count, send, setPending),
                         ...(pending.kind === 'none' && whoCanClaim.length > 0
                           ? [quickAct(() => setClaim('who'), false)]
                           : []),
                       ]
           }
-          hint={quickOpen && !myTurn ? t('quickBarHint') : null}
         />
       </footer>
 
@@ -1117,8 +1117,8 @@ const cancelAct = (onClick: () => void): Act => ({
   onClick,
 });
 
-// The bolt is the second way to a quick discard (the first is dragging a card onto the open discard): never the wide
-// button, even when it is the only thing to do while another player plays.
+// The bolt is how a shared screen names who claims a quick discard (its cards are not the holder's to drag): never the
+// wide button, even when it is the only thing to do while another player plays.
 const quickAct = (onClick: () => void, on: boolean): Act => ({
   key: 'quick',
   label: t('actQuick'),
@@ -1137,8 +1137,6 @@ function actsFor(
   peekCount: number,
   send: (a: Parameters<GameConnection['send']>[0] | undefined) => void,
   setPending: (p: Pending) => void,
-  /** A shared screen offers the quick discard per player instead (pass-and-play). */
-  shared = false,
 ): Act[] {
   const out: Act[] = [];
   if (pending.kind === 'lift') {
@@ -1235,7 +1233,6 @@ function actsFor(
       tone: 'call',
       onClick: () => send(call),
     });
-  if ((ui.canQuick || ui.letGo) && !shared) out.push(quickAct(() => setPending({ kind: 'quick' }), false));
   return out;
 }
 

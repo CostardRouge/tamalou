@@ -120,7 +120,6 @@ export const fr = {
   promptWaitGive: '{name} choisit une carte à donner.',
   promptRoundEnding: 'Fin de la manche…',
   promptQuickOpen: 'Défausse ouverte ! Même valeur que le dessus ? Glisse ta carte dessus.',
-  quickBarHint: 'Ou touche l’éclair, puis ta carte.',
   dropHint: 'Jette ici',
   dropHintHot: 'Lâche pour défausser',
   promptWaiting: 'Au tour de {name}.',

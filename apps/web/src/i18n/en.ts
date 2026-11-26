@@ -115,7 +115,6 @@ export const en: Messages = {
   promptWaitGive: '{name} is picking a card to give.',
   promptRoundEnding: 'End of the round…',
   promptQuickOpen: 'The discard is open! Same value as the top card? Drag yours onto it.',
-  quickBarHint: 'Or tap the bolt, then your card.',
   dropHint: 'Throw here',
   dropHintHot: 'Let go to discard',
   promptWaiting: '{name}’s turn.',
