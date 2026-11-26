@@ -37,7 +37,7 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 
 - **Context**: the brief's rules leave a few interactions unspecified; its own instruction is to parameterise and pick the described default.
 - **Decision**, each a `RuleSet` field with this default:
-  - the caller is penalised unless *strictly* lowest, so a tie is a failure;
+  - the caller is penalised unless *strictly* lowest, so a tie is a failure — **superseded by ADR-0027** (2026-11-26): a field, `tamalou.onTie`, whose default is now `'made'`;
   - a power resolves before any quick discard on the card that triggered it;
   - a penalty card opens a new face-down slot, unseen by its owner;
   - the Tamalou caller may still quick-discard; their locked cards stay out of others' powers;
@@ -169,4 +169,11 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 - **Decision**: a RuleSet field, `assist.log`: `full` (the whole game), `recent` (the last lap of the table: each player's last go, never before the round's start) or `off` (no journal, no button). **`recent` by default; the Débutant preset says `full`** (the owner, 2026-11-24). It is a rule, the same for the whole table, not a device setting: a device setting would favour whoever keeps it on. The table's UI applies it and the engine does not read it; the band under the opponents still says the move being played in every mode. It is a convention of the table, not a lock: the events still reach the device. The journal groups the log by go, names the player once, shows the card the go left on the discard, marks a power, a quick discard or a call, and puts in coral what touched my cards.
 - **Rejected**: a switch on the device (an edge for whoever keeps it on); on or off only (the owner took the middle level, to catch up a missed move without a crib sheet); a floating panel on a computer (B: it covered a seat); a drawer from the top, the discard laid out, a player's moves (D, E, F) as the journal on a phone. The discard laid out (E) is wanted as its own setting.
 - **Amended 2026-11-24** (the owner's answer on the canvas's «Les deux réglages» board): `assist.discardStory`, **off in Classique, on in Débutant**. An icon beside the discard, with the number of cards on it, lays the discard out since the deal or the last reshuffle: who threw each card and how, the power used with it, and which were taken back. A touch on the discard itself still takes it: the story never slows a move.
+
+## ADR-0027 — A tied Tamalou is made, an empty hand calls Tamalou (2026-11-26)
+
+- **Context**: after a game on his phone, the owner asked whether a caller tied with the lowest hand should be penalised («on devrait ne pas le pénaliser non ? Si oui ça peut être un paramètre») and whether the first player left with no card should call Tamalou automatically. The brief said «strictement» for the first (ADR-0006, written in the engine) and «Option : il déclenche automatiquement la fin de manche» for the second (`round.emptyHandEndsRound`, off).
+- **Decision** (his answers, 2026-11-26): `tamalou.onTie`, `'made'` **by default** (no penalty; the win bonus applies) or `'fails'` (the brief's). `round.emptyHand` replaces the switch with three choices: `'callsTamalou'` **by default** — that player becomes the caller, every other player still in plays a last turn (the turn in progress counts as its player's; the empty player's own turn ends if it had not begun), nothing more if someone has already called; `'endsRound'` (the old option); `'nothing'` (the old default). The call is the public `tamalouCalled` event with `empty: true`. Both are in the editor's «Tamalou» section.
+- **Consequences**: Classique changes: a tie no longer costs +10, an emptied hand ends the round after a last lap. A `#rules=` link from before that set `emptyHandEndsRound` loses it (the key is gone, Zod drops it): an edge accepted rather than a migration typing the field loosely.
+- **Rejected**: keeping the brief's strictness as the default (the owner's call); ending the round at once by default (no last lap for the others).
 

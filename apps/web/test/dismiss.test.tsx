@@ -78,15 +78,11 @@ describe('a tap on nothing', () => {
     expect(conn.view().step).toBe('reveal');
   });
 
-  it('lets my power go when I throw a card on the one I just threw', () => {
+  it('offers no bolt for a quick discard during my power: it is made by hand (drag.test.ts)', () => {
     const conn = lookingAtMyCard(false);
     expect(conn.view().step).toBe('power');
     render(<GameScreen conn={conn} onQuit={() => {}} />);
-    // The bolt, then one of my cards: the power is let go, then the quick discard is made.
-    fireEvent.click(screen.getByRole('button', { name: /Défausse rapide/ }));
-    fireEvent.click(screen.getByRole('button', { name: /^Ta carte 1/ }));
-    const types = conn.events().map((e) => e.type);
-    expect(types).toContain('powerSkipped');
-    expect(types.some((t) => t === 'quickDiscard' || t === 'quickDiscardFailed')).toBe(true);
+    // The owner, 2026-11-26: the bolt took too much room; a card dragged onto the discard does it.
+    expect(screen.queryByRole('button', { name: /Défausse rapide/ })).toBeNull();
   });
 });

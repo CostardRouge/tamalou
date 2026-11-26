@@ -6,7 +6,8 @@ The rules of record are `docs/SPEC.md` §2 (defaults) and §3 (what must be conf
 
 Each is a `RuleSet` field; the value below is the default (ADR-0006). The owner was told and did not object; any of them can be flipped without touching the engine.
 
-- **Caller's tie counts as a failure**: the brief says the caller is penalised unless they have *strictly* the lowest total.
+- **A caller's tie** (`tamalou.onTie`): the brief's «strictement» made it a failure, written in the engine; 2026-11-26 it became a field and **`'made'` by default** (the owner, ADR-0027; the win bonus applies). The summary says it in its own line («À égalité…»).
+- **An empty hand** (`round.emptyHand`, ADR-0027, 2026-11-26): **`'callsTamalou'` by default** (the owner's idea): `checkEmptyHand` makes that player the caller through the same `call()` as `callTamalou` (event `tamalouCalled` with `empty: true`), the turn in progress counting as its player's last; the empty player's own turn ends if not begun (step `draw` or `callDecision`). `'endsRound'` stops at once, `'nothing'` plays on. **Trap**: `checkEmptyHand` returns true only when it took over the turn flow (`endTurn` stops there); after a call made mid-turn it returns false so the turn finishes.
 - **A power resolves before any quick discard** on the card that triggered it: the power's owner acts first, then the quick-discard window opens on that card.
 - **A penalty card opens a new slot** in the grid (the hand grows beyond 2×2), face down, unseen by its owner.
 - **The Tamalou caller may still quick-discard** during the last round, and their locked cards stay untouchable by others' powers (`lockCallerCards`, default on).

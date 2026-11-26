@@ -158,6 +158,15 @@ export const SECTIONS: Section[] = [
       { id: 'minTurns', kind: 'number', path: ['tamalou', 'minTurnsBeforeCall'], min: 0, max: 20, step: 1 },
       { id: 'lockCaller', kind: 'toggle', path: ['tamalou', 'lockCallerCards'] },
       {
+        id: 'onTie',
+        kind: 'select',
+        path: ['tamalou', 'onTie'],
+        options: [
+          { value: 'fails', label: 'opt_tieFails' },
+          { value: 'made', label: 'opt_tieMade' },
+        ],
+      },
+      {
         id: 'failMode',
         kind: 'select',
         path: ['tamalou', 'failPenalty', 'mode'],
@@ -185,7 +194,16 @@ export const SECTIONS: Section[] = [
           { value: 'zero', label: 'opt_bonusZero' },
         ],
       },
-      { id: 'emptyHand', kind: 'toggle', path: ['round', 'emptyHandEndsRound'] },
+      {
+        id: 'emptyHand',
+        kind: 'select',
+        path: ['round', 'emptyHand'],
+        options: [
+          { value: 'callsTamalou', label: 'opt_emptyCalls' },
+          { value: 'endsRound', label: 'opt_emptyEnds' },
+          { value: 'nothing', label: 'opt_emptyNothing' },
+        ],
+      },
     ],
   },
   {

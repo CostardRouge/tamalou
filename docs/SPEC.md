@@ -90,7 +90,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 - Chaque autre joueur joue ensuite **un dernier tour**.
 - Option (activée par défaut) : les cartes du joueur qui a annoncé Tamalou sont **verrouillées**. Les pouvoirs des autres ne peuvent pas les toucher. **[ADR-0006]** Il peut encore faire des défausses rapides.
 - Toutes les cartes sont ensuite révélées et on compte les points.
-- Si le joueur qui a annoncé **n'a pas strictement le plus petit total**, il prend une pénalité. Par défaut, **+10 points**. Ce montant est configurable, avec aussi l'option « score doublé ». **[ADR-0006]** Une égalité compte donc comme un échec.
+- Si le joueur qui a annoncé **n'a pas strictement le plus petit total**, il prend une pénalité. Par défaut, **+10 points**. Ce montant est configurable, avec aussi l'option « score doublé ». **[ADR-0027]** Depuis le 2026-11-26, une égalité est un paramètre (`tamalou.onTie`) et compte par défaut comme une **réussite** (choix du propriétaire) ; l'ancienne règle « strictement » reste au choix.
 - Option : un bonus au joueur qui annonce et gagne, par exemple son score de manche ramené à 0.
 
 ### Fin de partie
@@ -102,7 +102,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 
 ### Cas limites à gérer
 - **Pioche vide** : on mélange la défausse, sauf la carte du dessus, pour reformer la pioche. **[ADR-0006]** Si elle reste vide, les cartes de pénalité manquantes sont sautées (provisoire, à confirmer).
-- **Main vide** : un joueur qui n'a plus aucune carte a 0 point. Option : il déclenche automatiquement la fin de manche.
+- **Main vide** : un joueur qui n'a plus aucune carte a 0 point. **[ADR-0027]** Par défaut il annonce automatiquement Tamalou (les autres jouent leur dernier tour) ; au choix, il termine la manche aussitôt, ou rien ne se passe.
 - **Égalités** en fin de manche et en fin de partie. Le comportement est défini et configurable.
 - **Joueur déconnecté ou inactif** : un timer de tour (optionnel) est suivi d'un auto-play par un bot.
 

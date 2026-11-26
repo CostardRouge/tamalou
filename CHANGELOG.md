@@ -8,10 +8,38 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Added
+
+- A rule for a Tamalou called on a tie with the lowest hand: made, now the default (no penalty), or missed, as
+  before. It is in «Tamalou» when you customise the rules.
+- A rule for a player left with no card: by default they now call Tamalou and the others play their last turn; the
+  round can also end at once, or nothing happen, as before.
+
 ### Changed
 
 - The journal's button at the top of the table is now a history clock, the same as the one beside the discard,
   instead of three lines that looked like a menu.
+- On a phone, panels rising from the bottom (the end of a round, the rules…) now reach the screen's edges and its
+  bottom, so they follow the phone's own rounded corners.
+- Each set of rules offered before a game now reads as a short list: the number of cards, when a player is out, how
+  the game ends, the cost of a failed Tamalou…, with the values in bold and what differs from Classique highlighted.
+
+### Removed
+
+- The «Rapide» bolt button in solo and online games: a quick discard is made by dragging a card onto the
+  discard. Games on one shared device keep it, to say who claims.
+
+### Fixed
+
+- On a phone, the other players' seats no longer change size or jump to another row as they play: each keeps its
+  place, and a long name gives way instead.
+- The glow around the player whose turn it is is no longer cut off at the edges of the other players' area.
+- The end-of-round panel can no longer leave you stuck: leaving the app while it shows no longer pauses the game
+  behind it, the pause's «Reprendre» is never hidden under it, and it always offers «Quitter la partie», even while
+  waiting for the others.
+- At the end of a round, a player with no card left gets an empty place in their row, as on the table, instead of a
+  shorter row.
+- In the panel where you set up a game, only the middle scrolls now: the title and «Jouer» stay in place.
 
 ## [0.16.1] - 2026-11-25 — Piquet
 

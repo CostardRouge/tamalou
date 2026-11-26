@@ -486,10 +486,24 @@ describe('Tamalou and scoring', () => {
     expect(scoreAfterCall(doubled, 'c')?.scores[2]?.scored).toBe(14);
   });
 
-  it('counts a tie as a failed call', () => {
-    const res = scoreAfterCall(base, 'a', { a: ['AH', '2H', '3H', 'KD'], c: ['AS', '2S', '3S', 'KH'] });
+  it('counts a tie as a failed call when the rules say so (the brief’s «strictement»)', () => {
+    const res = scoreAfterCall(rules({ tamalou: { onTie: 'fails' } }), 'a', {
+      a: ['AH', '2H', '3H', 'KD'],
+      c: ['AS', '2S', '3S', 'KH'],
+    });
     expect(res?.callerFailed).toBe(true);
     expect(res?.scores[0]).toMatchObject({ player: 'a', hand: 6, scored: 16 });
+  });
+
+  it('makes a tied call by default, the bonus with it', () => {
+    const tie = { a: ['AH', '2H', '3H', 'KD'], c: ['AS', '2S', '3S', 'KH'] };
+    const made = scoreAfterCall(base, 'a', tie);
+    expect(made?.callerFailed).toBe(false);
+    expect(made?.scores[0]).toMatchObject({ player: 'a', hand: 6, scored: 6 });
+    const zero = scoreAfterCall(rules({ tamalou: { onTie: 'made', winBonus: 'zero' } }), 'a', tie);
+    expect(zero?.scores[0]?.scored).toBe(0);
+    // A lower hand still beats the caller.
+    expect(scoreAfterCall(rules({ tamalou: { onTie: 'made' } }), 'c')?.callerFailed).toBe(true);
   });
 
   it('zeroes a winning caller with the bonus on', () => {
@@ -518,7 +532,7 @@ describe('Tamalou and scoring', () => {
   });
 
   it('scores an empty hand 0, and can end the round with it', () => {
-    const r = rules({ round: { emptyHandEndsRound: true } });
+    const r = rules({ round: { emptyHand: 'endsRound' } });
     const s = rig(newGame(r, 2).state, {
       hands: { a: ['9H', null, null, null], b: ['2S', '3S', '4S', '5S'] },
       discard: ['9C'],
@@ -531,9 +545,43 @@ describe('Tamalou and scoring', () => {
     const off = act(
       s,
       { type: 'quickDiscard', by: 'a', target: { player: 'a', slot: 0 }, expectTop: top(s) },
-      base,
+      rules({ round: { emptyHand: 'nothing' } }),
     ).state;
     expect(off.phase).toBe('play');
+    expect(off.caller).toBeNull();
+  });
+
+  it('calls Tamalou for a player left with no card, by default: the others play their last turn', () => {
+    // a throws a 9 and ends their turn; on b's turn a empties their hand with a quick discard on it: a is the caller,
+    // b plays this turn as their last.
+    const dealt = rig(newGame(base, 3).state, {
+      hands: { a: ['9H', null, null, null], b: ['2S', '3S', '4S', '5S'], c: ['2D', '3D', '4D', '5D'] },
+      discard: ['KC'],
+      deck: ['8C', '8D', '8S', '9D'],
+    });
+    const s = play(dealt, passTurn('a'), base).state;
+    expect(s.current).toBe('b');
+    const r1 = act(s, { type: 'quickDiscard', by: 'a', target: { player: 'a', slot: 0 }, expectTop: top(s) }, base);
+    expect(r1.events).toContainEqual({ type: 'tamalouCalled', player: 'a', empty: true });
+    expect(r1.state).toMatchObject({ phase: 'play', caller: 'a', current: 'b', lastTurns: ['b', 'c'] });
+    const done = play(r1.state, [...passTurn('b'), ...passTurn('c')], base).state;
+    expect(done.phase).toBe('roundEnding');
+    // Nobody calls a second time once someone has called.
+    expect(act(done, { type: 'endRound', by: 'host' }, base).state.results[0]?.caller).toBe('a');
+  });
+
+  it('ends the empty player’s own turn when it had not begun', () => {
+    const s = rig(newGame(base, 3).state, {
+      hands: { a: ['9H', null, null, null], b: ['2S', '3S', '4S', '5S'], c: ['2D', '3D', '4D', '5D'] },
+      discard: ['9C'],
+      window: true,
+    });
+    const { state } = act(
+      s,
+      { type: 'quickDiscard', by: 'a', target: { player: 'a', slot: 0 }, expectTop: top(s) },
+      base,
+    );
+    expect(state).toMatchObject({ caller: 'a', current: 'b', step: 'draw', lastTurns: ['b', 'c'] });
   });
 });
 

@@ -151,7 +151,12 @@ export const RuleSetSchema = z
         timing: z.enum(['startOfTurn', 'endOfTurn']).default('startOfTurn'),
         /** The caller's cards cannot be touched by the others' powers or claims during the last round. */
         lockCallerCards: z.boolean().default(true),
-        /** The caller fails unless strictly lowest, so a tie is a failure (ADR-0006). */
+        /**
+         * A caller tied for the lowest hand: the call is made (the default since the owner's pick of 2026-11-26) or
+         * fails (the brief's «strictement») — ADR-0006.
+         */
+        onTie: z.enum(['fails', 'made']).default('made'),
+        /** The penalty of a failed call. */
         failPenalty: z
           .object({
             mode: z.enum(['add', 'double']).default('add'),
@@ -167,8 +172,12 @@ export const RuleSetSchema = z
 
     round: z
       .object({
-        /** A player left with no card ends the round at once. */
-        emptyHandEndsRound: z.boolean().default(false),
+        /**
+         * A player left with no card (ADR-0006, the owner's pick of 2026-11-26): nothing happens (`nothing`), the round
+         * ends at once (`endsRound`), or that player calls Tamalou, the others playing their last turn
+         * (`callsTamalou`, the default; nothing more if someone has already called).
+         */
+        emptyHand: z.enum(['nothing', 'endsRound', 'callsTamalou']).default('callsTamalou'),
       })
       .prefault({}),
 

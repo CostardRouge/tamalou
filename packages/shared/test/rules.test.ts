@@ -39,10 +39,12 @@ describe('RuleSet defaults', () => {
     expect(r.tamalou).toEqual({
       timing: 'startOfTurn',
       lockCallerCards: true,
+      onTie: 'made',
       failPenalty: { mode: 'add', amount: 10 },
       winBonus: 'none',
       minTurnsBeforeCall: 0,
     });
+    expect(r.round.emptyHand).toBe('callsTamalou');
     expect(r.gameEnd).toMatchObject({ mode: 'threshold', threshold: 100, thresholdEnd: 'lastStanding' });
     expect(r.pace.turnTimerSeconds).toBe(0);
     expect(r.assist.showKnownCards).toBe(false);

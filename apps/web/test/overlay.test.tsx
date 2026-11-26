@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
+
+import type { PlayerView } from '@tamalou/shared';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { GameConnection } from '../src/connection/types.ts';
 import { Overlay } from '../src/game/Overlay.tsx';
+import { RoundOver } from '../src/game/RoundOver.tsx';
 
 afterEach(cleanup);
 
@@ -36,5 +40,30 @@ describe('a panel over the table', () => {
     fireEvent.click(screen.getByRole('dialog'));
     fireEvent.keyDown(document.body, { key: 'Escape' });
     expect(screen.getByRole('dialog')).toBeTruthy();
+  });
+});
+
+describe('the end of a round', () => {
+  it('always has a way out, even while waiting for the others (the owner’s report, 2026-11-26)', () => {
+    const view = {
+      phase: 'roundOver',
+      me: 'you',
+      players: [{ id: 'you', name: 'Moi', total: 3, slots: [] }],
+      lastResult: {
+        round: 3,
+        caller: null,
+        callerFailed: false,
+        scores: [{ player: 'you', hand: 0, scored: 0, total: 3 }],
+        eliminated: [],
+      },
+    } as unknown as PlayerView;
+    const conn = { readyForNext: () => ['you'], events: () => [] } as unknown as GameConnection;
+    const onLeave = vi.fn();
+    render(<RoundOver view={view} conn={conn} nameOf={(id) => id} onQuit={() => {}} onLeave={onLeave} />);
+    expect(screen.getByText('En attente des autres joueurs…')).toBeTruthy();
+    // A hand with no card left keeps a card's place, so its row is as tall as the others.
+    expect(screen.getByRole('img', { name: 'Plus aucune carte' }).className).toContain('card-empty');
+    fireEvent.click(screen.getByRole('button', { name: 'Quitter la partie' }));
+    expect(onLeave).toHaveBeenCalledTimes(1);
   });
 });

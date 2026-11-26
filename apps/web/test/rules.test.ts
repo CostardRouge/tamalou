@@ -51,7 +51,9 @@ describe('rules summary', () => {
     expect(text()).toContain('Roi (♥ ♦) : 0');
     expect(text()).toContain('Chacun regarde ses 2 cartes de droite au départ.');
     expect(text()).toContain('7, 8 : Regarder une de ses cartes');
-    expect(text()).toContain('Tamalou raté (égalité comprise) : +10 points.');
+    expect(text()).toContain('À égalité avec le plus petit total, le Tamalou est réussi.');
+    expect(text()).toContain('Une main vide annonce Tamalou : les autres jouent leur dernier tour.');
+    expect(text()).toContain('Tamalou raté : +10 points.');
     expect(text()).toContain('Éliminé à 100 points.');
     expect(summarize(DEFAULT_RULES).every((s) => s.lines.every((l) => !l.changed))).toBe(true);
   });

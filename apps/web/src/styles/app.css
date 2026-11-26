@@ -354,12 +354,16 @@ button {
   padding: 0;
 }
 
+/* Three bands: the handle and the title, the middle that scrolls, "Jouer". Only the middle is a scroll container, so
+   the title and the button never move, not even in iOS's bounce, which carried a sticky footer along with the content
+   (the owner's report, 2026-11-26). */
 .sheet {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: min(560px, 100%);
   max-height: 94dvh;
-  overflow: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
   padding: 10px 18px 0;
   border-radius: 28px 28px 0 0;
   background: var(--surface);
@@ -380,16 +384,40 @@ button {
   font-size: 1.5rem;
 }
 
-.setup-form,
-.setup-online {
+.sheet::before,
+.sheet .panel-head {
+  flex: none;
+}
+
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sheet-body {
   display: grid;
+  align-content: start;
   gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 -18px;
+  padding: 4px 18px 18px;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+}
+
+.overlay .sheet-body {
+  touch-action: pan-x pan-y;
+}
+
+.setup-online.sheet-body {
   padding-bottom: max(18px, env(safe-area-inset-bottom));
 }
 
 .setup-go {
-  position: sticky;
-  bottom: 0;
+  flex: none;
   display: grid;
   gap: 6px;
   margin: 0 -18px;
@@ -723,6 +751,9 @@ button {
   outline-offset: 2px;
 }
 
+/* The presets as cards in a row that slides sideways. The snap keeps the sheet's 18px margin (scroll-padding): without
+   it, a snapped card stuck to the sheet's left edge (the owner, 2026-11-26). Each card: the name, a tagline, then its
+   facts as a list, the values in bold, those that differ from Classique in the accent (home/presetFacts.ts). */
 .preset-cards {
   display: flex;
   gap: 10px;
@@ -730,6 +761,7 @@ button {
   padding: 2px 18px 6px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
+  scroll-padding-inline: 18px;
   scrollbar-width: none;
 }
 
@@ -737,11 +769,15 @@ button {
   flex: none;
   display: grid;
   align-content: start;
-  gap: 4px;
-  width: 168px;
-  padding: 12px 14px;
+  gap: 2px;
+  width: 184px;
+  padding: 14px 14px 12px;
   border-radius: 18px;
   scroll-snap-align: start;
+}
+
+.preset-cards b {
+  font-size: 1.05rem;
 }
 
 .preset-cards label.on b {
@@ -751,6 +787,35 @@ button {
 .preset-cards small {
   color: var(--muted);
   line-height: 1.35;
+}
+
+.preset-facts {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.preset-facts li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+
+.preset-facts span {
+  color: var(--muted);
+}
+
+.preset-facts strong {
+  text-align: right;
+}
+
+.preset-facts .changed strong {
+  color: var(--a);
 }
 
 /* ------------------------------------------------------------ table */
@@ -989,15 +1054,47 @@ html:has(.game) body {
   }
 }
 
+/* The others' seats never move with what they do (the owner's report, 2026-11-26: on a phone the band reflowed at every
+   move). Each seat is a third of the band whatever it holds, so a mark by a name, the turn's "▸" or a card more cannot
+   widen it and push a neighbour onto another row. The band scrolls on its own (below), which clips what overflows it:
+   its padding leaves room for the turn's glow (seat-pulse, 8px), and its negative margins give that room back to the
+   table's gaps, so nothing else moves. */
 .opponents {
+  --opp-gap: 8px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: var(--opp-gap);
   min-height: 0;
+  margin: -6px -8px;
+  padding: 8px;
   overflow: hidden auto;
   touch-action: pan-y;
   overscroll-behavior: contain;
+}
+
+.opponents .seat {
+  position: relative;
+  flex: 0 0 calc((100% - 2 * var(--opp-gap)) / 3);
+}
+
+/* The head keeps one height and its seat's width: the name gives way (ellipsis) to a mark, never the seat. */
+.opponents .seat-head {
+  align-items: center;
+  min-height: 20px;
+}
+
+.opponents .seat-who {
+  flex: 1 1 0;
+}
+
+/* «Tamalou» sits on the seat's top edge rather than adding a row to it. */
+.opponents .seat > .badge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
 }
 
 .opponents .grid {
@@ -1812,6 +1909,8 @@ html:has(.game) body {
     grid-column: 1;
     position: relative;
     display: block;
+    margin: 0;
+    padding: 0;
     overflow: visible;
   }
 
@@ -1945,6 +2044,22 @@ html:has(.overlay) body {
   gap: 12px;
 }
 
+/* On a phone a panel rising from the bottom is a sheet, like the launch screen's (.sheet): edge to edge and flush with
+   the bottom, its top corners rounded, so the screen's own rounded corners round its bottom ones exactly, whatever the
+   phone (the owner, 2026-11-26: a floating card with small corners clashed with an iPhone's). Its content keeps clear
+   of the home indicator. */
+@media (max-width: 699px) {
+  .overlay:not(.overlay-top) {
+    padding: 12px 0 0;
+  }
+
+  .overlay:not(.overlay-top) > .panel {
+    width: 100%;
+    border-radius: 28px 28px 0 0;
+    padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
+  }
+}
+
 .headline {
   margin: 0;
   font-weight: 600;
@@ -2009,7 +2124,7 @@ html:has(.overlay) body {
     gap: 6px;
   }
   .opponents {
-    gap: 6px;
+    --opp-gap: 6px;
   }
   .opponents .seat {
     padding: 4px 6px 6px;
@@ -3709,7 +3824,9 @@ html:has(.overlay) body {
   box-shadow: inset 0 0 0 2px var(--line);
 }
 
-.game.paused .overlay {
+/* A panel opened from the curtain (the rules) comes above it; the end-of-round panel stays under it, or it hid
+   «Reprendre» and left the player stuck (the owner's report, 2026-11-26). */
+.game.paused .overlay:not(.overlay-round) {
   z-index: 60;
 }
 
