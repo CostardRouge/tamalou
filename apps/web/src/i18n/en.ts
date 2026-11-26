@@ -528,6 +528,7 @@ export const en: Messages = {
   slotMine: 'Your card {n}',
   slotOf: '{name}’s card {n}',
   slotEmpty: 'Empty slot',
+  handEmpty: 'No card left',
 
   // Online rooms
   homeModeOnline: 'Online',

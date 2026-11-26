@@ -550,6 +550,7 @@ export const fr = {
   slotMine: 'Ta carte {n}',
   slotOf: 'Carte {n} de {name}',
   slotEmpty: 'Emplacement vide',
+  handEmpty: 'Plus aucune carte',
   // Online rooms
   homeModeOnline: 'En ligne',
   onlineHint: 'Chacun sur son appareil. Crée une salle et partage son code, ou rejoins celle d’un ami.',

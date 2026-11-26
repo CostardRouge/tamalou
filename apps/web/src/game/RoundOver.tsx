@@ -87,6 +87,11 @@ export function RoundOver({ view, conn, nameOf, onQuit, onLeave, onReplay }: Pro
                   </th>
                   <td>
                     <div className="hand-row">
+                      {/* No card left: an empty place, as on the table, so the row keeps a card's height (the owner,
+                          2026-11-26: the row was lower than the others). */}
+                      {(seat?.slots ?? []).some((sl) => sl.filled) ? null : (
+                        <CardView card={null} size="sm" empty label={t('handEmpty')} />
+                      )}
                       {(seat?.slots ?? [])
                         .filter((sl) => sl.filled)
                         .map((sl, i) => (
