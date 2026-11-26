@@ -8,6 +8,11 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ## [Unreleased]
 
+### Added
+
+- A rule for a Tamalou called on a tie with the lowest hand: missed, as before, or made. It is in «Tamalou» when
+  you customise the rules.
+
 ### Changed
 
 - The journal's button at the top of the table is now a history clock, the same as the one beside the discard,

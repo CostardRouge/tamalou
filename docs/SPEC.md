@@ -90,7 +90,7 @@ Un pouvoir s'active **seulement si la carte vient de la pioche et est défaussé
 - Chaque autre joueur joue ensuite **un dernier tour**.
 - Option (activée par défaut) : les cartes du joueur qui a annoncé Tamalou sont **verrouillées**. Les pouvoirs des autres ne peuvent pas les toucher. **[ADR-0006]** Il peut encore faire des défausses rapides.
 - Toutes les cartes sont ensuite révélées et on compte les points.
-- Si le joueur qui a annoncé **n'a pas strictement le plus petit total**, il prend une pénalité. Par défaut, **+10 points**. Ce montant est configurable, avec aussi l'option « score doublé ». **[ADR-0006]** Une égalité compte donc comme un échec.
+- Si le joueur qui a annoncé **n'a pas strictement le plus petit total**, il prend une pénalité. Par défaut, **+10 points**. Ce montant est configurable, avec aussi l'option « score doublé ». **[ADR-0006]** Une égalité compte donc comme un échec par défaut ; depuis le 2026-11-26 c'est un paramètre (`tamalou.onTie`), qui peut la compter comme une réussite.
 - Option : un bonus au joueur qui annonce et gagne, par exemple son score de manche ramené à 0.
 
 ### Fin de partie

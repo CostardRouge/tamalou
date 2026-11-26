@@ -39,6 +39,7 @@ describe('RuleSet defaults', () => {
     expect(r.tamalou).toEqual({
       timing: 'startOfTurn',
       lockCallerCards: true,
+      onTie: 'fails',
       failPenalty: { mode: 'add', amount: 10 },
       winBonus: 'none',
       minTurnsBeforeCall: 0,

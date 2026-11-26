@@ -159,6 +159,7 @@ export function summarize(r: RuleSet): SummarySection[] {
         line(t(tm.timing === 'startOfTurn' ? 'sum_callStart' : 'sum_callEnd'), tm.timing !== d.tamalou.timing),
         ...(tm.minTurnsBeforeCall > 0 ? [line(plural('sum_minTurns', tm.minTurnsBeforeCall), true)] : []),
         line(t(tm.lockCallerCards ? 'sum_locked' : 'sum_unlocked'), tm.lockCallerCards !== d.tamalou.lockCallerCards),
+        line(t(tm.onTie === 'fails' ? 'sum_tieFails' : 'sum_tieMade'), tm.onTie !== d.tamalou.onTie),
         line(fail, !same(tm.failPenalty, d.tamalou.failPenalty)),
         ...(tm.winBonus === 'zero' ? [line(t('sum_bonusZero'), true)] : []),
         ...(r.round.emptyHandEndsRound ? [line(t('sum_emptyHand'), true)] : []),

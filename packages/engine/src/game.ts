@@ -292,9 +292,12 @@ function scoreRound(s: GameState, rules: RuleSet, events: GameEvent[]): void {
   );
   const caller = s.caller;
   const callerHand = caller === null ? null : (hands.get(caller) ?? 0);
-  // Strictly lowest, or the call fails: a tie is a failure (ADR-0006).
+  // Lowest, or the call fails; a tie fails or holds as the rules say (ADR-0006).
+  const tieFails = rules.tamalou.onTie === 'fails';
   const callerFailed =
-    caller !== null && callerHand !== null && [...hands].some(([p, v]) => p !== caller && v <= callerHand);
+    caller !== null &&
+    callerHand !== null &&
+    [...hands].some(([p, v]) => p !== caller && (v < callerHand || (tieFails && v === callerHand)));
 
   const scores = active.map((p) => {
     const hand = hands.get(p.id) ?? 0;

@@ -492,6 +492,17 @@ describe('Tamalou and scoring', () => {
     expect(res?.scores[0]).toMatchObject({ player: 'a', hand: 6, scored: 16 });
   });
 
+  it('makes a tied call when the rules say so, the bonus with it', () => {
+    const tie = { a: ['AH', '2H', '3H', 'KD'], c: ['AS', '2S', '3S', 'KH'] };
+    const made = scoreAfterCall(rules({ tamalou: { onTie: 'made' } }), 'a', tie);
+    expect(made?.callerFailed).toBe(false);
+    expect(made?.scores[0]).toMatchObject({ player: 'a', hand: 6, scored: 6 });
+    const zero = scoreAfterCall(rules({ tamalou: { onTie: 'made', winBonus: 'zero' } }), 'a', tie);
+    expect(zero?.scores[0]?.scored).toBe(0);
+    // A lower hand still beats the caller.
+    expect(scoreAfterCall(rules({ tamalou: { onTie: 'made' } }), 'c')?.callerFailed).toBe(true);
+  });
+
   it('zeroes a winning caller with the bonus on', () => {
     const r = rules({ tamalou: { winBonus: 'zero' } });
     expect(scoreAfterCall(r, 'a')?.scores[0]).toMatchObject({ hand: 6, scored: 0 });

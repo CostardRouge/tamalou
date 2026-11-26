@@ -6,7 +6,7 @@ The rules of record are `docs/SPEC.md` §2 (defaults) and §3 (what must be conf
 
 Each is a `RuleSet` field; the value below is the default (ADR-0006). The owner was told and did not object; any of them can be flipped without touching the engine.
 
-- **Caller's tie counts as a failure**: the brief says the caller is penalised unless they have *strictly* the lowest total.
+- **Caller's tie counts as a failure** (`tamalou.onTie`, default `'fails'`): the brief says the caller is penalised unless they have *strictly* the lowest total. 2026-11-26 — the owner asked «on devrait ne pas le pénaliser non ?»: it became a field (`'made'`: a tie holds, the win bonus applies), the default kept to the brief until he says otherwise; the editor's line sits in «Tamalou» before the penalty, and the summary says it in its own line («À égalité…») instead of «(égalité comprise)».
 - **A power resolves before any quick discard** on the card that triggered it: the power's owner acts first, then the quick-discard window opens on that card.
 - **A penalty card opens a new slot** in the grid (the hand grows beyond 2×2), face down, unseen by its owner.
 - **The Tamalou caller may still quick-discard** during the last round, and their locked cards stay untouchable by others' powers (`lockCallerCards`, default on).

@@ -37,7 +37,7 @@ Short ADRs: context, decision, rejected alternatives. Numbered in order, never r
 
 - **Context**: the brief's rules leave a few interactions unspecified; its own instruction is to parameterise and pick the described default.
 - **Decision**, each a `RuleSet` field with this default:
-  - the caller is penalised unless *strictly* lowest, so a tie is a failure;
+  - the caller is penalised unless *strictly* lowest, so a tie is a failure (`tamalou.onTie: 'fails'`; until 2026-11-26 it was written in the engine, then the owner asked whether a tie should be penalised at all and it became the field, `'made'` the other choice);
   - a power resolves before any quick discard on the card that triggered it;
   - a penalty card opens a new face-down slot, unseen by its owner;
   - the Tamalou caller may still quick-discard; their locked cards stay out of others' powers;

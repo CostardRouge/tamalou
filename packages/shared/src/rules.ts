@@ -151,7 +151,12 @@ export const RuleSetSchema = z
         timing: z.enum(['startOfTurn', 'endOfTurn']).default('startOfTurn'),
         /** The caller's cards cannot be touched by the others' powers or claims during the last round. */
         lockCallerCards: z.boolean().default(true),
-        /** The caller fails unless strictly lowest, so a tie is a failure (ADR-0006). */
+        /**
+         * A caller tied for the lowest hand: the call fails (the brief's «strictement») or is made (ADR-0006, a field
+         * since the owner's ask of 2026-11-26).
+         */
+        onTie: z.enum(['fails', 'made']).default('fails'),
+        /** The penalty of a failed call. */
         failPenalty: z
           .object({
             mode: z.enum(['add', 'double']).default('add'),
