@@ -1979,6 +1979,22 @@ html:has(.overlay) body {
   gap: 12px;
 }
 
+/* On a phone a panel rising from the bottom is a sheet, like the launch screen's (.sheet): edge to edge and flush with
+   the bottom, its top corners rounded, so the screen's own rounded corners round its bottom ones exactly, whatever the
+   phone (the owner, 2026-11-26: a floating card with small corners clashed with an iPhone's). Its content keeps clear
+   of the home indicator. */
+@media (max-width: 699px) {
+  .overlay:not(.overlay-top) {
+    padding: 12px 0 0;
+  }
+
+  .overlay:not(.overlay-top) > .panel {
+    width: 100%;
+    border-radius: 28px 28px 0 0;
+    padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
+  }
+}
+
 .headline {
   margin: 0;
   font-weight: 600;
