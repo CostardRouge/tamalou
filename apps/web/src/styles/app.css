@@ -989,15 +989,47 @@ html:has(.game) body {
   }
 }
 
+/* The others' seats never move with what they do (the owner's report, 2026-11-26: on a phone the band reflowed at every
+   move). Each seat is a third of the band whatever it holds, so a mark by a name, the turn's "▸" or a card more cannot
+   widen it and push a neighbour onto another row. The band scrolls on its own (below), which clips what overflows it:
+   its padding leaves room for the turn's glow (seat-pulse, 8px), and its negative margins give that room back to the
+   table's gaps, so nothing else moves. */
 .opponents {
+  --opp-gap: 8px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: var(--opp-gap);
   min-height: 0;
+  margin: -6px -8px;
+  padding: 8px;
   overflow: hidden auto;
   touch-action: pan-y;
   overscroll-behavior: contain;
+}
+
+.opponents .seat {
+  position: relative;
+  flex: 0 0 calc((100% - 2 * var(--opp-gap)) / 3);
+}
+
+/* The head keeps one height and its seat's width: the name gives way (ellipsis) to a mark, never the seat. */
+.opponents .seat-head {
+  align-items: center;
+  min-height: 20px;
+}
+
+.opponents .seat-who {
+  flex: 1 1 0;
+}
+
+/* «Tamalou» sits on the seat's top edge rather than adding a row to it. */
+.opponents .seat > .badge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
 }
 
 .opponents .grid {
@@ -1812,6 +1844,8 @@ html:has(.game) body {
     grid-column: 1;
     position: relative;
     display: block;
+    margin: 0;
+    padding: 0;
     overflow: visible;
   }
 
@@ -2009,7 +2043,7 @@ html:has(.overlay) body {
     gap: 6px;
   }
   .opponents {
-    gap: 6px;
+    --opp-gap: 6px;
   }
   .opponents .seat {
     padding: 4px 6px 6px;

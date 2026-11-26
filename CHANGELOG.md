@@ -13,6 +13,12 @@ code, though the game speaks French first. Codenames are French card words, in a
 - The journal's button at the top of the table is now a history clock, the same as the one beside the discard,
   instead of three lines that looked like a menu.
 
+### Fixed
+
+- On a phone, the other players' seats no longer change size or jump to another row as they play: each keeps its
+  place, and a long name gives way instead.
+- The glow around the player whose turn it is is no longer cut off at the edges of the other players' area.
+
 ## [0.16.1] - 2026-11-25 — Piquet
 
 ### Fixed
