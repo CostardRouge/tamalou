@@ -19,10 +19,13 @@ interface Props {
   conn: GameConnection;
   nameOf: (id: PlayerId) => string;
   onQuit: () => void;
+  /** Leaving between two rounds, once confirmed: the panel always has a way out, even while the others keep it waiting
+   * (a lost connection, a room whose players left). */
+  onLeave?: (() => void) | undefined;
   onReplay?: (() => void) | undefined;
 }
 
-export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
+export function RoundOver({ view, conn, nameOf, onQuit, onLeave, onReplay }: Props) {
   const result = view.lastResult;
   const over = view.phase === 'gameOver';
   const rounds = result?.round ?? 0;
@@ -47,7 +50,7 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
   const headline = roundHeadline(view, seats);
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="round-title">
+    <div className="overlay overlay-round" role="dialog" aria-modal="true" aria-labelledby="round-title">
       <motion.div
         className="panel"
         initial={{ y: 40, opacity: 0 }}
@@ -127,12 +130,26 @@ export function RoundOver({ view, conn, nameOf, onQuit, onReplay }: Props) {
                 {t('actHome')}
               </button>
             </>
-          ) : waiting ? (
-            <p className="muted">{t('waitingOthers')}</p>
           ) : (
-            <button type="button" className="btn btn-primary" ref={focusOnMount} onClick={() => conn.continueRound()}>
-              {t('actNextRound')}
-            </button>
+            <>
+              {waiting ? (
+                <p className="muted">{t('waitingOthers')}</p>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  ref={focusOnMount}
+                  onClick={() => conn.continueRound()}
+                >
+                  {t('actNextRound')}
+                </button>
+              )}
+              {onLeave ? (
+                <button type="button" className="btn btn-secondary" onClick={onLeave}>
+                  {t('quitGame')}
+                </button>
+              ) : null}
+            </>
           )}
         </div>
       </motion.div>

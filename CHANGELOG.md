@@ -18,6 +18,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 - On a phone, the other players' seats no longer change size or jump to another row as they play: each keeps its
   place, and a long name gives way instead.
 - The glow around the player whose turn it is is no longer cut off at the edges of the other players' area.
+- The end-of-round panel can no longer leave you stuck: leaving the app while it shows no longer pauses the game
+  behind it, the pause's «Reprendre» is never hidden under it, and it always offers «Quitter la partie», even while
+  waiting for the others.
 
 ## [0.16.1] - 2026-11-25 — Piquet
 

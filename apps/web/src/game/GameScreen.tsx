@@ -134,11 +134,15 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const paused = conn.paused();
   const canPause = !!conn.setPaused && ['initialPeek', 'play', 'roundEnding'].includes(view.phase);
   // A game on this device pauses by itself when the player leaves it (a call, another app); a room never does, since
-  // only its game master may pause it for everyone. `setShowing` is how a connection says it runs here.
+  // only its game master may pause it for everyone. `setShowing` is how a connection says it runs here. Only where the
+  // menu offers the pause: hidden on the end-of-round panel, it froze the bots before they were ready for the next
+  // round and left the player waiting for them (the owner's report, 2026-11-26).
+  const pausable = useRef(canPause);
+  pausable.current = canPause;
   useEffect(() => {
     if (!conn.setShowing || !conn.setPaused) return;
     const onHide = () => {
-      if (document.hidden && !conn.paused()) conn.setPaused?.(true);
+      if (document.hidden && pausable.current && !conn.paused()) conn.setPaused?.(true);
     };
     document.addEventListener('visibilitychange', onHide);
     return () => document.removeEventListener('visibilitychange', onHide);
@@ -905,7 +909,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
       ) : null}
 
       {view.phase === 'roundOver' || view.phase === 'gameOver' ? (
-        <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onReplay={onReplay} />
+        <RoundOver view={view} conn={conn} nameOf={nameOf} onQuit={onQuit} onLeave={quit} onReplay={onReplay} />
       ) : null}
     </div>
   );
