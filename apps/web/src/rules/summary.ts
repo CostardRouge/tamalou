@@ -74,6 +74,9 @@ function peek(r: RuleSet): string {
   return t('sum_peekSlots', { slots: slots.map((s) => s + 1).join(', ') });
 }
 
+/** What a player left with no card brings about (`round.emptyHand`). */
+const EMPTY_HAND = { nothing: 'sum_emptyNothing', endsRound: 'sum_emptyHand', callsTamalou: 'sum_emptyCalls' } as const;
+
 export function summarize(r: RuleSet): SummarySection[] {
   const d = DEFAULT_RULES;
   const line = (text: string, changed: boolean): SummaryLine => ({ text, changed });
@@ -162,7 +165,7 @@ export function summarize(r: RuleSet): SummarySection[] {
         line(t(tm.onTie === 'fails' ? 'sum_tieFails' : 'sum_tieMade'), tm.onTie !== d.tamalou.onTie),
         line(fail, !same(tm.failPenalty, d.tamalou.failPenalty)),
         ...(tm.winBonus === 'zero' ? [line(t('sum_bonusZero'), true)] : []),
-        ...(r.round.emptyHandEndsRound ? [line(t('sum_emptyHand'), true)] : []),
+        line(t(EMPTY_HAND[r.round.emptyHand]), r.round.emptyHand !== d.round.emptyHand),
       ],
     },
     { title: 'sec_end', lines: end },

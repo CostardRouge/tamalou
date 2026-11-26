@@ -194,7 +194,16 @@ export const SECTIONS: Section[] = [
           { value: 'zero', label: 'opt_bonusZero' },
         ],
       },
-      { id: 'emptyHand', kind: 'toggle', path: ['round', 'emptyHandEndsRound'] },
+      {
+        id: 'emptyHand',
+        kind: 'select',
+        path: ['round', 'emptyHand'],
+        options: [
+          { value: 'callsTamalou', label: 'opt_emptyCalls' },
+          { value: 'endsRound', label: 'opt_emptyEnds' },
+          { value: 'nothing', label: 'opt_emptyNothing' },
+        ],
+      },
     ],
   },
   {

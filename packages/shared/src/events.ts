@@ -45,7 +45,8 @@ export type GameEvent =
   | { type: 'quickDiscardFailed'; player: PlayerId; target: SlotRef; card: Card; penalty: number[] }
   | { type: 'deckReshuffled'; size: number }
   | { type: 'penaltySkipped'; player: PlayerId; missing: number }
-  | { type: 'tamalouCalled'; player: PlayerId }
+  /** `empty`: called for them, their hand empty (`round.emptyHand: 'callsTamalou'`). */
+  | { type: 'tamalouCalled'; player: PlayerId; empty?: true }
   | { type: 'callPassed'; player: PlayerId }
   | { type: 'turnStarted'; player: PlayerId }
   | { type: 'lastTurns'; players: PlayerId[] }

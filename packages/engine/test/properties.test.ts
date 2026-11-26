@@ -26,7 +26,7 @@ import {
 const variants: RuleSetInput[] = [
   {},
   { deck: { jokers: true }, quickDiscard: { allowOpponentCards: true, penaltyCards: 2 } },
-  { tamalou: { timing: 'endOfTurn', lockCallerCards: false }, round: { emptyHandEndsRound: true } },
+  { tamalou: { timing: 'endOfTurn', lockCallerCards: false }, round: { emptyHand: 'endsRound' } },
   { hand: { size: 6, columns: 3, initialPeek: { mode: 'choose', count: 3 } }, deck: { count: 2 } },
   { assist: { showKnownCards: true }, powers: { activation: 'anyPile' }, discardPickup: { mustSwap: false } },
   { gameEnd: { mode: 'rounds', rounds: 3 } },

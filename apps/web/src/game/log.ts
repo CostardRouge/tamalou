@@ -43,7 +43,7 @@ export function describeEvent(e: GameEvent, nameOf: (id: PlayerId) => string, me
     case 'deckReshuffled':
       return t('logReshuffled');
     case 'tamalouCalled':
-      return line('logCalled', e.player);
+      return line(e.empty ? 'logCalledEmpty' : 'logCalled', e.player);
     case 'callPassed':
       return line('logPassed', e.player);
     case 'roundEnded':

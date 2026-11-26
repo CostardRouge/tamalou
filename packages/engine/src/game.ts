@@ -257,11 +257,40 @@ function enterRoundEnding(s: GameState): void {
   s.window = true;
 }
 
-function checkEmptyHand(s: GameState, rules: RuleSet, _events: GameEvent[]): boolean {
-  if (!rules.round.emptyHandEndsRound) return false;
-  if (!activePlayers(s).some((p) => filledSlots(s, p.id).length === 0)) return false;
-  enterRoundEnding(s);
-  return true;
+/** `player` calls Tamalou: every other player still in the game plays a last turn. */
+function call(s: GameState, player: PlayerId, events: GameEvent[], empty = false): void {
+  s.caller = player;
+  const order = s.players;
+  const from = order.findIndex((p) => p.id === player);
+  s.lastTurns = [];
+  for (let i = 1; i < order.length; i++) {
+    const p = order[(from + i) % order.length] as (typeof order)[number];
+    if (!p.eliminated) s.lastTurns.push(p.id);
+  }
+  events.push(empty ? { type: 'tamalouCalled', player, empty: true } : { type: 'tamalouCalled', player });
+  events.push({ type: 'lastTurns', players: [...s.lastTurns] });
+}
+
+/**
+ * A player left with no card (`round.emptyHand`). Ending the round returns true: the turn flow stops there. A call made
+ * for them leaves the turn in progress to finish (it counts as its player's last), unless it is theirs and not begun.
+ */
+function checkEmptyHand(s: GameState, rules: RuleSet, events: GameEvent[]): boolean {
+  const mode = rules.round.emptyHand;
+  if (mode === 'nothing') return false;
+  const empty = activePlayers(s).find((p) => filledSlots(s, p.id).length === 0);
+  if (!empty) return false;
+  if (mode === 'endsRound') {
+    enterRoundEnding(s);
+    return true;
+  }
+  if (s.phase !== 'play' || s.caller !== null) return false;
+  call(s, empty.id, events, true);
+  if (s.current === empty.id && (s.step === 'draw' || s.step === 'callDecision')) {
+    advance(s, events);
+    return true;
+  }
+  return false;
 }
 
 function finishPower(s: GameState, rules: RuleSet, events: GameEvent[]): void {
@@ -532,16 +561,7 @@ function step(s: GameState, a: Action, rules: RuleSet, events: GameEvent[]): Eng
       if (timing === 'startOfTurn' && s.step !== 'draw') return 'wrongStep';
       if (timing === 'endOfTurn' && s.step !== 'callDecision') return 'wrongStep';
       if (!canCall(s, rules, me)) return 'callNotAllowed';
-      s.caller = me;
-      const order = s.players;
-      const from = order.findIndex((p) => p.id === me);
-      s.lastTurns = [];
-      for (let i = 1; i < order.length; i++) {
-        const p = order[(from + i) % order.length] as (typeof order)[number];
-        if (!p.eliminated) s.lastTurns.push(p.id);
-      }
-      events.push({ type: 'tamalouCalled', player: me });
-      events.push({ type: 'lastTurns', players: [...s.lastTurns] });
+      call(s, me, events);
       // The call replaces the turn's draw; the card on the discard keeps its window open.
       s.window = true;
       advance(s, events);

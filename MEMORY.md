@@ -37,7 +37,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - Front: React 19 + Vite + Motion — ADR-0003.
 - Servers: a Node `ws` server for LAN (Docker on the homelab) AND a Cloudflare Worker + Durable Objects for online, both thin adapters over the pure `packages/room` — ADR-0004, `architecture.md`.
 - Quick discard window: open from a card landing on the discard until the next player draws (3 s minimum since 2026-10-25, counted from when the screen has put the card down; a draw held only while someone else may claim); off by default in pass-and-play; never on the card the deal turns over unless the game master says so (2026-11-21); an opponent's card may be claimed by default, the claimer then giving one of theirs, chosen after the match, while the table waits (2026-11-21) — ADR-0005, ADR-0021, ADR-0022, `rules.md`.
-- Defaults for the brief's unspecified rule points — ADR-0006, `rules.md`.
+- Defaults for the brief's unspecified rule points — ADR-0006, `rules.md`; since 2026-11-26 (the owner) a tied Tamalou is made and an empty hand calls Tamalou, both fields — ADR-0027.
 - Visual identity reused from Versus; card faces behind a theme — ADR-0007, `design.md`.
 - The engine has no clock: the quick-discard window is state, its minimum duration and the turn timer are the host's; a claim carries `expectTop` so a late claim is cancelled without penalty — ADR-0008, `rules.md`.
 - Views are checked against events: a face in a view must have been revealed to that player by an event they received — `architecture.md`.
