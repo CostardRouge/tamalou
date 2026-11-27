@@ -43,6 +43,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 - The end-of-round panel can no longer leave you stuck: leaving the app while it shows no longer pauses the game
   behind it, the pause's «Reprendre» is never hidden under it, and it always offers «Quitter la partie», even while
   waiting for the others.
+- Choosing a set of rules whose card is cut at the edge of its row now slides the card into full view (without
+  animation for those who ask for less motion).
 - On a computer, the panels rising from the bottom (setting up a game, the rules, the end of a round) now reach the
   bottom of the window, without a step underneath.
 - At the end of a round, a player with no card left gets an empty place in their row, as on the table, instead of a
