@@ -1,0 +1,71 @@
+/* What a language changes in the type (ADR-0028, docs/plans/languages.md § 2.7). Loaded by every page after the tokens.
+
+   Japanese and Chinese: no web font (a CJK one weighs several MB per weight), the system's own by `:lang()` — Hiragino
+   and PingFang on Apple, Yu Gothic and Microsoft YaHei / JhengHei on Windows, Noto CJK on Android — behind the site's
+   fonts, which keep the digits and the Latin letters. The exact `lang` matters: one Han character is drawn
+   differently in Japanese, Simplified and Traditional Chinese. packages/shared languages.ts names each one's script;
+   test/i18n.test.ts holds this file to it. */
+
+:lang(ja) {
+  --f-display:
+    "Bricolage Grotesque Variable", "Bricolage Grotesque", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    YuGothic, "Noto Sans JP", "Noto Sans CJK JP", sans-serif;
+  --f-body:
+    "Figtree Variable", "Figtree", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", YuGothic, "Noto Sans JP",
+    "Noto Sans CJK JP", sans-serif;
+}
+
+:lang(zh-Hans) {
+  --f-display:
+    "Bricolage Grotesque Variable", "Bricolage Grotesque", "PingFang SC", "Microsoft YaHei", "Noto Sans SC",
+    "Noto Sans CJK SC", sans-serif;
+  --f-body:
+    "Figtree Variable", "Figtree", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
+}
+
+:lang(zh-Hant) {
+  --f-display:
+    "Bricolage Grotesque Variable", "Bricolage Grotesque", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC",
+    "Noto Sans CJK TC", sans-serif;
+  --f-body:
+    "Figtree Variable", "Figtree", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
+}
+
+/* A word in its own language inside a page in another (a language list's 日本語 on a French page): its own fonts. */
+:not(html)[lang]:is(:lang(ja), :lang(zh)) {
+  font-family: var(--f-body);
+}
+
+/* No letter-spacing or capitals for these scripts (spaced ideographs read as separate words), lines broken by the
+   strict rules (no small kana or closing punctuation at a line's start), Japanese wrapped between phrases rather
+   than inside a word, and no italic, which these scripts do not have: an <em> keeps its colour or weight. The
+   overrides beat the components' own rules on purpose. */
+:lang(ja),
+:lang(zh) {
+  /* biome-ignore lint/complexity/noImportantStyles: over every component's own spacing, on purpose (above) */
+  letter-spacing: 0 !important;
+  /* biome-ignore lint/complexity/noImportantStyles: over every component's own capitals, on purpose (above) */
+  text-transform: none !important;
+  line-break: strict;
+}
+
+:lang(ja) {
+  word-break: auto-phrase;
+}
+
+:is(:lang(ja), :lang(zh)) :is(em, i) {
+  font-style: normal;
+}
+
+/* A word longer than its box (a long compound, a name) breaks rather than overflow it, in every language: it changes
+   nothing where words fit. */
+body {
+  overflow-wrap: break-word;
+}
+
+/* German is the longest (a third longer than English, with long compound words): those may break, hyphenated, in a
+   button, a tile or a title rather than overflow it. */
+:lang(de) :is(button, .btn, label, h1, h2, h3, .mode-words, .tile) {
+  hyphens: auto;
+  overflow-wrap: break-word;
+}

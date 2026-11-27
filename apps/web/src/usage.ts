@@ -81,7 +81,7 @@ function connection(): UsageContext['connection'] {
 export function usageContext(): UsageContext {
   const s = getSettings();
   return {
-    lang: currentLang() === 'en' ? 'en' : 'fr',
+    lang: currentLang(),
     device: device(),
     orientation: innerWidth > innerHeight ? 'landscape' : 'portrait',
     connection: connection(),

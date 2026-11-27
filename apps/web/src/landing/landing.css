@@ -98,8 +98,13 @@ body.site {
   color: var(--ink);
 }
 
-/* The other language as a pill: a globe and its name in itself (the owner, 2026-11-27). */
-.site .nav-links a.lang-switch {
+/* The language menu (ADR-0028): a pill, the globe and the page's language named in itself (the owner, 2026-11-27),
+   opening the list of its versions, each named in itself. A <details>, so it opens without a script. */
+.lang-menu {
+  position: relative;
+}
+
+.lang-switch {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -109,10 +114,22 @@ body.site {
   border-radius: var(--r-pill);
   color: var(--ink);
   white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
 }
 
-.site .nav-links a.lang-switch:hover {
+.lang-switch::-webkit-details-marker {
+  display: none;
+}
+
+.lang-switch:hover,
+.lang-menu[open] .lang-switch {
   border-color: var(--muted);
+}
+
+.lang-switch:focus-visible {
+  outline: 3px solid var(--a);
+  outline-offset: 2px;
 }
 
 .lang-switch svg {
@@ -121,6 +138,54 @@ body.site {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
+}
+
+.lang-menu ul {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 11rem;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+}
+
+.site .nav-links .lang-menu a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 9px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.site .nav-links .lang-menu a:hover {
+  background: var(--bg);
+}
+
+.site .nav-links .lang-menu a[aria-current] {
+  color: var(--a);
+}
+
+/* A home page in another language than the visitor's: its version in theirs, one discreet line under the header. */
+.lang-offer {
+  margin-block: 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.site .lang-offer a {
+  color: var(--a);
+  text-decoration: none;
+}
+
+.legal .translated {
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .foot {

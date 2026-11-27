@@ -2,8 +2,9 @@ import { handValue } from '@tamalou/engine';
 import { type Card, parseRules } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
 import { HANDS, question } from '../src/landing/quiz.tsx';
-import { cardWords, LANDING } from '../src/landing/text.ts';
+import { LANDING } from '../src/landing/text/index.ts';
 import { freshTut, pointsOf, step, type TAction, type Tut, tappableMine, total } from '../src/landing/tutorial.ts';
+import { cardWords } from '../src/landing/words.ts';
 
 // The home page's first round and hand quiz (ADR-0017): their values are the game's default ones, a sensible player
 // wins the round and meets every move on the way, and nothing a visitor taps out of turn moves the round.

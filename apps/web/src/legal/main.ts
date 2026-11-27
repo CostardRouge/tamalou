@@ -2,12 +2,13 @@ import '@fontsource-variable/bricolage-grotesque/opsz.css';
 import '@fontsource-variable/figtree/wght.css';
 import '@fontsource/jetbrains-mono/latin-500.css';
 import '../styles/tokens.css';
+import '../styles/lang.css';
 import '../landing/landing.css';
 import { measurement, setOptOut, startAnalytics, trackPage } from '../audience.ts';
-import { rememberLang } from '../i18n/remember.ts';
+import { pageLang, startLanguageMenu } from '../landing/menu.ts';
 
-// The legal notice's script (ADR-0018): the measurement switch, the page's own view, and the language memory of the
-// header's language link, as on the home page.
+// The legal notice's script (ADR-0018): the measurement switch, the page's own view, and the header's language menu,
+// as on the home page.
 
 startAnalytics();
 trackPage();
@@ -32,9 +33,4 @@ function mountCount(): void {
 
 mountCount();
 
-const lang = document.documentElement.lang === 'en' ? 'en' : 'fr';
-document.addEventListener('click', (e) => {
-  const a = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
-  const to = a?.dataset.lang ?? (/play\/$/.test(a?.getAttribute('href') ?? '') ? lang : null);
-  if (to === 'en' || to === 'fr') rememberLang(to);
-});
+startLanguageMenu(pageLang());

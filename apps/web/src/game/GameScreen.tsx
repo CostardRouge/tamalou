@@ -630,7 +630,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               <span className="mono seat-total">{p.total}</span>
             </div>
             <Presence state={conn.presence?.(p.id) ?? null} />
-            {view.caller === p.id ? <span className="badge">Tamalou</span> : null}
+            {view.caller === p.id ? <span className="badge">{t('badgeCaller')}</span> : null}
             {seat(p, 'sm')}
           </div>
         ))}
@@ -733,7 +733,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               <Avatar avatar={faceOf(me.id)} size="xs" />
               <span className="seat-name">{me.name}</span>
             </span>
-            {view.caller === view.me ? <span className="badge">Tamalou</span> : null}
+            {view.caller === view.me ? <span className="badge">{t('badgeCaller')}</span> : null}
             <span className="mono seat-total">{plural('points', me.total)}</span>
           </div>
           {seat(me, 'lg')}

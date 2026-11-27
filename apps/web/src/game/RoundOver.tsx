@@ -82,7 +82,7 @@ export function RoundOver({ view, conn, nameOf, onQuit, onLeave, onReplay }: Pro
                   <th scope="row">
                     {label.name}
                     {label.you ? <span className="muted"> ({t('roundYou')})</span> : null}
-                    {s.player === result.caller ? <span className="badge">Tamalou</span> : null}
+                    {s.player === result.caller ? <span className="badge">{t('badgeCaller')}</span> : null}
                     {out ? <span className="muted"> · {t('eliminated')}</span> : null}
                   </th>
                   <td>

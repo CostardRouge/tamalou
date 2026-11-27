@@ -7,8 +7,12 @@ import { t } from '../i18n/index.ts';
 // ton Tamalou.") and their row shows their name with "(toi)" after it; on a device passed round several players,
 // "toi" would only mean whoever holds it, so there everyone goes by name, in the third person.
 
-/** What a solo game names a player who typed no name ("Moi", "Me"): that row reads "Toi" rather than "Moi (toi)". */
+/**
+ * What a solo game names a player who typed no name ("Moi", "Me"): that row reads "Toi" rather than "Moi (toi)". The
+ * bundled languages' and the one on screen: a game can change language mid-way.
+ */
 const DEFAULT_NAMES = new Set<string>([fr.homeNameDefault, en.homeNameDefault]);
+const isDefaultName = (name: string) => DEFAULT_NAMES.has(name) || name === t('homeNameDefault');
 
 export interface Seats {
   me: PlayerId;
@@ -26,7 +30,7 @@ export interface SeatLabel {
 export function seatLabel(id: PlayerId, s: Seats): SeatLabel {
   const name = s.nameOf(id);
   if (id !== s.me || s.shared) return { name, you: false };
-  if (DEFAULT_NAMES.has(name)) return { name: t('you'), you: false };
+  if (isDefaultName(name)) return { name: t('you'), you: false };
   return { name, you: true };
 }
 

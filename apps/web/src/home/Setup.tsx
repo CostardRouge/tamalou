@@ -5,7 +5,7 @@ import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
 import { createRoom } from '../connection/remote.ts';
 import { Overlay } from '../game/Overlay.tsx';
-import { currentLang, type Key, plural, presetText, t } from '../i18n/index.ts';
+import { currentLocale, type Key, plural, presetText, t } from '../i18n/index.ts';
 import { reportUsage } from '../usage.ts';
 import type { GameChoice } from './HomeScreen.tsx';
 import { fitsTable, MAX_SEATS, type Mode, seatsOf } from './modes.ts';
@@ -59,7 +59,7 @@ export const othersOf = (c: GameChoice) => [
 
 /** A setup in one line: "Toi contre Ada et Basile", "Ana, Ben et 1 bot". */
 export function titleOf(c: GameChoice): string {
-  const list = (xs: string[]) => new Intl.ListFormat(currentLang(), { type: 'conjunction' }).format(xs);
+  const list = (xs: string[]) => new Intl.ListFormat(currentLocale(), { type: 'conjunction' }).format(xs);
   if (c.mode === 'solo') {
     const others = c.bots > 3 ? plural('heroBots', c.bots) : list(othersOf(c));
     return t('heroVs', { me: c.name.trim() || t('heroYou'), others });

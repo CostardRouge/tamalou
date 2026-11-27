@@ -1,13 +1,14 @@
+import type { ReadyLang } from '@tamalou/shared/languages';
 import { footer, type HomeLinks, header } from '../landing/markup.ts';
-import { LEGAL } from './text.ts';
+import { LEGAL } from './text/index.ts';
 
 /**
- * The legal notice's markup, written at build time into mentions-legales/ and en/legal/ (build/pages.ts, ADR-0018),
+ * The legal notice's markup, written at build time into mentions-legales/, en/legal/ and each language's legal/ (build/pages.ts, ADR-0018),
  * with the home page's header and footer. The measurement switch (#count) is hidden until the script (main.ts) knows
  * what this browser does; each line in it shows for one state (`data-when`).
  */
 
-type Lang = 'fr' | 'en';
+type Lang = ReadyLang;
 
 export function legalBody(lang: Lang, links: HomeLinks & { home: string; email: string; license: string }): string {
   const t = LEGAL[lang];
@@ -45,6 +46,7 @@ export function legalBody(lang: Lang, links: HomeLinks & { home: string; email: 
 <main class="legal wrap">
 <h1 class="h2">${t.title}</h1>
 <p class="sub">${t.intro}</p>
+${t.translated ? `<p class="translated">${t.translated}</p>` : ''}
 <nav class="toc" aria-label="${t.tocAria}"><ul>${sections.map(([id, title]) => `<li><a href="#${id}">${title}</a></li>`).join('')}</ul></nav>
 ${sections.map(([id, title, body]) => `<section id="${id}">\n<h2>${title}</h2>\n${body}\n</section>`).join('\n')}
 <p class="updated">${t.updated}</p>

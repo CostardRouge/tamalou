@@ -2,8 +2,9 @@ import type { Card, Rank, Suit } from '@tamalou/shared';
 import { useState } from 'react';
 import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
-import { cardWords, fill, type LandingText } from './text.ts';
+import type { LandingText } from './text/fr.ts';
 import { pointsOf } from './tutorial.ts';
+import { cardWords, fill } from './words.ts';
 
 // "What is this hand worth?" (the owner's pick from direction C, placed under the first round): four face-up cards,
 // three totals to choose from, and a line on what counted. It teaches the values, the red King's zero first.

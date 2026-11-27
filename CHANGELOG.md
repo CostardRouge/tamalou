@@ -17,11 +17,15 @@ code, though the game speaks French first. Codenames are French card words, in a
   before. It is in «Tamalou» when you customise the rules.
 - A rule for a player left with no card: by default they now call Tamalou and the others play their last turn; the
   round can also end at once, or nothing happen, as before.
+- The game opens in your phone's or computer's language the first time, English or French for now (French when it
+  speaks neither); a language you pick by hand is always kept first.
+- «Report a translation» in the settings, outside French: an e-mail to the publisher, ready to fill.
 
 ### Changed
 
-- The home page's language link is now a small pill with a globe and the language's own name («English»,
-  «Français») instead of «EN» / «FR».
+- The home page's language link is now a small pill with a globe and the page's language in its own name
+  («Français», «English»), which opens the list of languages, each written in itself; the settings show the same
+  list. A home page in another language than yours offers its version in yours, in one line under its header.
 - A hand closes up on the cards it still holds: the dashed places of thrown cards no longer show, nor lie over the
   cards left, and a player down to one card shows one card.
 - Easy bots no longer call Tamalou on their first turns: they wait until they have played three, so a round leaves

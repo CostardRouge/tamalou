@@ -3,6 +3,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['packages/*/test/**/*.test.ts', 'apps/*/test/**/*.test.{ts,tsx}'],
+    // A French browser for the game's tests (its language is the browser's, ADR-0028).
+    setupFiles: ['apps/web/test/setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**/*.ts'],

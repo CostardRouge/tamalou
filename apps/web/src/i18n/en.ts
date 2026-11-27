@@ -1,6 +1,7 @@
 import type { Messages } from './fr.ts';
 
-// English, kept in step with fr.ts by the type: ready for when the game offers a language switch (docs/SPEC.md §0).
+// English, kept in step with fr.ts by the type (a missing key does not compile) and by lock.json (a key whose French
+// changed since it was translated fails the tests: pnpm i18n:status, ADR-0028).
 
 export const en: Messages = {
   appName: 'Tamalou',
@@ -150,6 +151,7 @@ export const en: Messages = {
   // Captions under the action bar's icon buttons: one short word.
   barTake: 'Discard',
   barCall: 'Tamalou',
+  badgeCaller: 'Tamalou',
   barQuick: 'Quick',
   barSkip: 'Skip',
   barKeep: 'Keep',
@@ -724,8 +726,14 @@ export const en: Messages = {
     'Like a rare card: a holographic foil that follows the light (the mouse, or the phone’s tilt on Android), on the court cards and jokers too.',
   settings: 'Settings',
   settingsLang: 'Language',
-  langFr: 'Français',
-  langEn: 'English',
+  reportTranslation: 'Report a translation',
+  reportTranslationHint: 'A wrong word, a clumsy sentence? The e-mail is ready, just write.',
+  reportSubject: 'Tamalou: translation into {lang}',
+  reportBody: 'Language: {lang}\nVersion: {version}\n\nThe text to fix:\n\nWhat it should say:\n',
+  ordinal_one: '{n}st',
+  ordinal_two: '{n}nd',
+  ordinal_few: '{n}rd',
+  ordinal_other: '{n}th',
   settingsSound: 'Sounds',
   settingsHaptics: 'Vibrations',
   settingsCountDevice: 'Recognise this device',
@@ -790,9 +798,7 @@ export const en: Messages = {
   installed: 'Tamalou is installed: find it among your apps.',
   installIos: 'On iPhone and iPad: Share, then “Add to Home Screen”. Solo then works without a network.',
   legalLink: 'Legal notice and privacy',
-  legalHref: '../en/legal/',
   siteLink: 'About the game and its rules',
-  siteHref: '../en/',
   updateReady: 'A new version is ready.',
   updateReload: 'Reload',
   updateLater: 'Later',
@@ -800,3 +806,5 @@ export const en: Messages = {
   splashBy: '{name} calls the end of the round',
   splashByYou: 'You call the end of the round',
 };
+
+export default en;
