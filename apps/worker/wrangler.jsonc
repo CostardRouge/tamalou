@@ -19,19 +19,24 @@
     "bindings": [
       { "name": "ROOMS", "class_name": "RoomObject" },
       // The anonymous usage statistics (ADR-0024): the one thing this Worker keeps.
-      { "name": "USAGE", "class_name": "UsageObject" }
+      { "name": "USAGE", "class_name": "UsageObject" },
+      // The ranked players (ADR-0029): kept, and backed up.
+      { "name": "LADDER", "class_name": "LadderObject" }
     ]
   },
   // SQLite-backed objects are the ones the free plan offers; the room keeps nothing in storage anyway.
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["RoomObject"] },
-    { "tag": "v2", "new_sqlite_classes": ["UsageObject"] }
+    { "tag": "v2", "new_sqlite_classes": ["UsageObject"] },
+    { "tag": "v3", "new_sqlite_classes": ["LadderObject"] }
   ],
   // Per-IP limit on new rooms (the period is 10 or 60 seconds).
   "ratelimits": [
     { "name": "CREATE_LIMIT", "namespace_id": "2001", "simple": { "limit": 10, "period": 60 } },
     // Per-IP limit on usage reports: a game sends two or three.
-    { "name": "USAGE_LIMIT", "namespace_id": "2002", "simple": { "limit": 60, "period": 60 } }
+    { "name": "USAGE_LIMIT", "namespace_id": "2002", "simple": { "limit": 60, "period": 60 } },
+    // Per-IP limit on the ranked profile's calls: a screen makes one or two.
+    { "name": "LADDER_LIMIT", "namespace_id": "2003", "simple": { "limit": 20, "period": 60 } }
   ],
   // The admin page's settings (admin.ts): the issuer and client id here, the two secrets with `wrangler secret put`
   // (SESAME_CLIENT_SECRET, ADMIN_SECRET).

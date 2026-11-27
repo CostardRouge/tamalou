@@ -224,6 +224,9 @@ importers:
       '@tamalou/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@tamalou/ranking':
+        specifier: workspace:*
+        version: link:../../packages/ranking
       '@tamalou/room':
         specifier: workspace:*
         version: link:../../packages/room
@@ -267,6 +270,9 @@ importers:
       '@tamalou/admin':
         specifier: workspace:*
         version: link:../../packages/admin
+      '@tamalou/ranking':
+        specifier: workspace:*
+        version: link:../../packages/ranking
       '@tamalou/room':
         specifier: workspace:*
         version: link:../../packages/room
@@ -304,6 +310,15 @@ importers:
       '@tamalou/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/ranking:
+    dependencies:
+      '@tamalou/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
 
   packages/room:
     dependencies:

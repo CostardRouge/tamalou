@@ -10,6 +10,10 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- «Classé», on the online game's launch screen: create a ranked profile with no account and no e-mail. You get a
+  name drawn at random (the one strangers will see, never your own) and a recovery code that brings the profile
+  back on another phone, also saved in «Mes parties»'s file. «Mes données» downloads what the server keeps, and
+  «Supprimer mon profil» erases it. Ranked games against bots come next; the legal notice says what is kept.
 - «Reconnaître cet appareil» in the settings: the game statistics may carry a number your device drew at random,
   so the publisher sees how many devices come back to play. It says nothing about you, is renewed every 13 months,
   and switching it off erases it. The legal notice says so.

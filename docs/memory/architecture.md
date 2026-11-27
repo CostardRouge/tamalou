@@ -10,6 +10,7 @@ Planned layout, filled milestone by milestone (`docs/SPEC.md` §8):
 | `packages/engine` | the reducer, seeded RNG, `viewFor`, replay | `shared` |
 | `packages/bots` | three bot levels over a `PlayerView`, and the bot-vs-bot simulation CLI | `shared`, `engine` (for legal moves on a view) |
 | `packages/room` | seats, tokens, readiness, kick, turn timers, bot takeover, expiry: pure, clock injected | `shared`, `engine`, `bots` |
+| `packages/ranking` | the ranked mode (ADR-0029): identity, generated names, the `Ladder` over SQLite, its API; OpenSkill from R1 | `shared`, `zod` |
 | `apps/web` | React UI; `GameConnection` with `LocalConnection` and `RemoteConnection` | everything in `packages/` |
 | `apps/server` | Node `ws` adapter of `room` for LAN; serves the built web app; Docker | `room` |
 | `apps/worker` | Cloudflare Worker + one Durable Object per room, adapter of `room` for online | `room` |

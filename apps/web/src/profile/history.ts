@@ -182,9 +182,9 @@ export function summarize(list: readonly PlayedGame[]): HistorySummary {
   };
 }
 
-/** The file «Sauvegarder» writes. */
-export function historyFile(list: readonly PlayedGame[]): string {
-  return JSON.stringify({ format: FILE_FORMAT, version: 1, games: list });
+/** The file «Sauvegarder» writes; with the ranked profile's secret when this device has one (ADR-0029). */
+export function historyFile(list: readonly PlayedGame[], ranked: string | null = null): string {
+  return JSON.stringify({ format: FILE_FORMAT, version: 1, games: list, ...(ranked ? { ranked } : {}) });
 }
 
 /** Adds a saved file's games to these; the number added, or null when the file is not a saved history. */

@@ -26,6 +26,7 @@ export function legalBody(lang: Lang, links: HomeLinks & { home: string; email: 
       `${p(`<b>${t.privShort}</b>`)}
 <h3>${t.deviceTitle}</h3>${p(t.device1)}${p(t.device2)}
 <h3>${t.roomsTitle}</h3>${p(t.rooms1)}
+<h3 id="classement">${t.rankedTitle}</h3>${p(t.ranked1)}${p(t.ranked2)}
 <h3 id="mesure">${t.countTitle}</h3>${p(t.count1)}${p(t.count2)}${p(t.count3)}${p(t.count5)}${p(t.count4)}
 <div class="count" id="count" hidden>
 <p data-when="on">${t.countOn}</p>

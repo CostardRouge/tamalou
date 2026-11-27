@@ -12,6 +12,7 @@ Le brief d'origine du projet (2026-10-16), tenu à jour au fil des décisions. C
 4. **Conventions :**
    - Le code, les commits et les noms techniques sont en anglais.
    - L'interface est en français, avec une i18n simple pour ajouter l'anglais plus tard.
+   - **[ADR-0028]** Elle passe à neuf langues : français (la source), anglais, espagnol, italien, portugais du Brésil, allemand, japonais, chinois simplifié et traditionnel ; le jeu s'ouvre dans la langue du téléphone, et chaque texte français changé est traduit dans toutes les langues dans la même pull request.
 5. **Cadence :**
    - Des petits commits. **[ADR-0001]** Format de la spec commune (C3) : titre impératif en anglais, sans préfixe `feat:`, et non Conventional Commits.
    - Une milestone à la fois.
@@ -198,6 +199,7 @@ Stack retenue :
 - **Rejouer :** on peut enchaîner une nouvelle partie avec les mêmes joueurs et les mêmes règles.
 - Option : des spectateurs, qui ne voient que les informations publiques.
 - **[ADR-0024]** Statistiques d'usage anonymes (parties lancées et terminées, modes, réglages de l'appareil, façon d'entrer dans une salle), envoyées au serveur en ligne sous le même choix que la mesure d'audience, gardées 13 mois, lisibles par le propriétaire seul sur `/admin/`, connecté par son fournisseur OpenID Connect Sésame.
+- **[ADR-0029]** **Parties classées** (décidé le 2026-11-27, construit par étapes R0–R3, `docs/plans/ranking.md`) : un écran « Classé » ouvert depuis l'écran de lancement ; un joueur classé sans compte (un secret tiré sur l'appareil et un code de récupération) ; un niveau OpenSkill montré en treize paliers, du Deux à l'As ; une partie classée se joue toujours sur le serveur, même contre des bots seuls, aux règles imposées (Classique, défausse rapide, 30 s par tour, 5 manches) ; les inconnus ne voient qu'un pseudo généré ; quitter compte comme la dernière place. **C'est la seule exception aux données éphémères** : le serveur en ligne garde les joueurs classés et leurs parties (un Durable Object), effacés après 13 mois sans partie classée ou à la demande du joueur, et sauvegardés. Une salle entre amis n'est jamais classée et ne garde toujours rien.
 
 ### 5.4 Multi LAN
 - Le même protocole que le mode en ligne, servi **localement** par `apps/server` (Node) :

@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+import { Ladder, type LadderReply, ladderRequest, MAX_LADDER_BODY } from '@tamalou/ranking';
 import { Room, systemClock } from '@tamalou/room';
 import {
   MAX_USAGE_REPORT,
@@ -16,14 +17,16 @@ import { type AdminEnv, admin } from './admin.ts';
 
 // The online host (docs/SPEC.md §5.3, ADR-0004): the same API as the LAN server (apps/server), on Cloudflare.
 // One Durable Object per room code holds a packages/room Room in memory; the Worker only routes. A room is never
-// persisted: it lives while its object does, and closes after two idle hours or once a finished game is empty. The one
-// thing kept is the anonymous usage statistics (ADR-0024), in one SQLite-backed object, read by the admin page.
+// persisted: it lives while its object does, and closes after two idle hours or once a finished game is empty. Two
+// things are kept, each in one SQLite-backed object: the anonymous usage statistics (ADR-0024), read by the admin page,
+// and the ranked players (ADR-0029), backed up from it.
 //
 //   GET  /api/health           → { ok, v, mode: 'online' }
 //   POST /api/rooms            → { code }
 //   GET  /api/rooms/:code      → { code, phase } or 404
 //   WS   /api/rooms/:code/ws   → the room's protocol
 //   POST /api/usage            → 204: one anonymous usage report (packages/shared usage.ts)
+//   POST /api/ladder/:op       → the ranked profile: create, me, rename, data, delete (packages/ranking api.ts)
 //   /admin/…                   → the owner's statistics, signed in through Sésame (admin.ts)
 
 type Limit = { limit(o: { key: string }): Promise<{ success: boolean }> };
@@ -31,13 +34,19 @@ type Limit = { limit(o: { key: string }): Promise<{ success: boolean }> };
 interface Env extends AdminEnv {
   ROOMS: DurableObjectNamespace<RoomObject>;
   USAGE: DurableObjectNamespace<UsageObject>;
+  LADDER: DurableObjectNamespace<LadderObject>;
   ASSETS: Fetcher;
   CREATE_LIMIT?: Limit;
   USAGE_LIMIT?: Limit;
+  LADDER_LIMIT?: Limit;
 }
 
 /** The one object holding the statistics. */
 const usageStore = (env: Env) => env.USAGE.get(env.USAGE.idFromName('usage'));
+/** The one object holding the ranked players. */
+const ladderStore = (env: Env) => env.LADDER.get(env.LADDER.idFromName('ladder'));
+
+const LADDER_PATH = /^\/api\/ladder\/([a-z]+)$/;
 
 const ROOM_PATH = /^\/api\/rooms\/([^/]+)(\/ws)?$/;
 
@@ -53,7 +62,30 @@ export default {
     const path = url.pathname;
     if (path === '/api/health' && request.method === 'GET')
       return json(200, { ok: true, v: PROTOCOL_VERSION, mode: 'online' });
-    if (path === '/admin' || path.startsWith('/admin/')) return admin(request, env, usageStore(env));
+    if (path === '/admin' || path.startsWith('/admin/')) return admin(request, env, usageStore(env), ladderStore(env));
+    const ladder = LADDER_PATH.exec(path);
+    if (ladder) {
+      if (request.method !== 'POST') return json(405, { error: 'method' });
+      // Every call is limited by address: a code cannot be guessed, but nobody gets to try.
+      const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+      if (env.LADDER_LIMIT && !(await env.LADDER_LIMIT.limit({ key: ip })).success)
+        return json(429, { error: 'slowDown' });
+      const text = await request.text();
+      if (text.length > MAX_LADDER_BODY) return json(413, { error: 'tooLarge' });
+      let body: unknown = null;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        return json(400, { error: 'badRequest' });
+      }
+      const reply = await ladderStore(env).handle(ladder[1] ?? '', body);
+      return reply.json === null
+        ? new Response(null, { status: reply.status, headers: { 'cache-control': 'no-store' } })
+        : new Response(reply.json, {
+            status: reply.status,
+            headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+          });
+    }
     if (path === '/api/usage' && request.method === 'POST') {
       const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
       if (env.USAGE_LIMIT && !(await env.USAGE_LIMIT.limit({ key: ip })).success)
@@ -213,5 +245,48 @@ export class UsageObject extends DurableObject<Env> {
       }
     }
     return out;
+  }
+}
+
+/**
+ * The ranked players (ADR-0029): packages/ranking's `Ladder` over this object's SQLite. One object for the whole ladder:
+ * a few writes per game, far from what one object holds. Cloudflare keeps 30 days of point-in-time recovery; the owner
+ * also downloads an export from /admin/ every week.
+ */
+export class LadderObject extends DurableObject<Env> {
+  private readonly ladder: Ladder;
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    this.ladder = new Ladder({
+      exec: <T extends Record<string, string | number | null>>(
+        query: string,
+        ...bindings: (string | number | null)[]
+      ) => ctx.storage.sql.exec<T>(query, ...bindings),
+    });
+  }
+
+  /** One call; the body comes back as JSON text (what RPC carries). */
+  async handle(op: string, body: unknown): Promise<{ status: number; json: string | null }> {
+    const reply: LadderReply = await ladderRequest(this.ladder, op, body, new Date());
+    return { status: reply.status, json: reply.body === undefined ? null : JSON.stringify(reply.body) };
+  }
+
+  async summary(): Promise<{ players: number; lastExport: string | null }> {
+    return { players: this.ladder.count(), lastExport: this.ladder.lastExport() };
+  }
+
+  /** The export as JSON text. */
+  async exportFile(): Promise<string> {
+    return JSON.stringify(this.ladder.exportFile(new Date()));
+  }
+
+  /** An export's JSON text read back. */
+  async importFile(text: string): Promise<number | null> {
+    try {
+      return this.ladder.importFile(JSON.parse(text));
+    } catch {
+      return null;
+    }
   }
 }

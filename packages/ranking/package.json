@@ -1,0 +1,13 @@
+{
+  "name": "@tamalou/ranking",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@tamalou/shared": "workspace:*",
+    "zod": "^4.6.7"
+  }
+}
