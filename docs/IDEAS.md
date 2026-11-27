@@ -65,6 +65,8 @@ Pour lire le tableau : **coût** = travail d'agent + temps du propriétaire (tes
 
 ## 5. Classement Elo
 
+**Évaluée le 2026-11-27, avec les pistes 4 et 6** : `docs/plans/ranking.md` (identité, stockage, RGPD, OpenSkill, règles classées, pièges, coût, questions, étapes R0–R4). En attente des choix du propriétaire.
+
 **Le choix technique** : l'Elo classique est fait pour le face-à-face ; Tamalou se joue à 2–6. Pour du chacun-pour-soi à plusieurs, **OpenSkill** (Weng-Lin, libre, bibliothèque JS) fait ce que TrueSkill fait, sans ses brevets ; Glicko-2 si on se limite au un-contre-un. Le classement se calcule sur l'ordre final d'une partie.
 
 **Les pièges** : la collusion (deux amis à la même table classée qui se parlent) — d'où des tables classées tirées au hasard, ou du un-contre-un classé ; les règles d'une partie classée sont fixes (un preset, journal compris, ADR-0026), pas celles du maître de jeu ; et un joueur qui quitte pour ne pas perdre (le relais par un bot existe déjà, ADR-0013, la défaite doit compter).
