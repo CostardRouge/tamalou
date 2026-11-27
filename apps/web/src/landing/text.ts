@@ -15,7 +15,6 @@ const fr = {
   navModes: 'Modes',
   navPlay: 'Jouer',
   otherLang: 'English',
-  otherLangShort: 'EN',
 
   eyebrow: 'Apprends en jouant · une minute',
   heroTitle: 'Ta première manche de Tamalou, <em>ici même.</em>',
@@ -162,7 +161,6 @@ const en: LandingText = {
   navModes: 'Modes',
   navPlay: 'Play',
   otherLang: 'Français',
-  otherLangShort: 'FR',
 
   eyebrow: 'Learn by playing · one minute',
   heroTitle: 'Your first round of Tamalou, <em>right here.</em>',

@@ -91,9 +91,12 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const faces = conn.avatars?.() ?? avatarsFor(view.players);
   const faceOf = (id: PlayerId) => faces.get(id) ?? FALLBACK_FACE;
   const colorOf = (id: PlayerId) => COLOR_HEX[faceOf(id).color];
+  /** The slot of mine a queued swap will fill: my drawn card flies straight there (flights.ts, straightInto). */
+  const into = useRef<Place | null>(null);
   const fly = useFlights(events, view.me, !reduced, {
     replayFrom,
     handOf: (id) => view.players.find((p) => p.id === id)?.slots.length ?? 4,
+    into: () => into.current,
     hands: settings.showHands
       ? {
           kind: handKindHere,
@@ -128,6 +131,9 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const [ask, setAsk] = useState<Drop[] | null>(null);
   /** The second half of a drop: a card drawn onto one of mine is swapped there once the draw is through. */
   const [queued, setQueued] = useState<Action | null>(null);
+  // Not when every move is confirmed: the swap may then wait on a question, and the card would sit in a slot not yet its.
+  into.current =
+    queued?.type === 'swap' && !rules.assist.confirmMoves ? slotPlace({ player: view.me, slot: queued.slot }) : null;
   const ui = interaction(view, rules, pending);
   const handoff = conn.handoff?.() ?? null;
   // The pause (the owner's pick A on the 2026-11-21 canvas, ADR-0023): a curtain over the table, every clock stopped.
@@ -489,7 +495,8 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const spot = view.phase === 'play' ? (myTurn ? ' turn-mine' : ' turn-other') : '';
   // The drawn card (game/front.ts): in front of whoever drew it, mine held above my hand or large on the table.
   const holder = view.drawn ? view.current : null;
-  const holdingMine = !!holder && holder === view.me && !!me;
+  // A card drawn onto one of mine is on its way into that slot: it is not shown held meanwhile (straightInto).
+  const holdingMine = !!holder && holder === view.me && !!me && !(queued?.type === 'swap' && into.current);
   // Another player's card stays in front of them until their hand has taken it on, the state may have moved on.
   if (view.drawn && holder) lastDrawn.current = { holder, card: view.drawn.card };
   const front =

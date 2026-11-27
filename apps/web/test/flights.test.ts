@@ -1,6 +1,6 @@
 import type { Card, GameEvent } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
-import { bubblesOf, DEAL_STEP, dealToReplay, flightsOf } from '../src/game/flights.ts';
+import { bubblesOf, DEAL_STEP, dealToReplay, flightsOf, straightInto } from '../src/game/flights.ts';
 
 const c = (rank: Card['rank'], suit: Card['suit'] = 'S', id = 1): Card => ({ id, rank, suit, deck: 0 });
 
@@ -146,5 +146,28 @@ describe('what the others say', () => {
       { player: 'ada', key: 'bubbleThrow', card: c('7', 'D'), event: 1 },
       { player: 'bob', key: 'bubblePeekYou', event: 3 },
     ]);
+  });
+});
+
+describe('my card drawn onto one of mine', () => {
+  const nine: Card = { id: 1, rank: '9', suit: 'H', deck: 0 } as Card;
+  const king: Card = { id: 2, rank: 'K', suit: 'S', deck: 0 } as Card;
+  it('goes straight into the slot, and the old card leaves at once (the owner, 2026-11-27)', () => {
+    const drew = flightsOf([{ type: 'drew', player: 'me', from: 'discard', card: nine }], 'me');
+    const first = straightInto(drew, 'me', 'slot:me:1', null);
+    expect(first.flights).toMatchObject([{ from: 'discard', to: 'slot:me:1' }]);
+    expect(first.via).toBe('slot:me:1');
+    const swap = flightsOf([{ type: 'swapped', player: 'me', slot: 1, discarded: king }], 'me');
+    const second = straightInto(swap, 'me', null, first.via);
+    // Only the old card flies, on the beat the new one would have taken.
+    expect(second.flights).toMatchObject([{ from: 'slot:me:1', to: 'discard', card: king, beat: 0 }]);
+    expect(second.via).toBeNull();
+  });
+
+  it('leaves a draw without a swap waiting, and the others’ moves, alone', () => {
+    const drew = flightsOf([{ type: 'drew', player: 'me', from: 'deck' }], 'me');
+    expect(straightInto(drew, 'me', null, null).flights).toEqual(drew);
+    const theirs = flightsOf([{ type: 'drew', player: 'ada', from: 'deck' }], 'me');
+    expect(straightInto(theirs, 'me', 'slot:me:1', null).flights).toEqual(theirs);
   });
 });

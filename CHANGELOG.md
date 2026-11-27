@@ -17,6 +17,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The home page's language link is now a small pill with a globe and the language's own name («English»,
+  «Français») instead of «EN» / «FR».
 - A hand closes up on the cards it still holds: the dashed places of thrown cards no longer show, nor lie over the
   cards left, and a player down to one card shows one card.
 - Easy bots no longer call Tamalou on their first turns: they wait until they have played three, so a round leaves
@@ -41,6 +43,12 @@ code, though the game speaks French first. Codenames are French card words, in a
 - The end-of-round panel can no longer leave you stuck: leaving the app while it shows no longer pauses the game
   behind it, the pause's «Reprendre» is never hidden under it, and it always offers «Quitter la partie», even while
   waiting for the others.
+- A card taken from the discard (or drawn) and dropped on one of yours now goes straight into its place while your
+  old card leaves for the discard, instead of stopping aside first.
+- Choosing a set of rules whose card is cut at the edge of its row now slides the card into full view (without
+  animation for those who ask for less motion).
+- On a computer, the panels rising from the bottom (setting up a game, the rules, the end of a round) now reach the
+  bottom of the window, without a step underneath.
 - At the end of a round, a player with no card left gets an empty place in their row, as on the table, instead of a
   shorter row.
 - In the panel where you set up a game, only the middle scrolls now: the title and «Jouer» stay in place.

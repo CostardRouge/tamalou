@@ -24,6 +24,15 @@ export const MODE_KEY: Record<Mode, Key> = { solo: 'homeModeSolo', pass: 'homeMo
 const PRESET_RULES = new Map(PRESETS.map((p) => [p.id, rulesFromPreset(p.id)]));
 const CLASSIC = rulesFromPreset('classic');
 
+/**
+ * Brings a preset's card wholly into its sliding row (the owner, 2026-11-27: a card cut at either end stayed cut once
+ * chosen), smoothly unless the player asked for less motion. The row's scroll-padding keeps the sheet's margin.
+ */
+function showWhole(el: Element | null) {
+  const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  el?.scrollIntoView?.({ inline: 'nearest', block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+}
+
 /** A player's name as typed, or "Joueur n" when left empty. */
 export const playerName = (typed: string, i: number) => typed.trim() || t('playerN', { n: i + 1 });
 
@@ -124,7 +133,10 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
                         name="preset"
                         value={p.id}
                         checked={c.preset === p.id}
-                        onChange={() => set({ preset: p.id, overrides: {} })}
+                        onChange={(e) => {
+                          set({ preset: p.id, overrides: {} });
+                          showWhole(e.currentTarget.closest('label'));
+                        }}
                       />
                       <b>{presetText(p.id, p).name}</b>
                       <small>{t(`presetTag_${p.id}` as Key)}</small>

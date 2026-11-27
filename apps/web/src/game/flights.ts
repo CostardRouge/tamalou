@@ -231,3 +231,39 @@ export function bubblesOf(events: readonly GameEvent[], me: PlayerId): Bubble[] 
   }
   return [...said.values()];
 }
+
+/**
+ * My card drawn onto one of my cards (a drop, or the discard lifted then a touch) goes straight into that slot, and the
+ * card it replaces leaves for the discard at once (the owner, 2026-11-27: it went aside first, to where a drawn card is
+ * held, then into the slot, which read as a detour, not a swap). `into` is the slot a swap waits to be sent for, while
+ * my draw arrives; `via`, the slot an earlier batch sent my drawn card to, whose swap then flies only the old card.
+ * Returns the flights to play and the `via` to keep for the next batch.
+ */
+export function straightInto(
+  flights: readonly Flight[],
+  me: PlayerId,
+  into: Place | null,
+  via: Place | null,
+): { flights: Flight[]; via: Place | null } {
+  const out: Flight[] = [];
+  let skipped: { event: number; beat: number } | null = null;
+  for (const f of flights) {
+    if (f.to === 'drawn' && f.by === me) {
+      via = into;
+      out.push(into ? { ...f, to: into } : f);
+      continue;
+    }
+    if (via && f.from === 'drawn' && f.to === via && f.by === me) {
+      skipped = { event: f.event, beat: f.beat };
+      continue;
+    }
+    if (skipped && via && f.event === skipped.event && f.from === via) {
+      out.push({ ...f, beat: skipped.beat });
+      via = null;
+      skipped = null;
+      continue;
+    }
+    out.push(f);
+  }
+  return { flights: out, via };
+}

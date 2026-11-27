@@ -32,8 +32,14 @@ export interface HomeLinks {
 }
 
 /** The brand and the navigation, shared by the home page and the other static pages. */
+/** The language switch's globe (the owner, 2026-11-27: «EN» alone read poorly; flags name countries, not languages). */
+const GLOBE =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>';
+
 export function header(lang: Lang, links: { home: string; play: string; other: string }, sections = true): string {
   const t = LANDING[lang];
+  // The other language, named in itself («English» on the French page), so a reader of it recognises it.
+  const other = lang === 'fr' ? 'en' : 'fr';
   return `<header class="nav wrap">
 <a class="brand" href="${links.home}"><span class="brand-mark" aria-hidden="true">T</span>Tamalou</a>
 <nav class="nav-links" aria-label="${t.navAria}">
@@ -47,7 +53,7 @@ ${
         .map(([id, label]) => `<a class="hide-s" href="#${id}">${label}</a>\n`)
         .join('')
     : ''
-}<a href="${links.other}" hreflang="${lang === 'fr' ? 'en' : 'fr'}" lang="${lang === 'fr' ? 'en' : 'fr'}" data-lang="${lang === 'fr' ? 'en' : 'fr'}" aria-label="${t.otherLang}">${t.otherLangShort}</a>
+}<a class="lang-switch" href="${links.other}" hreflang="${other}" lang="${other}" data-lang="${other}">${GLOBE}<span>${t.otherLang}</span></a>
 <a class="btn btn-a btn-sm" href="${links.play}">${t.navPlay}</a>
 </nav>
 </header>`;
