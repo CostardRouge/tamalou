@@ -98,6 +98,31 @@ body.site {
   color: var(--ink);
 }
 
+/* The other language as a pill: a globe and its name in itself (the owner, 2026-11-27). */
+.site .nav-links a.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px 0 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.site .nav-links a.lang-switch:hover {
+  border-color: var(--muted);
+}
+
+.lang-switch svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
 .foot {
   display: flex;
   flex-wrap: wrap;

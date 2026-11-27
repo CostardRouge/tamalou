@@ -17,6 +17,8 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- The home page's language link is now a small pill with a globe and the language's own name («English»,
+  «Français») instead of «EN» / «FR».
 - A hand closes up on the cards it still holds: the dashed places of thrown cards no longer show, nor lie over the
   cards left, and a player down to one card shows one card.
 - Easy bots no longer call Tamalou on their first turns: they wait until they have played three, so a round leaves
