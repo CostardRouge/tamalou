@@ -24,12 +24,20 @@ export const MODE_KEY: Record<Mode, Key> = { solo: 'homeModeSolo', pass: 'homeMo
 const PRESET_RULES = new Map(PRESETS.map((p) => [p.id, rulesFromPreset(p.id)]));
 const CLASSIC = rulesFromPreset('classic');
 
+/** Where the presets' row stood when a card was touched, before the browser scrolled to the radio it focuses. */
+let rowAtTouch: { left: number; at: number } | null = null;
+
 /**
  * Brings a preset's card wholly into its sliding row (the owner, 2026-11-27: a card cut at either end stayed cut once
  * chosen), smoothly unless the player asked for less motion. The row's scroll-padding keeps the sheet's margin.
  */
 function showWhole(el: Element | null) {
   const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  // The browser has already jumped the row to the radio it focused (a card cut at the left end, 2026-11-27: Classique
+  // came back without a glide): the row goes back to where the touch found it, then glides.
+  const row = el?.parentElement;
+  if (row && rowAtTouch && performance.now() - rowAtTouch.at < 1000) row.scrollLeft = rowAtTouch.left;
+  rowAtTouch = null;
   el?.scrollIntoView?.({ inline: 'nearest', block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
 }
 
@@ -125,7 +133,12 @@ export function SetupSheet({ c, set, linked, changes, onClose, onPlay, onEdit, o
               ) : null}
               <fieldset className="field">
                 <legend>{t('homePreset')}</legend>
-                <div className="preset-cards">
+                <div
+                  className="preset-cards"
+                  onPointerDown={(e) => {
+                    rowAtTouch = { left: e.currentTarget.scrollLeft, at: performance.now() };
+                  }}
+                >
                   {PRESETS.map((p) => (
                     <label key={p.id} className={c.preset === p.id ? 'on' : ''}>
                       <input
