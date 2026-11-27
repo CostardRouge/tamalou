@@ -27,7 +27,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - The game master configures **every** rule before the game; the engine reads a versioned `RuleSet` and hard-codes nothing, so variants come later without touching it.
 - One pure engine everywhere: in the browser for solo and pass-and-play, on an authoritative server for LAN and online, where clients send intentions and receive only their filtered view.
 - Online rooms are ephemeral: no account, no persisted data, gone after 2 h idle or at the end of the game.
-- Later, out of scope for now: advanced variants, the owner's own card designs. Floated by the owner's friends (2026-11-27, «un délire», no decision): ranking, servers, a leaderboard — a real multiplayer game; a live view of the rooms in progress on the admin page would come with it.
+- Later, out of scope for now: advanced variants, the owner's own card designs. (A profile and «Mes parties» on the device came 2026-11-24, ADR-0025.)
+- 2026-11-27 — **Beyond the friends' table** (the owner, after his friends played; they floated ranking, servers, a leaderboard, «un délire»): ranking/Elo, public matchmaking, international, gamification (tutorial, a solo path, something viral), marketing, store apps as a bonus only (he holds the PWA enough and Apple's 99 €/yr not worth it); a live view of the rooms in progress on the admin page would come with multiplayer. Listed and weighed in `docs/IDEAS.md`, nothing decided; each topic gets its own session from its section. **How to apply**: favour what works with no population first (daily challenge from the seeded engine, solo path), since an empty queue kills a small game; a public ranking needs a durable player identity, which reopens ADR-0024 (the statistics' device number is not an identity), ADR-0025 (no account) and C18 (nothing to back up) — say so and write an ADR before building it.
 
 ## Decisions at a glance (details in `docs/DECISIONS.md` and the topic files)
 
@@ -60,6 +61,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - A pause held by the host's `Table` (every clock stops, an opaque curtain), anyone on this device and automatic when the page hides, only the game master in a room (2026-11-21) — ADR-0023, `web.md`.
 - The journal (2026-11-24): the game master's rule `assist.log` — the whole game, the last lap of the table (default) or none; Débutant gives it all; a panel pushing the table aside on a computer, a sheet over the hand on a phone; and `assist.discardStory`, the discard laid out from an icon beside it (off, on in Débutant) — ADR-0026, `web.md`, "The journal".
 - The table's top bar (2026-11-24, the owner's pick A on a canvas): the way out, the round, the journal and «⋯» holding pause, sound, vibrations, display, rules and leaving — `web.md`, "The top bar".
+- Nine languages (2026-11-27, the owner): fr, en, es, it, pt (Brazil), de, ja, zh-Hans, zh-Hant; French the source; the game opens in the phone's language; strict sync (a French change updates every language in the same PR, a lock fails `pnpm check` on a stale key); no native reviewer, so the `/translate` skill's back-translation review and a «Signaler une traduction» link — ADR-0028, `docs/plans/languages.md` (steps L0–L4).
 - Readability: a spotlight on whose turn it is, always; confirming each move is the game master's choice (`assist.confirmMoves`, off by default) — ADR-0016, `web.md`.
 - The table's look, chosen by the owner on the 2026-10-17 canvas: one-line action bar (A), rules as cards to leaf through (B), cards flying on soft springs for every move with the others' moves told in bubbles, drag and drop with soft physics (D) and quick discard by dragging onto the discard (C) — `web.md`.
 - The launch screen (2026-10-22, the owner's pick on a canvas): the last game and "Rejouer" first, one tile per mode opening a panel with the table to set, the device's settings behind a button; the cards are dealt on the game's own table at every round, and a wide screen seats the others round an oval (2026-10-24) — `web.md`, "The launch screen".
@@ -105,6 +107,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-11-24 — Owner to judge the top bar on his phone: «⋯» and its items (the sound and the vibrations switched in place), the journal beside it, the way out.
 - 2026-11-24 — Owner to judge the new rules screen on his phone and his computer: the tiles, a tile opening in place, card points and powers set on the cards, the cards seen at the start.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
+- 2026-11-27 — **Languages, next step L0** (`docs/plans/languages.md` § 6): the foundations, shipped with French and English only, in its own session; then L1 (the skill + Spanish), L2 (it, pt, de), L3 (ja, both Chinese).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.
 
 
