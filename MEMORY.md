@@ -106,6 +106,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-11-24 — Owner to judge the top bar on his phone: «⋯» and its items (the sound and the vibrations switched in place), the journal beside it, the way out.
 - 2026-11-24 — Owner to judge the new rules screen on his phone and his computer: the tiles, a tile opening in place, card points and powers set on the cards, the cards seen at the start.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
+- 2026-11-27 — **Nine languages** (the owner: es, it, pt, de, ja, zh, maybe both Chinese scripts; the whole game, rules, home, legal; French stays the source, code/commits/CHANGELOG English): planned in `docs/plans/languages.md` (steps L0–L4, a `/translate` skill, a `lock.json` of the French each translation came from, no CJK web font). Waiting on the owner's five answers (§ 7: Brazilian or European Portuguese, one or both Chinese scripts, detect the phone's language, strict sync on every French change, native reviewers); then an ADR and L0 in its own session.
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.
 
 

@@ -95,7 +95,7 @@ Pour lire le tableau : **coût** = travail d'agent + temps du propriétaire (tes
 
 **Ce que ça demande** : des langues de plus (espagnol, italien, portugais, allemand), les pages d'accueil et le référencement par langue, des noms de cartes et de pouvoirs vérifiés par un natif ; le jeu se joue sous d'autres noms ailleurs (cousin de Golf et de Cabo) — à garder en tête pour le référencement, sans emprunter le nom d'un jeu commercial.
 
-**Question pour toi** : quelles langues d'abord ? connais-tu des joueurs natifs pour relire ?
+**Lancée le 2026-11-27** : espagnol, italien, portugais, allemand, japonais, chinois (simplifié et traditionnel). Le plan détaillé, ses étapes et ses questions sont dans `docs/plans/languages.md`.
 
 ## 9. Marketing et acquisition
 
