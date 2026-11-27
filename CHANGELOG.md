@@ -17,6 +17,10 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Changed
 
+- A hand closes up on the cards it still holds: the dashed places of thrown cards no longer show, nor lie over the
+  cards left, and a player down to one card shows one card.
+- Easy bots no longer call Tamalou on their first turns: they wait until they have played three, so a round leaves
+  time to play.
 - The journal's button at the top of the table is now a history clock, the same as the one beside the discard,
   instead of three lines that looked like a menu.
 - On a phone, panels rising from the bottom (the end of a round, the rules…) now reach the screen's edges and its

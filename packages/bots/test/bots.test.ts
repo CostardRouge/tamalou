@@ -1,4 +1,4 @@
-import { buildCards, createGame, viewFor } from '@tamalou/engine';
+import { apply, buildCards, createGame, viewFor } from '@tamalou/engine';
 import { type Card, type GameEvent, parseRules, type RuleSetInput } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
 import { BOT_LEVELS, Bot, type BotLevel, BotMemory, PROFILES, playMatch, tournament } from '../src/index.ts';
@@ -141,6 +141,26 @@ describe('bots', () => {
     expect(duel('medium', 'easy')).toBeGreaterThan(0.9);
     expect(duel('hard', 'medium')).toBeGreaterThan(0.55);
   }, 60_000);
+
+  it('let an easy bot call only from its fourth turn of a round (the owner, 2026-11-27)', () => {
+    let calls = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      const levels: BotLevel[] = ['easy', 'easy', 'easy'];
+      const { actions } = playMatch({ seed, rules, levels });
+      // Replays the match to read how many turns the caller had played when it called.
+      let { state } = createGame({ seed, players: levels.map((l, i) => ({ id: `s${i}`, name: `${l} ${i}` })), rules });
+      for (const action of actions) {
+        if (action.type === 'callTamalou') {
+          calls++;
+          expect(state.turns[action.by] ?? 0).toBeGreaterThanOrEqual(PROFILES.easy.callFrom);
+        }
+        const r = apply(state, action, rules);
+        if (!r.ok) throw new Error(r.error);
+        state = r.state;
+      }
+    }
+    expect(calls).toBeGreaterThan(0);
+  });
 
   it('give the host a thinking delay per level, faster as they get better', () => {
     expect(PROFILES.hard.delays.quickDiscard[0]).toBeLessThan(PROFILES.medium.delays.quickDiscard[0]);
