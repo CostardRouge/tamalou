@@ -193,5 +193,5 @@ in alphabetical order (0.1.0 As, 0.2.0 Brelan… 0.9.0 Impasse, 0.10.0 Joker,
 
 - `AGENTS.md`: a symlink to this file, for tools that do not read `CLAUDE.md`.
 - `MEMORY.md` + `docs/memory/`: project long-term memory (rule 2).
-- `docs/SPEC.md`: the brief, kept current. `docs/DECISIONS.md`: the ADRs.
+- `docs/SPEC.md`: the brief, kept current. `docs/DECISIONS.md`: the ADRs. `docs/IDEAS.md`: the ideas beyond the brief (ranking, matchmaking, gamification, store apps, marketing), weighed but not decided.
 - `CHANGELOG.md`: what each release brings (rule 4); `.github/release.mjs` + `.github/workflows/release.yml` tag and publish it.
