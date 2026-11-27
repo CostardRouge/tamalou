@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { NOT_FOUND_SCRIPT, notFoundHtml } from '../build/notfound.ts';
+import { notFoundHtml, notFoundScript } from '../build/notfound.ts';
 import { pageHead } from '../build/pages.ts';
 import { precacheList } from '../build/pwa.ts';
 import { contentSecurityPolicy, scriptHash } from '../build/security.ts';
 import { GENERATED, generatedFiles, indexedPages, lastmod, llmsTxt, robotsTxt, sitemapXml } from '../build/seo.ts';
 import { PAGES, PLAY_PATH, SITE_URL, SOURCE_URL, toRoot } from '../build/site.ts';
-import { LANDING } from '../src/landing/text.ts';
+import { LANDING } from '../src/landing/text/index.ts';
 
 // Findability (COMMON-PROJECT-SPEC C17): what a crawler or an answer engine reads, written at build time from
 // build/site.ts and held here to the pages' own heads.
@@ -27,6 +27,10 @@ describe('findability', () => {
       expect(listed, page.file).toBe(!pageHead(page, SITE_URL).includes('noindex'));
     }
     expect(xml).toContain('<lastmod>2026-10-19</lastmod>');
+    // Each address lists its versions in every language, as its page's head does.
+    expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
+    expect(xml.match(/<xhtml:link rel="alternate" hreflang="en" href="[^"]+en\/legal\/" \/>/g)).toHaveLength(2);
+    expect(xml.match(/hreflang="x-default"/g)).toHaveLength(locs.length);
   });
 
   it('writes llms.txt with the game and every address worth reading', () => {
@@ -95,7 +99,7 @@ describe('the 404 page', () => {
 
   it('names its one inline script in the content security policy', () => {
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1] ?? '');
-    expect(scripts).toEqual([NOT_FOUND_SCRIPT]);
-    expect(contentSecurityPolicy()).toContain(scriptHash(NOT_FOUND_SCRIPT));
+    expect(scripts).toEqual([notFoundScript()]);
+    expect(contentSecurityPolicy()).toContain(scriptHash(notFoundScript()));
   });
 });

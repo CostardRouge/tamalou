@@ -1,4 +1,4 @@
-import type { Tally, UsageGame, UsageSummary } from '@tamalou/shared';
+import type { Lang, Tally, UsageGame, UsageSummary } from '@tamalou/shared';
 
 // The admin pages (ADR-0024): the anonymous usage statistics of a period, a day and its games, one game; drawn as
 // plain HTML by the Worker (the owner's picks on the 2026-11-24 canvas). They are the owner's alone, signed in through
@@ -31,13 +31,25 @@ const NAMES: Record<string, string> = {
   true: 'Oui',
   false: 'Non',
   unknown: 'Inconnue',
+  classic: 'Classique',
+};
+
+/** Every language of the list (packages/shared languages.ts), in French: a new one must be named here to compile. */
+const LANG_NAMES: Record<Lang, string> = {
   fr: 'Français',
   en: 'Anglais',
-  classic: 'Classique',
+  es: 'Espagnol',
+  it: 'Italien',
+  pt: 'Portugais (Brésil)',
+  de: 'Allemand',
+  ja: 'Japonais',
+  'zh-Hans': 'Chinois simplifié',
+  'zh-Hant': 'Chinois traditionnel',
 };
 
 /** A device setting's values, named as the game's settings name them (apps/web i18n). */
 const SETTING_NAMES: Partial<Record<keyof UsageSummary['context'], Record<string, string>>> = {
+  lang: LANG_NAMES,
   hand: { grid: 'Grille', row: 'Ligne', flat: 'Posée', arc: 'Arc', fan: 'Éventail', carousel: 'Carrousel' },
   drawView: { held: 'En main', big: 'En grand' },
   botPace: { fast: 'Vif', normal: 'Normal', slow: 'Posé' },
@@ -298,7 +310,7 @@ ${row('Son, vibrations', `${yes(c.sound)}, ${yes(c.haptics)}`)}
 ${row('Main', setting('hand', c.hand))}
 ${row('Carte piochée', setting('drawView', c.drawView))}
 ${row('Rythme, vitesse', `${setting('botPace', c.botPace)}, ${setting('cardSpeed', c.cardSpeed).toLowerCase()}`)}
-${row('Langue', NAMES[c.lang] ?? c.lang)}
+${row('Langue', LANG_NAMES[c.lang])}
 ${row(
   'Reconnu',
   device

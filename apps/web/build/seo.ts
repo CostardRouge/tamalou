@@ -1,9 +1,11 @@
 import { execFileSync } from 'node:child_process';
+import { language, READY_LANGS, type ReadyLang } from '@tamalou/shared';
 import type { Plugin } from 'vite';
-import { LANDING } from '../src/landing/text.ts';
+import { LANDING } from '../src/landing/text/index.ts';
+import { LEGAL } from '../src/legal/text/index.ts';
 import { notFoundHtml } from './notfound.ts';
 import { headersFile } from './security.ts';
-import { AUTHOR, PAGES, type Page, PLAY_PATH, SOURCE_URL, siteUrl } from './site.ts';
+import { AUTHOR, PAGES, type Page, PLAY_PATH, SOURCE_URL, siteUrl, versionsOf } from './site.ts';
 
 /**
  * Findability (COMMON-PROJECT-SPEC C17): robots.txt, the sitemap and llms.txt, written at the site's root at build time
@@ -22,6 +24,10 @@ export const indexedPages = (): Page[] => PAGES.filter((p) => p.kind === 'home' 
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+/** A language's name in English («Brazilian Portuguese», «Simplified Chinese»), for llms.txt. */
+const englishName = (lang: ReadyLang) =>
+  new Intl.DisplayNames(['en'], { type: 'language' }).of(language(lang).html) ?? language(lang).name;
+
 const pageUrl = (site: string, kind: Page['kind'], lang: Page['lang']) =>
   `${site}${PAGES.find((p) => p.kind === kind && p.lang === lang)?.path ?? ''}`;
 
@@ -35,15 +41,26 @@ export function robotsTxt(site: string): string {
 }
 
 /**
- * The home page and the legal notice of each language, in the plain sitemap format: their hreflang pairs are in each
- * page's head, which Google reads as well as a sitemap's. The game is left out: it is noindex (a sitemap that submits
- * a noindex address is an error in Search Console), reached from the home pages and llms.txt.
+ * The home page and the legal notice of each language, each with its versions in every language (`xhtml:link`, the
+ * same list as the pages' hreflang tags, French as `x-default`). The game is left out: it is noindex (a sitemap that
+ * submits a noindex address is an error in Search Console), reached from the home pages and llms.txt.
  */
 export function sitemapXml(site: string, lastmod: string): string {
+  const alternates = (page: Page) => {
+    const versions = versionsOf(page);
+    const fr = versions.find((v) => v.lang === 'fr');
+    return [
+      ...versions.map((v) => [language(v.lang).hreflang, v.path] as const),
+      ...(fr ? [['x-default', fr.path] as const] : []),
+    ].map(([lang, path]) => `\n    <xhtml:link rel="alternate" hreflang="${lang}" href="${esc(site + path)}" />`);
+  };
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...indexedPages().map((p) => `  <url><loc>${esc(site + p.path)}</loc><lastmod>${esc(lastmod)}</lastmod></url>`),
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    ...indexedPages().map(
+      (p) =>
+        `  <url><loc>${esc(site + p.path)}</loc><lastmod>${esc(lastmod)}</lastmod>${alternates(p).join('')}\n  </url>`,
+    ),
     '</urlset>',
     '',
   ].join('\n');
@@ -56,7 +73,7 @@ export function llmsTxt(site: string): string {
     '',
     `> ${LANDING.en.description}`,
     '',
-    'Tamalou is the French card game played at home, a cousin of Cabo and Golf, as a free web game in French first and in English, with no account. Each player keeps four cards face down in a 2×2 grid and looks at two of them at the start; on a turn you draw a card or take the top of the discard, keep it in place of one of yours or throw it, some cards have a power when thrown, a card of the rank just discarded can be thrown out of turn (the quick discard), and you call "Tamalou!" when you believe your total is the lowest. The hands are revealed, the lowest total wins the round, and a game runs until a player reaches 100 points.',
+    `Tamalou is the French card game played at home, a cousin of Cabo and Golf, as a free web game in ${new Intl.ListFormat('en').format(READY_LANGS.map(englishName))}, with no account. Each player keeps four cards face down in a 2×2 grid and looks at two of them at the start; on a turn you draw a card or take the top of the discard, keep it in place of one of yours or throw it, some cards have a power when thrown, a card of the rank just discarded can be thrown out of turn (the quick discard), and you call "Tamalou!" when you believe your total is the lowest. The hands are revealed, the lowest total wins the round, and a game runs until a player reaches 100 points.`,
     '',
     '## Modes',
     '',
@@ -73,10 +90,12 @@ export function llmsTxt(site: string): string {
     '## Links',
     '',
     `- [Tamalou](${pageUrl(site, 'home', 'fr')}): home page, in French, with a guided first round and a quiz`,
-    `- [Tamalou in English](${pageUrl(site, 'home', 'en')}): the same page in English`,
-    `- [Play](${site}${PLAY_PATH}): the game, in French or English`,
+    ...READY_LANGS.filter((l) => l !== 'fr').map(
+      (l) => `- [Tamalou in ${englishName(l)}](${pageUrl(site, 'home', l)}): the same page in ${englishName(l)}`,
+    ),
+    `- [Play](${site}${PLAY_PATH}): the game, in ${new Intl.ListFormat('en', { type: 'disjunction' }).format(READY_LANGS.map(englishName))}`,
     `- [Source code](${SOURCE_URL}): TypeScript, MIT license`,
-    `- [Mentions légales](${pageUrl(site, 'legal', 'fr')}) · [Legal notice and privacy](${pageUrl(site, 'legal', 'en')}): publisher, hosting, what is stored and counted`,
+    `- ${READY_LANGS.map((l) => `[${LEGAL[l].title}](${pageUrl(site, 'legal', l)})`).join(' · ')}: publisher, hosting, what is stored and counted`,
     `- [${AUTHOR.name}](${AUTHOR.url}): author`,
     '',
   ].join('\n');

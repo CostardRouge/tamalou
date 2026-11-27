@@ -1,7 +1,7 @@
 import type { Avatar as AvatarValue } from '@tamalou/shared';
 import { useRef, useState } from 'react';
 import { focusOnMount } from '../game/Overlay.tsx';
-import { currentLang, type Key, ordinal, plural, t } from '../i18n/index.ts';
+import { currentLocale, type Key, ordinal, plural, t } from '../i18n/index.ts';
 import { Avatar } from './Avatar.tsx';
 import { historyFile, type PlayedGame, restoreHistory, summarize, useHistory } from './history.ts';
 
@@ -12,7 +12,7 @@ import { historyFile, type PlayedGame, restoreHistory, summarize, useHistory } f
 const DAY = 86_400_000;
 
 function when(at: number, now: number): string {
-  const lang = currentLang();
+  const lang = currentLocale();
   const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' }).format(at);
   const start = new Date(now);
   start.setHours(0, 0, 0, 0);
@@ -29,7 +29,7 @@ function when(at: number, now: number): string {
 
 function who(g: PlayedGame): string {
   if (!g.others.length) return t('historyAlone');
-  const names = new Intl.ListFormat(currentLang(), { type: 'conjunction', style: 'narrow' }).format(g.others);
+  const names = new Intl.ListFormat(currentLocale(), { type: 'conjunction', style: 'narrow' }).format(g.others);
   return t(g.mode === 'solo' ? 'historyAgainst' : 'historyWith', { names });
 }
 
@@ -71,7 +71,7 @@ export function HistoryScreen({ avatar, onClose }: { avatar: AvatarValue; onClos
             {sum.since !== null ? (
               <small className="muted">
                 {t('historySince', {
-                  date: new Intl.DateTimeFormat(currentLang(), { day: 'numeric', month: 'long' }).format(sum.since),
+                  date: new Intl.DateTimeFormat(currentLocale(), { day: 'numeric', month: 'long' }).format(sum.since),
                 })}
               </small>
             ) : null}

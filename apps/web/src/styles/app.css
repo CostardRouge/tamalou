@@ -3603,6 +3603,29 @@ html:has(.overlay) body {
   gap: 6px;
 }
 
+/* The languages, each named in itself (ADR-0028): as many columns as fit, two on a phone. */
+.segmented.lang-list {
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+}
+
+.segmented.lang-list label {
+  padding: 6px 8px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.settings .report {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 0;
+}
+
+.settings .report a {
+  justify-self: start;
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* A new version waits (ADR-0020): one line, the words then Reload and Later; it wraps on a narrow phone. */
 .banner.update {
   top: max(12px, env(safe-area-inset-top));

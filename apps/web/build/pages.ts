@@ -1,11 +1,12 @@
 import { relative } from 'node:path';
+import { language } from '@tamalou/shared';
 import type { Plugin } from 'vite';
 import { homeBody } from '../src/landing/markup.ts';
-import { LANDING } from '../src/landing/text.ts';
+import { LANDING } from '../src/landing/text/index.ts';
 import { legalBody } from '../src/legal/markup.ts';
-import { LEGAL } from '../src/legal/text.ts';
+import { LEGAL } from '../src/legal/text/index.ts';
 import { type AnalyticsConfig, analyticsConfig, analyticsTag } from './analytics.ts';
-import { NOT_FOUND_SCRIPT } from './notfound.ts';
+import { notFoundScript } from './notfound.ts';
 import {
   APP,
   AUTHOR,
@@ -20,6 +21,7 @@ import {
   siteUrl,
   THEME,
   toRoot,
+  versionsOf,
 } from './site.ts';
 
 /**
@@ -65,7 +67,7 @@ export function inlineScripts(): string[] {
       if (page.kind === 'moved') return [movedScript(link(page, PLAY_PATH))];
       return [];
     }),
-    NOT_FOUND_SCRIPT,
+    notFoundScript(),
   ];
 }
 
@@ -90,15 +92,14 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
       `<link rel="sitemap" type="application/xml" href="${root}sitemap.xml" />`,
       `<link rel="alternate" type="text/markdown" href="${root}llms.txt" title="Tamalou in Markdown" />`,
     );
-    if (page.twin !== undefined) {
-      const fr = page.lang === 'fr' ? page.path : page.twin;
-      const en = page.lang === 'en' ? page.path : page.twin;
-      lines.push(
-        `<link rel="alternate" hreflang="fr" href="${site}${fr}" />`,
-        `<link rel="alternate" hreflang="en" href="${site}${en}" />`,
-        `<link rel="alternate" hreflang="x-default" href="${site}${fr}" />`,
-      );
-    }
+    // Every version of the page, itself included, and the French one for a visitor whose language has none.
+    const versions = versionsOf(page);
+    lines.push(
+      ...versions.map(
+        (v) => `<link rel="alternate" hreflang="${language(v.lang).hreflang}" href="${site}${v.path}" />`,
+      ),
+      `<link rel="alternate" hreflang="x-default" href="${site}${versions.find((v) => v.lang === 'fr')?.path ?? ''}" />`,
+    );
     // The link preview: the language's card (C17), with its size so unfurlers lay it out before fetching it.
     const card = OG_IMAGES[page.lang];
     lines.push(
@@ -107,7 +108,10 @@ export function pageHead(page: Page, site: string, analytics: AnalyticsConfig | 
       `<meta property="og:title" content="${esc(t.title)}" />`,
       `<meta property="og:description" content="${esc(t.description)}" />`,
       `<meta property="og:url" content="${site}${page.path}" />`,
-      `<meta property="og:locale" content="${page.lang === 'fr' ? 'fr_FR' : 'en_US'}" />`,
+      `<meta property="og:locale" content="${language(page.lang).ogLocale}" />`,
+      ...versionsOf(page)
+        .filter((v) => v.lang !== page.lang)
+        .map((v) => `<meta property="og:locale:alternate" content="${language(v.lang).ogLocale}" />`),
       `<meta property="og:image" content="${site}${card.path}" />`,
       '<meta property="og:image:type" content="image/png" />',
       `<meta property="og:image:width" content="${card.width}" />`,
@@ -144,7 +148,7 @@ export function pageBody(page: Page): string {
   const links = {
     home: link(page, home?.path ?? ''),
     play: link(page, PLAY_PATH),
-    other: link(page, page.twin ?? ''),
+    versions: versionsOf(page).map((v) => ({ lang: v.lang, href: link(page, v.path) })),
     source: SOURCE_URL,
     author: AUTHOR,
     footer: [`<a href="${link(page, legal?.path ?? '')}">${LANDING[page.lang].footLegal}</a>`],
@@ -170,6 +174,7 @@ export function pages(): Plugin {
         const page = pageOf(relative(root, ctx.filename));
         if (!page) throw new Error(`No page in build/site.ts for ${ctx.filename}`);
         return html
+          .replace(/<html lang="[^"]*">/, `<html lang="${language(page.lang).html}">`)
           .replace('<!-- page:head -->', pageHead(page, site, analytics))
           .replace('<!-- page:body -->', pageBody(page));
       },

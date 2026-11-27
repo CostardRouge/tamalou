@@ -188,6 +188,8 @@ Une étape = une session = une pull request. Chacune se termine par quelque chos
 | **L3 — Le japonais et le chinois** | Les réglages typographiques CJK, le japonais, le chinois simplifié, puis le traditionnel par OpenCC et relecture. Les cartes d'aperçu sont dessinées avec Noto CJK. | Les mêmes critères. Des captures sur Chromium et, si possible, un vrai iPhone et un Android. | Une partie en japonais et en chinois : les caractères, les retours à la ligne, la lisibilité des petits textes. |
 | **L4 — Après** (optionnel) | Une page « Règles du Tamalou » par langue pour le référencement (piste 9 de `IDEAS.md`), les captures d'installation par langue, et Weblate si des bénévoles se proposent. | — | — |
 
+**Où on en est (2026-11-27)** : L0 est faite. Ce qu'elle a posé, et ce qu'une langue rendue prête demande encore (ses deux pages HTML, sa carte d'aperçu, ses exceptions « identique au français »), est dans `docs/memory/languages.md`. Écart au plan : `lock.json` couvre aussi les textes de l'accueil et des mentions, pas seulement le jeu.
+
 Chaque étape ajoute ses lignes au `CHANGELOG.md`. Les nouvelles langues méritent une version MINOR, la prochaine en Q. Le propriétaire décide quand la publier, par exemple après L2, ou après L3 pour annoncer les neuf langues d'un coup.
 
 ---

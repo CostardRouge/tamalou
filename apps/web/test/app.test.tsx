@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pkg from '../../../package.json' with { type: 'json' };
 import { App } from '../src/App.tsx';
 import { updateSettings } from '../src/feedback/settings.ts';
+import { setLang } from '../src/i18n/index.ts';
 import { openMode, panel, playFromPanel } from './launch.ts';
 
 afterEach(cleanup);
@@ -93,5 +94,23 @@ describe('the app', () => {
     render(<App />);
     const link = screen.getByRole('link', { name: 'Découvrir le jeu et ses règles' });
     expect(link.getAttribute('href')).toBe('../');
+  });
+
+  it('lists the languages in the settings, each named in itself, and offers to report a translation', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Réglages' }));
+    expect(screen.getByRole('radio', { name: 'Français' })).toHaveProperty('checked', true);
+    expect(screen.getByText('English').closest('label')?.getAttribute('lang')).toBe('en');
+    // French is the source: nothing to report there.
+    expect(screen.queryByRole('link', { name: 'Signaler une traduction' })).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'English' }));
+    const report = await screen.findByRole('link', { name: 'Report a translation' });
+    expect(report.getAttribute('href')).toMatch(
+      /^mailto:pommier\.steeve\+tamalou@gmail\.com\?subject=Tamalou%3A%20translation%20into%20English&body=Language%3A%20English/,
+    );
+    expect(localStorage.getItem('tamalou-lang')).toBe('en');
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.getByRole('link', { name: 'About the game and its rules' }).getAttribute('href')).toBe('../en/');
+    await setLang('fr', false);
   });
 });

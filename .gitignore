@@ -19,3 +19,6 @@ playwright-report/
 # npm and yarn lockfiles: this repository is pnpm only (pnpm-lock.yaml).
 package-lock.json
 yarn.lock
+
+# pnpm i18n:shots: pictures to look at, never committed.
+apps/web/shots/

@@ -1,6 +1,9 @@
+import { language, legalDir, READY_LANGS, type ReadyLang } from '@tamalou/shared';
+
 /**
- * Every fact about the site that its pages repeat (ADR-0017): where it lives, its pages and their languages. Read by
- * the build (build/pages.ts) and by the tests; no secret here, everything ends up in the pages.
+ * Every fact about the site that its pages repeat (ADR-0017): where it lives, its pages and their languages (the list
+ * is packages/shared languages.ts, ADR-0028). Read by the build (build/pages.ts) and by the tests; no secret here,
+ * everything ends up in the pages.
  */
 
 /** The canonical address; a build for another host sets VITE_SITE_URL. GitHub Pages serves a copy under /tamalou/. */
@@ -10,8 +13,8 @@ export const SOURCE_URL = 'https://github.com/CostardRouge/tamalou';
 export const LICENSE_URL = `${SOURCE_URL}/blob/main/LICENSE`;
 export const AUTHOR = { name: 'Steeve Pommier', url: 'https://steevepommier.com/' };
 
-/** Where to write about the site, the legal notice, a takedown. */
-export const CONTACT = 'pommier.steeve+tamalou@gmail.com';
+/** Where to write about the site, the legal notice, a takedown, a translation (a module of its own: the game reads it). */
+export { CONTACT } from '../src/contact.ts';
 
 /** Audience measurement (ADR-0018): the author's self-hosted Umami, the one Versus and steevepommier.com report to. */
 export const ANALYTICS = {
@@ -39,7 +42,6 @@ export const COLORS = {
   cardBackInk: '#dfe5ff',
 } as const;
 
-export type Lang = 'fr' | 'en';
 /** `moved`: an old address that sends its visitor on (the game was at jouer/ before play/). */
 export type PageKind = 'home' | 'play' | 'legal' | 'moved';
 
@@ -48,20 +50,30 @@ export interface Page {
   file: string;
   /** Its address on the site, relative to the root: '' for the home page, 'play/' for the game. */
   path: string;
-  lang: Lang;
+  /** The language its words are in; the game (`play/`) is one page for every language and says French by default. */
+  lang: ReadyLang;
   kind: PageKind;
-  /** The same page in the other language, when there is one (hreflang). */
-  twin?: string;
 }
 
+/**
+ * A home page and a legal notice per ready language (`/`, `/en/`, `/es/`…; `/mentions-legales/`, `/en/legal/`,
+ * `/es/legal/`…), each with its shell (`<dir>index.html`, whose `lang` the build sets), the one game and the old
+ * address. A language made ready needs its two shells, copies of English's.
+ */
 export const PAGES: Page[] = [
-  { file: 'index.html', path: '', lang: 'fr', kind: 'home', twin: 'en/' },
-  { file: 'en/index.html', path: 'en/', lang: 'en', kind: 'home', twin: '' },
+  ...READY_LANGS.map(
+    (lang): Page => ({ file: `${language(lang).dir}index.html`, path: language(lang).dir, lang, kind: 'home' }),
+  ),
   { file: 'play/index.html', path: 'play/', lang: 'fr', kind: 'play' },
-  { file: 'mentions-legales/index.html', path: 'mentions-legales/', lang: 'fr', kind: 'legal', twin: 'en/legal/' },
-  { file: 'en/legal/index.html', path: 'en/legal/', lang: 'en', kind: 'legal', twin: 'mentions-legales/' },
+  ...READY_LANGS.map(
+    (lang): Page => ({ file: `${legalDir(lang)}index.html`, path: legalDir(lang), lang, kind: 'legal' }),
+  ),
   { file: 'jouer/index.html', path: 'jouer/', lang: 'fr', kind: 'moved' },
 ];
+
+/** The same page in every language (hreflang): the home pages, the legal notices; none for the game. */
+export const versionsOf = (page: Page): Page[] =>
+  page.kind === 'home' || page.kind === 'legal' ? PAGES.filter((p) => p.kind === page.kind) : [];
 
 /** The game's address from the root. */
 export const PLAY_PATH = 'play/';
@@ -79,7 +91,7 @@ export interface SocialCard {
  * The link preview of each language (COMMON-PROJECT-SPEC C17): a 1200×630 card, not the icon, named by the og:image
  * tags of every page of that language. A redrawn card takes a new file name: unfurlers cache a card by its URL.
  */
-export const OG_IMAGES: Record<Lang, SocialCard> = {
+export const OG_IMAGES: Record<ReadyLang, SocialCard> = {
   fr: {
     path: 'og-v2.png',
     width: 1200,
@@ -95,7 +107,10 @@ export const OG_IMAGES: Record<Lang, SocialCard> = {
 };
 
 /** What the card says, in the home page's own words (src/landing/text.ts): three short lines, a sentence, the button and its note. */
-export const CARD_COPY: Record<Lang, { lines: [string, string, string]; body: string; cta: string; note: string }> = {
+export const CARD_COPY: Record<
+  ReadyLang,
+  { lines: [string, string, string]; body: string; cta: string; note: string }
+> = {
   fr: {
     lines: ['Quatre cartes,', 'de la mémoire', 'et du bluff.'],
     body: 'Le plus petit total gagne. Seul contre des bots, à plusieurs sur un appareil, en Wi-Fi ou en ligne.',

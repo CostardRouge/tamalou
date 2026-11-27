@@ -10,7 +10,7 @@ import {
 import { useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import { Overlay } from '../game/Overlay.tsx';
-import { type Key, plural, presetText, t } from '../i18n/index.ts';
+import { type Key, plural, presetText, sitePaths, t } from '../i18n/index.ts';
 import { Avatar } from '../profile/Avatar.tsx';
 import { refreshProfile, useProfile } from '../profile/avatar.ts';
 import { HistoryScreen } from '../profile/HistoryScreen.tsx';
@@ -262,8 +262,8 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
 
       <footer className="home-foot">
         {/* The site's home page (ADR-0017): what the game is, a first round, the rules; in this language. */}
-        <a href={t('siteHref')}>{t('siteLink')}</a>
-        <a href={t('legalHref')}>{t('legalLink')}</a>
+        <a href={sitePaths().home}>{t('siteLink')}</a>
+        <a href={sitePaths().legal}>{t('legalLink')}</a>
         <p className="version mono">{BUILD}</p>
       </footer>
 

@@ -1,4 +1,5 @@
-import { LANDING } from './text.ts';
+import { language, type ReadyLang } from '@tamalou/shared/languages';
+import { LANDING } from './text/index.ts';
 
 /**
  * The home page's markup, written at build time into index.html and en/index.html (build/pages.ts, ADR-0017): every
@@ -8,7 +9,7 @@ import { LANDING } from './text.ts';
  * no React: the Vite config imports it.
  */
 
-type Lang = 'fr' | 'en';
+type Lang = ReadyLang;
 
 const ICONS: Record<string, string> = {
   bot: '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 14h.01M15 14h.01"/>',
@@ -23,23 +24,44 @@ const icon = (name: string) =>
 export interface HomeLinks {
   /** The game. */
   play: string;
-  /** The same page in the other language. */
-  other: string;
+  /** The same page in every language, this one included (build/site.ts `versionsOf`). */
+  versions: Array<{ lang: Lang; href: string }>;
   source: string;
   author: { name: string; url: string };
   /** Extra links for the footer (the legal notice), already as <a> tags. */
   footer?: string[];
 }
 
-/** The brand and the navigation, shared by the home page and the other static pages. */
 /** The language switch's globe (the owner, 2026-11-27: «EN» alone read poorly; flags name countries, not languages). */
 const GLOBE =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>';
 
-export function header(lang: Lang, links: { home: string; play: string; other: string }, sections = true): string {
+/**
+ * The language menu (ADR-0028): a pill, the globe and this page's language named in itself, which opens the list of
+ * the page's versions, each named in itself and in its own writing so its reader recognises it. A <details>: it opens
+ * without a script; the pages' scripts close it on a touch elsewhere (landing/menu.ts).
+ */
+export function languageMenu(lang: Lang, versions: HomeLinks['versions']): string {
   const t = LANDING[lang];
-  // The other language, named in itself («English» on the French page), so a reader of it recognises it.
-  const other = lang === 'fr' ? 'en' : 'fr';
+  const here = language(lang);
+  const items = versions.map((v) => {
+    const l = language(v.lang);
+    const current = v.lang === lang ? ' aria-current="page"' : '';
+    return `<li><a href="${v.href}" hreflang="${l.hreflang}" lang="${l.html}" data-lang="${l.code}"${current}>${l.name}</a></li>`;
+  });
+  return `<details class="lang-menu">
+<summary class="lang-switch" aria-label="${t.langMenu.replace('{lang}', here.name)}">${GLOBE}<span>${here.name}</span></summary>
+<ul>${items.join('')}</ul>
+</details>`;
+}
+
+/** The brand and the navigation, shared by the home page and the other static pages. */
+export function header(
+  lang: Lang,
+  links: { home: string; play: string; versions: HomeLinks['versions'] },
+  sections = true,
+): string {
+  const t = LANDING[lang];
   return `<header class="nav wrap">
 <a class="brand" href="${links.home}"><span class="brand-mark" aria-hidden="true">T</span>Tamalou</a>
 <nav class="nav-links" aria-label="${t.navAria}">
@@ -53,7 +75,7 @@ ${
         .map(([id, label]) => `<a class="hide-s" href="#${id}">${label}</a>\n`)
         .join('')
     : ''
-}<a class="lang-switch" href="${links.other}" hreflang="${other}" lang="${other}" data-lang="${other}">${GLOBE}<span>${t.otherLang}</span></a>
+}${languageMenu(lang, links.versions)}
 <a class="btn btn-a btn-sm" href="${links.play}">${t.navPlay}</a>
 </nav>
 </header>`;

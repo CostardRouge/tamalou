@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { trackEvent } from '../audience.ts';
 import { CardView } from '../cards/CardView.tsx';
-import { cardWords, fill, type LandingText } from './text.ts';
+import type { LandingText } from './text/fr.ts';
 import {
   canCall,
   deckLow,
@@ -18,6 +18,7 @@ import {
   top,
   total,
 } from './tutorial.ts';
+import { cardWords, fill } from './words.ts';
 
 // The home page's first round (ADR-0017, direction B): the coach on one side, the table on the other, the cards drawn
 // by CardView and the card theme (ADR-0007). tutorial.ts holds the rules of this little round; this file draws it and

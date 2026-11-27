@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LANG_CODES } from './languages.ts';
 
 // Anonymous usage statistics (ADR-0024, the owner's picks of 2026-11-22): what is played and how, never who. An event
 // names no person, no room code and no address; the server adds only the day it arrived. Since 2026-11-27 a report may
@@ -21,7 +22,8 @@ const word = z
 
 /** How the device was set up when the event happened. */
 export const UsageContextSchema = z.object({
-  lang: z.enum(['fr', 'en']),
+  /** Any language of the list (languages.ts): an old client sends `fr` or `en`, which stay in it. */
+  lang: z.enum(LANG_CODES),
   device: z.enum(['phone', 'tablet', 'desktop']),
   orientation: z.enum(['portrait', 'landscape']),
   /** The Network Information API's guess, where the browser gives one. */

@@ -1,4 +1,5 @@
-// The French dictionary: the source of every key. en.ts is typed against it, so a missing key fails typecheck.
+// The French dictionary: the source of every key. Every other language (en.ts, and es.ts… loaded on demand) is typed
+// against it, so a missing key fails typecheck; lock.json records the French each one was translated from.
 // Placeholders are {name}; plurals are two keys, `_one` and `_other` (see plural() in index.ts).
 
 export const fr = {
@@ -745,8 +746,14 @@ export const fr = {
     'Comme une carte rare : un film holographique qui suit la lumière (la souris, ou l’inclinaison du téléphone sur Android), aussi sur les figures et les jokers.',
   settings: 'Réglages',
   settingsLang: 'Langue',
-  langFr: 'Français',
-  langEn: 'English',
+  reportTranslation: 'Signaler une traduction',
+  reportTranslationHint: 'Un mot faux, une phrase bancale ? L’e-mail est prêt, il n’y a qu’à écrire.',
+  reportSubject: 'Tamalou : traduction en {lang}',
+  reportBody: 'Langue : {lang}\nVersion : {version}\n\nLe texte à corriger :\n\nCe qu’il devrait dire :\n',
+  ordinal_one: '{n}er',
+  ordinal_two: '{n}e',
+  ordinal_few: '{n}e',
+  ordinal_other: '{n}e',
   settingsSound: 'Sons',
   settingsHaptics: 'Vibrations',
   settingsCountDevice: 'Reconnaître cet appareil',
@@ -811,9 +818,7 @@ export const fr = {
   installed: 'Tamalou est installé : retrouve-le parmi tes applis.',
   installIos: 'Sur iPhone et iPad : Partager, puis « Sur l’écran d’accueil ». Le solo marche ensuite sans réseau.',
   legalLink: 'Mentions légales et confidentialité',
-  legalHref: '../mentions-legales/',
   siteLink: 'Découvrir le jeu et ses règles',
-  siteHref: '../',
   updateReady: 'Une nouvelle version est prête.',
   updateReload: 'Recharger',
   updateLater: 'Plus tard',
@@ -823,3 +828,5 @@ export const fr = {
 };
 
 export type Messages = { [K in keyof typeof fr]: string };
+
+export default fr;

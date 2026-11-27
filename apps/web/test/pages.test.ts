@@ -1,10 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { language, READY_LANGS } from '@tamalou/shared';
 import { describe, expect, it } from 'vitest';
 import { inputs, link, pageBody, pageHead } from '../build/pages.ts';
-import { CONTACT, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot } from '../build/site.ts';
-import { LANDING } from '../src/landing/text.ts';
-import { LEGAL } from '../src/legal/text.ts';
+import { CONTACT, OG_IMAGES, PAGES, PLAY_PATH, pageOf, SITE_URL, siteUrl, toRoot, versionsOf } from '../build/site.ts';
+import { LANDING } from '../src/landing/text/index.ts';
+import { LEGAL } from '../src/legal/text/index.ts';
 
 // The site's pages (ADR-0017): every page has its shell, the home pages carry their words in the static HTML, links
 // stay relative (the same build serves a domain's root and GitHub Pages' /tamalou/). The first round and the quiz have
@@ -21,7 +22,7 @@ describe('pages', () => {
       const shell = readFileSync(resolve(root, page.file), 'utf8');
       expect(shell, page.file).toContain('<!-- page:head -->');
       if (page.kind !== 'play') expect(shell, page.file).toContain('<!-- page:body -->');
-      expect(shell, page.file).toContain(`lang="${page.lang}"`);
+      expect(shell, page.file).toMatch(/<html lang="[^"]+">/);
       expect(pageOf(page.file)).toBe(page);
     }
     expect(Object.values(inputs(root)).every((f) => existsSync(f))).toBe(true);
@@ -57,6 +58,36 @@ describe('pages', () => {
       expect(body).toContain(`href="${link(page, PLAY_PATH)}"`);
       expect(body).not.toMatch(/href="\/[^/]/);
     }
+  });
+
+  it('gives every ready language its home page and legal notice, each declaring all its versions both ways', () => {
+    for (const kind of ['home', 'legal'] as const)
+      expect(PAGES.filter((p) => p.kind === kind).map((p) => p.lang)).toEqual(READY_LANGS);
+    const declared = (head: string) =>
+      [...head.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)" \/>/g)].map((m) => `${m[1]} ${m[2]}`);
+    for (const page of PAGES.filter((p) => p.kind === 'home' || p.kind === 'legal')) {
+      const head = pageHead(page, SITE_URL);
+      const versions = versionsOf(page);
+      const fr = versions.find((v) => v.lang === 'fr');
+      expect(declared(head), page.file).toEqual([
+        ...versions.map((v) => `${language(v.lang).hreflang} ${SITE_URL}${v.path}`),
+        `x-default ${SITE_URL}${fr?.path}`,
+      ]);
+      // Each version it names names it back.
+      for (const v of versions)
+        expect(declared(pageHead(v, SITE_URL))).toContain(`${language(page.lang).hreflang} ${SITE_URL}${page.path}`);
+      expect(head).toContain(`<meta property="og:locale" content="${language(page.lang).ogLocale}" />`);
+      expect(head).toContain(`content="${SITE_URL}${OG_IMAGES[page.lang].path}"`);
+      // The language menu lists every version, each named in itself, the page's own marked as current.
+      const body = pageBody(page);
+      for (const v of versions)
+        expect(body).toContain(
+          `hreflang="${language(v.lang).hreflang}" lang="${language(v.lang).html}" data-lang="${v.lang}"`,
+        );
+      expect(body).toContain(`aria-current="page">${language(page.lang).name}</a>`);
+    }
+    const game = PAGES.find((p) => p.kind === 'play');
+    if (game) expect(versionsOf(game)).toEqual([]);
   });
 
   it('names the other language and the canonical address in the head', () => {
