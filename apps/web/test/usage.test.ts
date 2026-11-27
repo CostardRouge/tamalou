@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { parseUsageReport } from '@tamalou/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { endGame, reportUsage, setUsageAvailable, startGame, usageContext } from '../src/usage.ts';
+import { updateSettings } from '../src/feedback/settings.ts';
+import { deviceId, endGame, reportUsage, setUsageAvailable, startGame, usageContext } from '../src/usage.ts';
 
 const sent: unknown[] = [];
 beforeEach(() => {
@@ -94,6 +95,29 @@ describe('usage reports from the browser', () => {
     endGame(2, false, 60_000);
     await flush();
     expect(sent).toHaveLength(0);
+  });
+
+  it('carries this device’s random number, kept, drawn again after 13 months, gone when switched off', async () => {
+    setUsageAvailable(true);
+    const now = Date.now();
+    const first = deviceId(now);
+    expect(first).toMatch(/^[A-Za-z0-9_-]{16}$/);
+    expect(deviceId(now + 1000)).toBe(first);
+    reportUsage({ kind: 'roomCreated' });
+    await flush();
+    expect(sent).toMatchObject([{ deviceId: first }]);
+    expect(parseUsageReport(sent[0])?.deviceId).toBe(first);
+    // Thirteen months on, a new number, never the old one prolonged.
+    const later = deviceId(now + 397 * 86_400_000);
+    expect(later).not.toBe(first);
+    // Switched off: nothing sent, nothing kept.
+    updateSettings({ countDevice: false });
+    sent.length = 0;
+    reportUsage({ kind: 'roomCreated' });
+    await flush();
+    expect((sent[0] as { deviceId?: string }).deviceId).toBeUndefined();
+    expect(localStorage.getItem('tamalou-device')).toBeNull();
+    updateSettings({ countDevice: true });
   });
 
   it('falls back to a kept-alive request when the browser has no beacon', async () => {

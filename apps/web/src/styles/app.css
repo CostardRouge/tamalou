@@ -3580,7 +3580,19 @@ html:has(.overlay) body {
   font-weight: 600;
 }
 
+.toggle-note > span {
+  display: grid;
+  gap: 2px;
+  padding-block: 6px;
+}
+
+.toggle-note small {
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 .toggle input {
+  flex: none;
   width: 24px;
   height: 24px;
   accent-color: var(--a);

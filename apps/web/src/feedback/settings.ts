@@ -25,6 +25,8 @@ export interface Settings {
   drawView: DrawView;
   /** How my cards look: the back's colour, pattern and mark, an effect (cards/deck.ts). */
   deck: DeckStyle;
+  /** The game statistics may carry this device's random number, so the owner sees devices come back (usage.ts). */
+  countDevice: boolean;
 }
 
 const KEY = 'tamalou-settings';
@@ -38,6 +40,7 @@ const DEFAULTS: Settings = {
   cardSpeed: 'normal',
   drawView: DEFAULT_DRAW_VIEW,
   deck: DEFAULT_DECK,
+  countDevice: true,
 };
 
 function load(): Settings {
@@ -54,6 +57,7 @@ function load(): Settings {
       cardSpeed: isCardSpeed(data.cardSpeed) ? data.cardSpeed : DEFAULTS.cardSpeed,
       drawView: isDrawView(data.drawView) ? data.drawView : DEFAULTS.drawView,
       deck: data.deck ? readDeck(data.deck) : DEFAULTS.deck,
+      countDevice: typeof data.countDevice === 'boolean' ? data.countDevice : DEFAULTS.countDevice,
     };
   } catch {
     return DEFAULTS;

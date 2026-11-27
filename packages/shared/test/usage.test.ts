@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  deviceGames,
   localTime,
   MAX_USAGE_REPORT,
   parseUsageReport,
@@ -81,7 +82,7 @@ describe('usage statistics', () => {
     ];
     const s = summarizeUsage(rows, '2026-11-22', 7);
     expect(s.days).toHaveLength(7);
-    expect(s.days.at(-1)).toEqual({ day: '2026-11-22', started: 0, ended: 3, rooms: 1, joins: 3 });
+    expect(s.days.at(-1)).toEqual({ day: '2026-11-22', started: 0, ended: 3, rooms: 1, joins: 3, devices: 0 });
     expect(s.days[0]?.day).toBe('2026-11-16');
     expect(s.totals).toEqual({ started: 3, ended: 3, rooms: 1, joins: 3 });
     expect(s.modes.map((t) => t.value).sort()).toEqual(['online', 'pass', 'solo']);
@@ -164,5 +165,28 @@ describe('usage statistics', () => {
     expect(s.weekdays[1]).toBe(2);
     expect(s.weekdays[4]).toBe(1);
     expect(s.games).toHaveLength(3);
+  });
+
+  it('counts the devices that sent their number, and those back on another day (the owner, 2026-11-27)', () => {
+    const by = (day: string, deviceId: string | null, event: UsageEvent = solo): UsageRow => ({
+      day,
+      report: { v: 1, event, ctx, ...(deviceId ? { deviceId } : {}) },
+    });
+    const rows = [
+      by('2026-11-20', 'device001'),
+      by('2026-11-20', 'device001', { kind: 'roomCreated' }),
+      by('2026-11-22', 'device001'),
+      by('2026-11-22', 'device002'),
+      by('2026-11-22', null),
+    ];
+    const s = summarizeUsage(rows, '2026-11-22', 7);
+    expect(s.devices).toEqual({ seen: 2, returning: 1 });
+    expect(s.days.find((d) => d.day === '2026-11-20')?.devices).toBe(1);
+    expect(s.days.find((d) => d.day === '2026-11-22')?.devices).toBe(2);
+    expect(deviceGames(usageGames(rows), 'device001')).toEqual({ count: 2, since: '2026-11-20' });
+    expect(deviceGames(usageGames(rows), 'nobody01')).toBeNull();
+    // A number is a short random word, nothing else.
+    expect(parseUsageReport({ v: 1, event: solo, ctx, deviceId: 'Steeve Pommier' })).toBeNull();
+    expect(parseUsageReport({ v: 1, event: solo, ctx, deviceId: 'device001' })?.deviceId).toBe('device001');
   });
 });

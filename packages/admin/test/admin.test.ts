@@ -161,6 +161,8 @@ describe('the admin page', () => {
     expect(html).toContain('1 humain, 2 bots');
     expect(html).toContain('Téléphone, portrait');
     expect(html).toContain('<dd>Ligne</dd>');
+    expect(html).toContain('numéro coupé');
+    expect(gamePage({ game, device: { count: 3, since: '2026-11-20' }, who: 'S' })).toContain('3 parties depuis le');
     expect(gamePage({ game: { ...base, end: null }, who: 'S' })).toContain('Heure inconnue');
     expect(gameTitle({ ...base, mode: 'online', humans: 4, bots: 1 })).toBe('En ligne, 4 humains + 1 bot');
     expect(gameTitle({ ...base, mode: 'pass', humans: 3, bots: 0 })).toBe('Un appareil, 3 joueurs');

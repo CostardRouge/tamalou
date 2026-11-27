@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 // Anonymous usage statistics (ADR-0024, the owner's picks of 2026-11-22): what is played and how, never who. An event
-// names no person, no device, no room code and no address; the server adds only the day it arrived. The browser sends
+// names no person, no room code and no address; the server adds only the day it arrived. Since 2026-11-27 a report may
+// carry a number the device drew at random and keeps (`deviceId`), so the owner sees how many devices come back: it says
+// nothing of the person, is drawn again after 13 months, and the player switches it off in the game's settings. The browser sends
 // one for a game started and ended, a room created or joined, under the same choice as the audience counter (the legal
 // page's switch, Do Not Track, Global Privacy Control). The admin page (apps/worker) reads them through
 // `summarizeUsage`.
@@ -41,6 +43,8 @@ const mode = z.enum(['solo', 'pass', 'online']);
  * 2026-11-24). It names the game, never the device: two games of one phone carry unrelated numbers.
  */
 const gameId = z.string().regex(/^[A-Za-z0-9_-]{8,32}$/);
+/** A number drawn at random by a device and kept there (the owner's pick, 2026-11-27): only "this device came back". */
+const deviceId = z.string().regex(/^[A-Za-z0-9_-]{8,32}$/);
 const count = z.number().int().min(0).max(10);
 
 export const UsageEventSchema = z.discriminatedUnion('kind', [
@@ -76,6 +80,8 @@ export const UsageReportSchema = z.object({
   v: z.literal(USAGE_VERSION),
   event: UsageEventSchema,
   ctx: UsageContextSchema,
+  /** Absent when the player switched it off, from a device that sent none yet, and in every report before 2026-11-27. */
+  deviceId: deviceId.optional(),
 });
 export type UsageReport = z.infer<typeof UsageReportSchema>;
 
@@ -143,6 +149,8 @@ export function usageCutoff(today: string, keepDays = USAGE_KEEP_DAYS): string {
 export interface UsageGame {
   /** Its random number, null for a game reported before numbers existed (it cannot be opened). */
   id: string | null;
+  /** The device's number, when it sent one. */
+  deviceId: string | null;
   /** The Paris day and time it started (time null before 2026-11-24). */
   day: string;
   start: string | null;
@@ -173,6 +181,7 @@ export function usageGames(rows: readonly UsageRow[]): UsageGame[] {
     const ended = endRow?.report.event.kind === 'gameEnded' ? endRow.report.event : null;
     games.push({
       id: e.game ?? null,
+      deviceId: r.report.deviceId ?? null,
       day: rowDay(r),
       start: r.at ? localTime(r.at).time : null,
       mode: e.mode,
@@ -204,8 +213,10 @@ export type Tally = { value: string; count: number }[];
 
 export interface UsageSummary {
   /** The days covered, oldest first, each with what happened that day. */
-  days: { day: string; started: number; ended: number; rooms: number; joins: number }[];
+  days: { day: string; started: number; ended: number; rooms: number; joins: number; devices: number }[];
   totals: { started: number; ended: number; rooms: number; joins: number };
+  /** Devices that sent their number: how many, and how many came on two days or more of the period. */
+  devices: { seen: number; returning: number };
   /** Games started, by mode. */
   modes: Tally;
   /** Games started, by table size. */
@@ -250,8 +261,10 @@ export function summarizeUsage(rows: readonly UsageRow[], today: string, days = 
   const byDay = new Map<string, UsageSummary['days'][number]>();
   for (let i = days - 1; i >= 0; i--) {
     const day = usageCutoff(today, i);
-    byDay.set(day, { day, started: 0, ended: 0, rooms: 0, joins: 0 });
+    byDay.set(day, { day, started: 0, ended: 0, rooms: 0, joins: 0, devices: 0 });
   }
+  /** Each device's days in the period. */
+  const deviceDays = new Map<string, Set<string>>();
   const started: Extract<UsageEvent, { kind: 'gameStarted' }>[] = [];
   const ended: Extract<UsageEvent, { kind: 'gameEnded' }>[] = [];
   const joins: string[] = [];
@@ -261,6 +274,13 @@ export function summarizeUsage(rows: readonly UsageRow[], today: string, days = 
     const day = rowDay(row);
     const d = byDay.get(day);
     const e = row.report.event;
+    const device = row.report.deviceId;
+    if (device) {
+      const seen = deviceDays.get(device) ?? new Set<string>();
+      if (d && !seen.has(day)) d.devices++;
+      seen.add(day);
+      deviceDays.set(device, seen);
+    }
     if (e.kind === 'gameStarted') {
       started.push(e);
       if (d) d.started++;
@@ -292,6 +312,10 @@ export function summarizeUsage(rows: readonly UsageRow[], today: string, days = 
       rooms: list.reduce((a, d) => a + d.rooms, 0),
       joins: joins.length,
     },
+    devices: {
+      seen: deviceDays.size,
+      returning: [...deviceDays.values()].filter((days) => days.size >= 2).length,
+    },
     modes: tally(started.map((e) => e.mode)),
     players: tally(started.map((e) => String(e.players))),
     opponents: tally(started.map((e) => (e.bots === 0 ? 'humans' : e.humans <= 1 ? 'bots' : 'mixed'))),
@@ -307,4 +331,11 @@ export function summarizeUsage(rows: readonly UsageRow[], today: string, days = 
     weekdays,
     games: usageGames(kept),
   };
+}
+
+/** A device's games among `games` (usageGames, newest first): how many, and the day of the first. */
+export function deviceGames(games: readonly UsageGame[], device: string): { count: number; since: string } | null {
+  const mine = games.filter((g) => g.deviceId === device);
+  const first = mine.at(-1);
+  return first ? { count: mine.length, since: first.day } : null;
 }

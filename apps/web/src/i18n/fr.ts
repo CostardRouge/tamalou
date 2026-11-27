@@ -749,6 +749,9 @@ export const fr = {
   langEn: 'English',
   settingsSound: 'Sons',
   settingsHaptics: 'Vibrations',
+  settingsCountDevice: 'Reconnaître cet appareil',
+  settingsCountDeviceHint:
+    'Pour les statistiques du jeu, un numéro tiré au hasard dit que cet appareil revient jouer. Rien sur toi ; renouvelé tous les 13 mois.',
   handLayout: 'Disposition de ta main',
   hand_grid: 'Grille',
   hand_row: 'Ligne',

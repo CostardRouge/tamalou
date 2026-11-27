@@ -728,6 +728,9 @@ export const en: Messages = {
   langEn: 'English',
   settingsSound: 'Sounds',
   settingsHaptics: 'Vibrations',
+  settingsCountDevice: 'Recognise this device',
+  settingsCountDeviceHint:
+    'For the game statistics, a random number says this device comes back to play. Nothing about you; renewed every 13 months.',
   handLayout: 'Your hand’s layout',
   hand_grid: 'Grid',
   hand_row: 'Row',

@@ -27,7 +27,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - The game master configures **every** rule before the game; the engine reads a versioned `RuleSet` and hard-codes nothing, so variants come later without touching it.
 - One pure engine everywhere: in the browser for solo and pass-and-play, on an authoritative server for LAN and online, where clients send intentions and receive only their filtered view.
 - Online rooms are ephemeral: no account, no persisted data, gone after 2 h idle or at the end of the game.
-- Later, out of scope for now: advanced variants, the owner's own card designs, statistics and game history.
+- Later, out of scope for now: advanced variants, the owner's own card designs. Floated by the owner's friends (2026-11-27, «un délire», no decision): ranking, servers, a leaderboard — a real multiplayer game; a live view of the rooms in progress on the admin page would come with it.
 
 ## Decisions at a glance (details in `docs/DECISIONS.md` and the topic files)
 
@@ -54,7 +54,7 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - A legal notice (`/mentions-legales/`, `/en/legal/`) and Versus's anonymous Umami measurement, ported as is; the notice lists every event, a test holds the code to it — ADR-0018, `site.md`.
 - Security headers from one list (`build/security.ts`, C16): written into the build's `_headers` for Cloudflare, read back by the LAN server, the CSP Report-Only with every inline script named by hash; Zod runs jitless so the policy sees no `new Function` — `site.md`, `architecture.md`.
 - Nothing the table says sits over a card (2026-11-21, the owner's picks on a canvas): one band between the others and the piles (my turn, a power, what another says, else the journal), an icon by the speaker's name, and a power written in the prompt too — `web.md`, "The band".
-- Anonymous usage statistics (no name, no device id, 13 months, one Durable Object; since 2026-11-24 the minute and a random per-game number) and `/admin/` for the owner alone, signed in through his Sésame (OIDC, role `admin`): the period, a day, a game — ADR-0024, `architecture.md`.
+- Anonymous usage statistics (no name, 13 months, one Durable Object; since 2026-11-24 the minute and a random per-game number; since 2026-11-27 a random number per device, renewed every 13 months, switched off in the settings, to see who comes back) and `/admin/` for the owner alone, signed in through his Sésame (OIDC, role `admin`): the period, a day, a game — ADR-0024, `architecture.md`.
 - A profile on the device (2026-11-24, the owner's picks on the canvas): a name and an avatar (8 colours × 12 icons) shown on the seats and the lobby, sent to a room with the name, given by place to whoever has none; the games finished kept on the phone too («Mes parties», saved to and restored from a file), no account — ADR-0025, `web.md`.
 - The player's cards (2026-11-24, the owner's ask): back colour, pattern, a 0–2 character mark and an effect (an oil-slick «Irisé» or a holographic foil, still until the pointer or the phone's tilt moves them; no sweep), a device setting read by the card theme — `design.md`, "The player's cards".
 - A pause held by the host's `Table` (every clock stops, an opaque curtain), anyone on this device and automatic when the page hides, only the game master in a room (2026-11-21) — ADR-0023, `web.md`.
