@@ -362,10 +362,25 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
   const seat = (p: PlayerSeatView, size: 'sm' | 'lg') => {
     const mine = p.id === view.me;
     const layout = mine ? settings.hand : opponentLayout(settings.hand, settings.oppHand);
+    // A hand closes up on the cards it still holds (the owner, 2026-11-27: the dashed places of thrown cards lay over
+    // the cards left, and a player down to one card should look it). An empty place stays while its card is still
+    // leaving on screen, or while it waits for the card a claimer owes; a hand with none left keeps one empty place,
+    // as at the end of a round, so its seat keeps its height.
+    const owed = view.owedGive?.to.player === p.id ? view.owedGive.to.slot : null;
+    const shown = p.slots.filter(
+      (s) => s.filled || s.slot === owed || fly.leaving(slotPlace({ player: p.id, slot: s.slot })) > 0,
+    );
+    // Sized for every place the hand has, so its cards keep their size and its seat its height as it thins out; only
+    // the places close up (slotStyle).
     const frame = handFrame(layout, p.slots.length, rules.hand.columns, !mine);
     return (
       <fieldset className={frame.className} style={frame.style} aria-label={mine ? t('you') : p.name}>
-        {p.slots.map((s, i) => {
+        {shown.length === 0 ? (
+          <div className="slot" style={slotStyle(0, 1)}>
+            <CardView card={null} size={size} empty label={t('handEmpty')} />
+          </div>
+        ) : null}
+        {shown.map((s, i) => {
           const ref = { player: p.id, slot: s.slot };
           const claimAction = claimUi && p.id === claim ? claimUi.slot(ref) : null;
           const action = claim ? (claimAction?.send ? claimAction : null) : ui.slot(ref);
@@ -378,7 +393,7 @@ export function GameScreen({ conn, onQuit, onReplay, banner }: Props) {
               }${s.locked ? `, ${t('locked')}` : ''}`;
           const place = slotPlace(ref);
           return (
-            <div key={s.slot} className="slot" style={slotStyle(i, p.slots.length)}>
+            <div key={s.slot} className="slot" style={slotStyle(i, shown.length)}>
               {carry(
                 { kind: 'slot', ref },
                 place,
