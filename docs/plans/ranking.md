@@ -1,6 +1,6 @@
 # Plan — classement OpenSkill et « Jouer maintenant »
 
-L'évaluation des pistes 4 (identité légère), 5 (classement) et 6 (matchmaking public) de `docs/IDEAS.md`, lancée par le propriétaire le 2026-11-27 (« go step number 6 : openskill »). **Rien n'est décidé** : ce document prépare ses choix (§ 9) ; ses réponses deviendront un ADR, l'amendement de `docs/SPEC.md` (§ 5.3, la mention des données) et de la déclaration C18 de `CLAUDE.md`, puis le découpage du § 10 sera confirmé. Pas de code avant.
+L'évaluation des pistes 4 (identité légère), 5 (classement) et 6 (matchmaking public) de `docs/IDEAS.md`, lancée par le propriétaire le 2026-11-27 (« go step number 6 : openskill »). **Ses choix sont tranchés le jour même** (§ 9) et consignés dans l'**ADR-0029**, qui fait foi ; `docs/SPEC.md` § 5.3 et la déclaration C18 de `CLAUDE.md` sont amendés. Ce document se lit avant de lancer chaque étape (§ 10). Là où l'évaluation proposait plusieurs voies, le choix est celui du § 9.
 
 **En une phrase** : le code est à la portée du projet (les salles, les bots, le moteur rejouable existent) ; ce qui coûte, c'est une décision — garder des joueurs sur un serveur, pour la première fois — et une population — une file vide fait fuir. D'où la recommandation : **un classement contre les bots d'abord**, qui marche avec zéro joueur en ligne, puis la file publique quand `/admin/` montre du monde.
 
@@ -81,7 +81,7 @@ Ordre de grandeur pour qu'une file se remplisse **sans** bots : pour réunir 4 i
 - **Ton temps** : les décisions ci-dessous ; un test par étape sur ton téléphone ; **la modération** si le pseudo est libre dans le classement ; répondre aux « j'ai perdu mon code ».
 - **Le travail d'agent** : 5 à 6 étapes (§ 10), chacune une session et une pull request.
 
-## 9. Les questions (au plus cinq)
+## 9. Les questions, et les choix du propriétaire (2026-11-27)
 
 1. **Garder des joueurs sur le serveur** : d'accord pour un `LadderObject` qui garde pseudo, avatar, niveau et parties classées, effacés après 13 mois sans partie classée, avec un export hebdomadaire depuis `/admin/` ? (C18 passe de « rien à sauvegarder » à « le classement, sauvegardé ».)
 2. **Le pseudo public** : libre et modéré par toi (1), libre à la table mais généré dans le classement (2, recommandé), ou généré partout (3) ?
@@ -89,13 +89,25 @@ Ordre de grandeur pour qu'une file se remplisse **sans** bots : pour réunir 4 i
 4. **Le format classé** : Classique verrouillé, défausse rapide active, journal « dernier tour », minuterie 30 s, **5 manches** — d'accord, ou une autre durée (limite de 50 points, 3 manches…) ?
 5. **Les écrans** : tes choix sur le canvas (« Jouer maintenant », la file, le niveau affiché, le classement).
 
-## 10. Le découpage proposé (à confirmer après tes réponses)
+**Ses réponses**, sur le canvas https://claude.ai/artifact/8SdbsD5bXGabzTprahRNHS (privé, ses choix dans sa base `picks/owner`) :
+
+| | Choix |
+|---|---|
+| 1. Données | **oui**, avec l'export hebdomadaire depuis `/admin/` |
+| 2. Pseudo | **libre à la table, généré pour les inconnus** (le 2) : tout ce qu'un inconnu voit est généré, donc rien à modérer ni à signaler |
+| 3. Première étape | **le classement contre les bots** |
+| 4. Durée | **5 manches**, total le plus bas |
+| Lancer | **C** : une tuile « Classé » ouvre son propre écran (niveau, « Contre les bots », plus tard « Contre des joueurs », un aperçu du classement) |
+| Attente | **A** : la table qui se remplit siège par siège, un compte à rebours, puis des bots annoncés |
+| Niveau | **A** : treize paliers nommés d'après les cartes, du Deux à l'As, une barre jusqu'au suivant |
+| Classement | **B** : autour de moi, et les joueurs croisés récemment |
+
+## 10. Le découpage (confirmé par l'ADR-0029)
 
 Chaque étape est sa propre session et sa propre pull request, jouable ou testable.
 
-- **R0 — L'identité** : créer son profil classé (pseudo, code de récupération), le retrouver sur un autre téléphone, le supprimer ; `LadderObject`, la mention légale. *Test* : créer, restaurer sur un second téléphone, supprimer.
-- **R1 — Classé contre les bots** : `packages/ranking` (OpenSkill, l'ordre final, les repères des bots), une salle classée sur le Worker avec des bots, le niveau après la partie, « en calibrage ». *Test* : dix parties, voir son niveau bouger.
-- **R2 — Le classement** : la liste, ma ligne, le « Signaler », le renommage et l'export dans `/admin/`. *Test* : se trouver, signaler, renommer depuis l'admin.
-- **R3 — La file « Jouer maintenant »** : un Durable Object « file » qui assemble une table au hasard, complète par des bots annoncés après un délai, l'abandon compté. À lancer quand `/admin/` montre assez de parties en ligne. *Test* : deux téléphones qui se trouvent ; un seul, complété par des bots.
-- **R4 — Les créneaux** : « la table du vendredi 21 h », un rappel. Si la population reste petite.
-- **Plus tard** : la passkey ; une vue en direct des salles dans `/admin/` (souhaitée le 2026-11-27, vient avec la file) ; les parties asynchrones (piste 7), non classées d'abord.
+- **R0 — L'identité** : créer son profil classé (pseudo généré, code de récupération), le retrouver sur un autre téléphone, télécharger ses données, le supprimer ; `LadderObject` ; l'export du classement dans `/admin/` ; la mention légale. *Test* : créer, restaurer sur un second téléphone, supprimer.
+- **R1 — Classé contre les bots** : `packages/ranking` (OpenSkill, l'ordre final, les repères des bots mesurés par `pnpm bots`), le preset classé, une salle classée sur le Worker avec des bots, l'écran « Classé » (choix C), le niveau en cartes après la partie (choix A), « en calibrage ». *Test* : dix parties, voir son niveau bouger.
+- **R2 — Le classement** : autour de moi et les joueurs croisés (choix B), sous leurs pseudos générés. *Test* : se trouver, retrouver un adversaire.
+- **R3 — La file « Contre des joueurs »** : un Durable Object « file » qui assemble une table au hasard, la table qui se remplit (choix A), des bots annoncés après le compte à rebours, l'abandon compté. À lancer quand `/admin/` montre assez de parties en ligne. *Test* : deux téléphones qui se trouvent ; un seul, complété par des bots.
+- **Plus tard** : la passkey ; les créneaux (« la table du vendredi 21 h »), si la file reste vide ; une vue en direct des salles dans `/admin/` (souhaitée le 2026-11-27, vient avec la file) ; les parties asynchrones (piste 7), non classées d'abord.
