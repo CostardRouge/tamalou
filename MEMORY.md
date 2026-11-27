@@ -27,7 +27,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - The game master configures **every** rule before the game; the engine reads a versioned `RuleSet` and hard-codes nothing, so variants come later without touching it.
 - One pure engine everywhere: in the browser for solo and pass-and-play, on an authoritative server for LAN and online, where clients send intentions and receive only their filtered view.
 - Online rooms are ephemeral: no account, no persisted data, gone after 2 h idle or at the end of the game.
-- Later, out of scope for now: advanced variants, the owner's own card designs, statistics and game history.
+- Later, out of scope for now: advanced variants, the owner's own card designs. (A profile and «Mes parties» on the device came 2026-11-24, ADR-0025.)
+- 2026-11-27 — **Beyond the friends' table** (the owner, after his friends played): ranking/Elo, public matchmaking, international, gamification (tutorial, a solo path, something viral), marketing, store apps as a bonus only (he holds the PWA enough and Apple's 99 €/yr not worth it). Listed and weighed in `docs/IDEAS.md`, nothing decided; each topic gets its own session from its section. **How to apply**: favour what works with no population first (daily challenge from the seeded engine, solo path), since an empty queue kills a small game; a public ranking needs a durable player identity, which reopens ADR-0024 (no device id), ADR-0025 (no account) and C18 (nothing to back up) — say so and write an ADR before building it.
 
 ## Decisions at a glance (details in `docs/DECISIONS.md` and the topic files)
 
