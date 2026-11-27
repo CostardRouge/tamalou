@@ -10,6 +10,9 @@ code, though the game speaks French first. Codenames are French card words, in a
 
 ### Added
 
+- «Reconnaître cet appareil» in the settings: the game statistics may carry a number your device drew at random,
+  so the publisher sees how many devices come back to play. It says nothing about you, is renewed every 13 months,
+  and switching it off erases it. The legal notice says so.
 - A rule for a Tamalou called on a tie with the lowest hand: made, now the default (no penalty), or missed, as
   before. It is in «Tamalou» when you customise the rules.
 - A rule for a player left with no card: by default they now call Tamalou and the others play their last turn; the

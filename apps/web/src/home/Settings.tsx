@@ -50,6 +50,17 @@ export function Settings({ onClose }: { onClose: () => void }) {
           />
         </label>
       ) : null}
+      <label className="toggle toggle-note">
+        <span>
+          {t('settingsCountDevice')}
+          <small className="muted">{t('settingsCountDeviceHint')}</small>
+        </span>
+        <input
+          type="checkbox"
+          checked={settings.countDevice}
+          onChange={(e) => updateSettings({ countDevice: e.target.checked })}
+        />
+      </label>
       <DeckPicker name="deck" />
       <HandPicker name="hand" />
       <HandWatch name="watch" />

@@ -11,7 +11,15 @@ import {
   sign,
   unsign,
 } from '@tamalou/admin';
-import { localTime, summarizeUsage, type UsageRow, usageCutoff, usageGames, usageMinute } from '@tamalou/shared';
+import {
+  deviceGames,
+  localTime,
+  summarizeUsage,
+  type UsageRow,
+  usageCutoff,
+  usageGames,
+  usageMinute,
+} from '@tamalou/shared';
 import * as oauth from 'oauth4webapi';
 import { version } from '../../../package.json';
 
@@ -210,9 +218,17 @@ export async function admin(request: Request, env: AdminEnv, store: UsageStore):
       }
       const id = url.searchParams.get('game');
       if (id && /^[A-Za-z0-9_-]{8,32}$/.test(id)) {
-        const game = usageGames(await store.rows(oldest)).find((g) => g.id === id);
+        const games = usageGames(await store.rows(oldest));
+        const game = games.find((g) => g.id === id);
         return game
-          ? html(200, gamePage({ game, who: session.name }))
+          ? html(
+              200,
+              gamePage({
+                game,
+                device: game.deviceId ? deviceGames(games, game.deviceId) : null,
+                who: session.name,
+              }),
+            )
           : html(
               404,
               messagePage('Partie introuvable', 'Elle a peut-être plus de 13 mois.', {

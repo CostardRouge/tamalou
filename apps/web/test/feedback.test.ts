@@ -60,6 +60,7 @@ describe('settings', () => {
       cardSpeed: 'normal',
       drawView: 'held',
       deck: { color: 'cobalt', pattern: 'stripes', mark: 'T', effect: 'none' },
+      countDevice: true,
     };
     expect(getSettings()).toEqual(defaults);
     updateSettings({ sound: false });

@@ -197,7 +197,10 @@ ${kpi(one(s.rounds), 'manches par partie')}
 ${kpi(one(s.minutes), 'minutes par partie')}
 ${kpi(s.winRate === null ? '—' : percent(s.winRate), 'parties gagnées en solo')}
 ${kpi(percent(s.rulesChanged), 'parties aux règles changées')}
+${kpi(s.devices.seen, 'appareils reconnus')}
+${kpi(s.devices.returning, 'revenus un autre jour')}
 </div>
+<p class="note">Appareils&#160;: ceux qui envoient leur numéro tiré au hasard, depuis le 27 novembre 2026 (un joueur peut l’arrêter dans les réglages).</p>
 ${dayChart(s)}
 ${whenCard(s)}
 <section class="card wide"><h3>Dernières parties</h3>${gameList(s.games.slice(0, 8), true)}</section>
@@ -246,13 +249,23 @@ ${kpi(s.totals.started, 'lancées')}
 ${kpi(s.totals.ended, 'terminées')}
 ${kpi(s.totals.ended === 0 ? '—' : `${one(s.minutes)} min`, 'en moyenne')}
 ${kpi(s.totals.joins, 'arrivées en salle')}
+${kpi(s.devices.seen, 'appareils reconnus')}
 </div>
 <section class="card wide"><h3>Les parties du jour</h3>${gameList([...s.games].reverse(), false)}</section>`,
   );
 }
 
 /** One game: when, how long, the table, the device. */
-export function gamePage({ game: g, who }: { game: UsageGame; who: string }): string {
+export function gamePage({
+  game: g,
+  device = null,
+  who,
+}: {
+  game: UsageGame;
+  /** The games its device told in the kept months, when it sent its number (deviceGames). */
+  device?: { count: number; since: string } | null;
+  who: string;
+}): string {
   const o = outcome(g);
   const row = (k: string, v: string) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`;
   const c = g.ctx;
@@ -286,6 +299,12 @@ ${row('Main', setting('hand', c.hand))}
 ${row('Carte piochée', setting('drawView', c.drawView))}
 ${row('Rythme, vitesse', `${setting('botPace', c.botPace)}, ${setting('cardSpeed', c.cardSpeed).toLowerCase()}`)}
 ${row('Langue', NAMES[c.lang] ?? c.lang)}
+${row(
+  'Reconnu',
+  device
+    ? `${plural(device.count, 'partie', 'parties')} depuis le ${dayName(device.since)}`
+    : 'non (numéro coupé, ou partie d’avant le 27 novembre)',
+)}
 </dl></section>
 </div>`,
   );
