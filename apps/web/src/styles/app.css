@@ -350,10 +350,6 @@ button {
 }
 
 /* The panel a mode opens: from the bottom, nearly the whole screen, its "Jouer" always in reach. */
-.sheet-overlay {
-  padding: 0;
-}
-
 /* Three bands: the handle and the title, the middle that scrolls, "Jouer". Only the middle is a scroll container, so
    the title and the button never move, not even in iOS's bounce, which carried a sticky footer along with the content
    (the owner's report, 2026-11-26). */
@@ -2044,19 +2040,29 @@ html:has(.overlay) body {
   gap: 12px;
 }
 
-/* On a phone a panel rising from the bottom is a sheet, like the launch screen's (.sheet): edge to edge and flush with
-   the bottom, its top corners rounded, so the screen's own rounded corners round its bottom ones exactly, whatever the
-   phone (the owner, 2026-11-26: a floating card with small corners clashed with an iPhone's). Its content keeps clear
-   of the home indicator. */
+/* A panel rising from the bottom is a sheet, like the launch screen's (.sheet): flush with the bottom, its top corners
+   rounded. On a phone it is edge to edge, so the screen's own rounded corners round its bottom ones exactly, whatever
+   the phone (the owner, 2026-11-26: a floating card with small corners clashed with an iPhone's); on a computer it
+   keeps its width, still flush (2026-11-27: a step of backdrop showed under it). Its content keeps clear of the home
+   indicator. `.overlay.sheet-overlay` beats `.overlay`'s padding, which the mode's sheet lost to (it comes later). */
+.overlay:not(.overlay-top),
+.overlay.sheet-overlay {
+  padding: 12px 12px 0;
+}
+
+.overlay:not(.overlay-top) > .panel {
+  border-radius: 28px 28px 0 0;
+  padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
+}
+
 @media (max-width: 699px) {
-  .overlay:not(.overlay-top) {
-    padding: 12px 0 0;
+  .overlay:not(.overlay-top),
+  .overlay.sheet-overlay {
+    padding-inline: 0;
   }
 
   .overlay:not(.overlay-top) > .panel {
     width: 100%;
-    border-radius: 28px 28px 0 0;
-    padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
   }
 }
 
