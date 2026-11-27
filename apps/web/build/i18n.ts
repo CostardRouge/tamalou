@@ -32,6 +32,7 @@ const SAME_EVERYWHERE: Record<Catalog, string[]> = {
   game: [
     'appName',
     'barCall',
+    'badgeCaller',
     'rank_JOKER',
     'rank_2',
     'rank_3',

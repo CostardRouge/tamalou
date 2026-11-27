@@ -51,7 +51,7 @@ const FORMS = {
   computer: { width: 1280, height: 800, mobile: false },
 } as const;
 /** Visible words allowed without brackets in the pseudo-language: names, and `Intl`'s own words (a list's «et»). */
-const ALLOWED = new Set([...fr.botNames.split(','), 'Tamalou', 'et']);
+const ALLOWED = new Set([...fr.botNames.split(','), 'et']);
 
 const out = resolve(web, 'shots', code);
 rmSync(out, { recursive: true, force: true });

@@ -158,6 +158,8 @@ export const fr = {
   // Captions under the action bar's icon buttons: one short word.
   barTake: 'Défausse',
   barCall: 'Tamalou',
+  /** The mark beside whoever called the round's end: the word is never translated, its writing may be (ADR-0028). */
+  badgeCaller: 'Tamalou',
   barQuick: 'Rapide',
   barSkip: 'Passer',
   barKeep: 'Garder',

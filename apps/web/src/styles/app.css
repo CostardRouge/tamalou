@@ -764,6 +764,8 @@ button {
 .preset-cards label {
   flex: none;
   display: grid;
+  /* The card keeps its width in a longer language: its words wrap inside it. */
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 2px;
   width: 184px;
@@ -808,6 +810,11 @@ button {
 
 .preset-facts strong {
   text-align: right;
+}
+
+.preset-facts li > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .preset-facts .changed strong {
@@ -939,7 +946,10 @@ html:has(.game) body {
   z-index: 45;
   display: flex;
   flex-direction: column;
-  width: 236px;
+  /* Wider for a longer language, never past the screen's edge (the button sits 12px from it). */
+  width: max-content;
+  min-width: 236px;
+  max-width: calc(100vw - 24px);
   padding: 6px;
   border-radius: 18px;
   background: var(--surface);
@@ -978,6 +988,10 @@ html:has(.game) body {
   margin-left: auto;
   color: var(--muted);
   font-weight: 500;
+}
+
+.bar-pop .bar-icon {
+  flex: none;
 }
 
 .bar-pop hr {
@@ -1494,9 +1508,11 @@ html:has(.game) body {
 
 .ibtn {
   flex: none;
-  width: 56px;
+  /* As wide as its caption needs in a longer language, up to half as wide again; the main button gives way. */
+  min-width: 56px;
+  max-width: 84px;
   height: 56px;
-  padding: 0;
+  padding: 0 4px;
   display: grid;
   place-items: center;
   align-content: center;
@@ -1523,9 +1539,13 @@ html:has(.game) body {
 }
 
 .ibtn small {
+  max-width: 100%;
+  overflow: hidden;
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .ibtn-call {
@@ -5254,6 +5274,14 @@ html:has(.overlay) body {
 
 .deck-patterns .card {
   --w: 30px;
+}
+
+.deck-patterns span {
+  max-width: 100%;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .deck-mark {

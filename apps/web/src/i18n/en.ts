@@ -151,6 +151,7 @@ export const en: Messages = {
   // Captions under the action bar's icon buttons: one short word.
   barTake: 'Discard',
   barCall: 'Tamalou',
+  badgeCaller: 'Tamalou',
   barQuick: 'Quick',
   barSkip: 'Skip',
   barKeep: 'Keep',
