@@ -12,6 +12,7 @@ Le brief d'origine du projet (2026-10-16), tenu à jour au fil des décisions. C
 4. **Conventions :**
    - Le code, les commits et les noms techniques sont en anglais.
    - L'interface est en français, avec une i18n simple pour ajouter l'anglais plus tard.
+   - **[ADR-0028]** Elle passe à neuf langues : français (la source), anglais, espagnol, italien, portugais du Brésil, allemand, japonais, chinois simplifié et traditionnel ; le jeu s'ouvre dans la langue du téléphone, et chaque texte français changé est traduit dans toutes les langues dans la même pull request.
 5. **Cadence :**
    - Des petits commits. **[ADR-0001]** Format de la spec commune (C3) : titre impératif en anglais, sans préfixe `feat:`, et non Conventional Commits.
    - Une milestone à la fois.
