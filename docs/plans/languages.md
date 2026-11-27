@@ -2,7 +2,7 @@
 
 Le plan de la piste 8 de `docs/IDEAS.md` (2026-11-27). On ajoute à l'interface l'espagnol, l'italien, le portugais, l'allemand, le japonais et le chinois (simplifié et traditionnel), en plus du français et de l'anglais. Sont traduits : tout le jeu, les règles et leurs écrans, la page d'accueil (première manche guidée et quiz compris), les mentions légales, la page 404, les cartes d'aperçu et le manifeste de l'application installée. Ne changent pas : le français reste la langue principale et la source de tous les textes ; le code, les commits, la mémoire, les ADR et le `CHANGELOG.md` restent en anglais ; la page `/admin/` reste en français (elle n'a qu'un lecteur) ; la console du serveur LAN aussi.
 
-Ce document se lit avant de lancer chaque étape (§ 6). Les choix marqués **à valider** attendent la réponse du propriétaire (§ 7). Une fois ces choix tranchés, ils deviennent un ADR dans `docs/DECISIONS.md` ; à partir de là, l'ADR fait foi et ce plan sert d'historique.
+Ce document se lit avant de lancer chaque étape (§ 6). Les choix du propriétaire sont tranchés (§ 7) et consignés dans l'**ADR-0028** (`docs/DECISIONS.md`), qui fait foi.
 
 ---
 
@@ -79,7 +79,7 @@ Pour l'accueil et les mentions : chaque page statique est écrite au build dans 
 ### 2.5 Choisir sa langue
 
 - **Le sélecteur** : la pastille globe de l'en-tête reste, avec le nom de la langue écrit dans cette langue, comme décidé le 2026-11-27. Avec neuf langues, elle ouvre une **liste** où chaque langue est écrite dans sa propre écriture. Les drapeaux restent écartés : un drapeau nomme un pays, pas une langue. Le menu déroulant avait été écarté parce qu'il cachait deux choix seulement ; à neuf, il devient le bon outil. Dans les Réglages du jeu, les boutons radio deviennent cette même liste.
-- **La détection** (**à valider**) : à la première visite du jeu, sans choix mémorisé, il prend la première langue de `navigator.languages` qu'il connaît (`zh-TW`, `zh-HK` → traditionnel ; `zh`, `zh-CN`, `zh-SG` → simplifié ; `pt-*` → portugais), et le français à défaut. Un choix fait à la main l'emporte toujours. Les pages d'accueil **ne redirigent pas** : une redirection selon la langue du navigateur gêne les robots des moteurs de recherche et surprend quand on ouvre un lien partagé. À la place, l'accueil français affiche un bandeau discret « Disponible en español » quand le navigateur parle une autre langue disponible.
+- **La détection** (retenue) : à la première visite du jeu, sans choix mémorisé, il prend la première langue de `navigator.languages` qu'il connaît (`zh-TW`, `zh-HK` → traditionnel ; `zh`, `zh-CN`, `zh-SG` → simplifié ; `pt-*` → portugais), et le français à défaut. Un choix fait à la main l'emporte toujours. Les pages d'accueil **ne redirigent pas** : une redirection selon la langue du navigateur gêne les robots des moteurs de recherche et surprend quand on ouvre un lien partagé. À la place, l'accueil français affiche un bandeau discret « Disponible en español » quand le navigateur parle une autre langue disponible.
 - `?lang=xx` force toujours une langue, ce qui sert aux tests et aux captures.
 
 ### 2.6 Adresses et référencement
@@ -102,7 +102,7 @@ Pour l'accueil et les mentions : chaque page statique est écrite au build dans 
 - **La 404** : le français et l'anglais restent écrits dans la page. Un petit script, autorisé par empreinte dans la politique de sécurité comme les autres, ajoute la langue du visiteur si on la connaît.
 - **Les cartes d'aperçu** : une par langue (`og-es-v2.png`…), dessinées par `scripts/card.mjs`. Pour le japonais et le chinois, le conteneur doit avoir les polices Noto CJK installées le temps du dessin. Les PNG sont commis, comme aujourd'hui.
 - **Le manifeste** : un manifeste par langue, avec le même `id` et la même adresse de départ, pour les noms des raccourcis (« Partie solo », « À plusieurs ») et la description. Chaque accueil lie le sien ; le jeu change le lien du manifeste selon la langue avant une installation.
-- **Les captures de la boîte d'installation** (**à valider**) : en français et en anglais seulement au départ, puisque ce sont huit images par langue. On les ajoutera par langue si les installations le justifient.
+- **Les captures de la boîte d’installation** (par défaut) : en français et en anglais seulement au départ, puisque ce sont huit images par langue. On les ajoutera par langue si les installations le justifient.
 - **Les noms des bots** : une liste par langue, des prénoms du pays, aussi désuets et drôles que les français (Dagobert, Hortense…).
 - **Les lettres des figures** : ce sont celles imprimées sur les jeux vendus dans le pays (§ 4).
 
@@ -139,13 +139,13 @@ Pour l'accueil et les mentions : chaque page statique est écrite au build dans 
 5. `pnpm i18n:stamp`, puis les tests, puis `pnpm i18n:shots` sur les écrans touchés, et un regard sur les captures.
 6. Le chinois traditionnel part du simplifié converti par OpenCC, en variante Taïwan avec son vocabulaire (`opencc-js`, outil de développement, jamais embarqué), puis l'agent relit la conversion : elle se trompe sur certains mots, et certaines tournures diffèrent.
 
-Une règle nouvelle dans `CLAUDE.md` : **une pull request qui change un texte français lance `/translate` avant son commit** (**à valider**, voir § 7, question 4). Les tests rendent l'oubli visible : une clé périmée fait échouer `pnpm check`.
+Une règle nouvelle dans `CLAUDE.md` : **une pull request qui change un texte français lance `/translate` avant son commit** (retenue, ADR-0028). Les tests rendent l'oubli visible : une clé périmée fait échouer `pnpm check`.
 
 ### 3.4 La relecture par des natifs
 
-L'agent traduit bien ces langues, mais le ton d'un jeu entre amis, l'humour des bots et le vocabulaire des joueurs d'un pays demandent un natif. Le guide de chaque langue garde la liste de ce qu'un natif a relu.
+L'agent traduit bien ces langues, mais le ton d'un jeu entre amis, l'humour des bots et le vocabulaire des joueurs d'un pays demandent un natif, et le propriétaire n'en a pas sous la main. La relecture indépendante du skill en tient lieu. Le guide de chaque langue garde la liste de ce qu'un natif aura relu, le jour où l'un d'eux se manifestera.
 
-Un lien « Signaler une traduction » dans les Réglages, qui ouvre un e-mail prérempli vers l'adresse de contact, permettrait de recueillir les corrections sans compte (**à valider**).
+Un lien « Signaler une traduction » dans les Réglages, qui ouvre un e-mail prérempli vers l'adresse de contact, recueille les corrections sans compte (retenu, ADR-0028 : il n'y a pas de relecteur natif).
 
 ---
 
@@ -157,7 +157,7 @@ Les valeurs ci-dessous sont celles par défaut, à vérifier par un natif. Elles
 |---|---|---|---|---|
 | espagnol | tú, neutre (ni vosotros ni vocabulaire trop local) | « » ou “ ”, ¡…! ¿…? | J Q K | « carta » et non « naipe » |
 | italien | tu | « » | J Q K | les élisions (l'asso, un'altra) dans les gabarits |
-| portugais (Brésil) | você | “ ” | J Q K | le brésilien, pas le portugais d'Europe (§ 7) |
+| portugais (Brésil) | você | “ ” | J Q K | le brésilien, pas le portugais d'Europe (ADR-0028) |
 | allemand | du | „ … “ | B D K | la longueur, les noms composés, les cas autour d'un `{placeholder}` |
 | japonais | polie et courte (です/ます), phrases nominales sur les boutons | 「」, 。、！？ en pleine chasse | J Q K | pas d'espaces, `auto-phrase`, l'onomatopée du cri « Tamalou ! » |
 | chinois simplifié | 你 | “ ”, ，。！？ en pleine chasse | J Q K | site sans licence ICP : joignable depuis la Chine mais lent, pas de promotion là-bas |
@@ -192,10 +192,12 @@ Chaque étape ajoute ses lignes au `CHANGELOG.md`. Les nouvelles langues mérite
 
 ---
 
-## 7. Les questions pour le propriétaire
+## 7. Les réponses du propriétaire (2026-11-27)
 
-1. **Portugais** : celui du Brésil (recommandé : plus de 200 millions de locuteurs, et c'est là que les jeux web gratuits trouvent leur public) ou celui du Portugal ?
-2. **Chinois** : les deux, simplifié et traditionnel (recommandé : le second coûte peu, puisqu'il part d'une conversion automatique relue), ou un seul ? Si un seul : le traditionnel, pour Taïwan et Hong Kong, où le site se charge normalement ; ou le simplifié, pour la Chine continentale, où le site restera lent sans licence ICP.
-3. **Détection** : le jeu s'ouvre-t-il dans la langue du téléphone à la première visite (recommandé), plutôt qu'en français pour tout le monde comme aujourd'hui ?
-4. **Synchronisation** : toute modification d'un texte français met à jour les huit autres langues dans la même pull request (recommandé : jamais de mélange de langues à l'écran, et c'est le travail de l'agent, pas le tien), ou bien un repli sur l'anglais en attendant un rattrapage groupé ?
-5. **Natifs** : as-tu des amis qui parlent ces langues et pourraient relire ? Faut-il un lien « Signaler une traduction » dans les Réglages ?
+Elles sont consignées dans l'ADR-0028, qui fait foi.
+
+1. **Portugais** : celui du Brésil.
+2. **Chinois** : les deux, simplifié et traditionnel.
+3. **Détection** : oui, le jeu s'ouvre dans la langue du téléphone à la première visite.
+4. **Synchronisation** : stricte. Toute modification d'un texte français met à jour les huit autres langues dans la même pull request.
+5. **Natifs** : aucun relecteur natif. La relecture indépendante du skill (§ 3.3) en tient lieu, et le lien « Signaler une traduction » est retenu par défaut (le propriétaire peut le retirer).
