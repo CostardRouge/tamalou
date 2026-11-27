@@ -22,6 +22,12 @@ export interface BotProfile {
   callLead: number;
   /** Points added to the estimate per own card never seen: how much uncertainty scares the bot. */
   unknownRisk: number;
+  /**
+   * A bot that does not think (easy) calls at random: never before it has played this many turns in the round, then
+   * with `callChance` at each turn it may (the owner, 2026-11-27: it called on its first turn, before anyone had played).
+   */
+  callFrom: number;
+  callChance: number;
   /** Claims a quick discard when it remembers a matching card. */
   quickDiscard: boolean;
   /** Picks targets by who is most dangerous, keeps a drawn card matching one of its own to discard both. */
@@ -39,6 +45,8 @@ export const PROFILES: Record<BotLevel, BotProfile> = {
     callAt: 0,
     callLead: 0,
     unknownRisk: 0,
+    callFrom: 3,
+    callChance: 0.2,
     quickDiscard: false,
     tactics: false,
     delays: { turn: [700, 1400], quickDiscard: [1500, 3000] },
@@ -51,6 +59,8 @@ export const PROFILES: Record<BotLevel, BotProfile> = {
     callAt: 6,
     callLead: 0,
     unknownRisk: 3,
+    callFrom: 0,
+    callChance: 0,
     quickDiscard: true,
     tactics: false,
     delays: { turn: [600, 1200], quickDiscard: [900, 1800] },
@@ -63,6 +73,8 @@ export const PROFILES: Record<BotLevel, BotProfile> = {
     callAt: 8,
     callLead: 2,
     unknownRisk: 1.5,
+    callFrom: 0,
+    callChance: 0,
     quickDiscard: true,
     tactics: true,
     delays: { turn: [500, 1000], quickDiscard: [500, 1100] },
@@ -141,7 +153,10 @@ export class Bot {
     const turn = legal.filter((a) => a.type !== 'quickDiscard');
     if (turn.length === 0) return null;
     const call = turn.find((a) => a.type === 'callTamalou');
-    if (call && (view.myTurns >= FORCE_CALL_AFTER || this.random() < 0.12)) return call;
+    const { callFrom, callChance } = this.profile;
+    if (call && (view.myTurns >= FORCE_CALL_AFTER || (view.myTurns >= callFrom && this.random() < callChance))) {
+      return call;
+    }
     const rest = turn.filter((a) => a.type !== 'callTamalou');
     return this.pick(rest.length > 0 ? rest : turn) ?? null;
   }
