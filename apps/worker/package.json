@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@tamalou/admin": "workspace:*",
+    "@tamalou/ranking": "workspace:*",
     "@tamalou/room": "workspace:*",
     "@tamalou/shared": "workspace:*",
     "oauth4webapi": "^3.8.9"

@@ -5157,6 +5157,179 @@ html:has(.overlay) body {
   gap: 8px;
 }
 
+/* «Classé» (ranked/RankedScreen.tsx, the owner's pick C on the 2026-11-27 canvas): the ranked profile, step R0. */
+.mode-ranked .mode-icon {
+  --tone: var(--b-ink);
+}
+
+.ranked {
+  display: grid;
+  gap: 14px;
+}
+
+.ranked-hero,
+.ranked-me,
+.ranked-level {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ranked-words {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ranked-hero b,
+.ranked-level b {
+  font-family: var(--f-display);
+  font-size: 1.15rem;
+}
+
+.ranked-hero small {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.ranked-me {
+  padding: 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.ranked-me .link {
+  margin-left: 0;
+  min-height: 36px;
+}
+
+.ranked .btn:disabled {
+  opacity: 0.45;
+}
+
+.ranked-name {
+  font-family: var(--f-display);
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.ranked-level {
+  padding: 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+}
+
+.ranked-bar {
+  display: block;
+  justify-self: stretch;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: var(--r-pill);
+  background: var(--line);
+  overflow: hidden;
+}
+
+.ranked-bar i {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: var(--r-pill);
+  background: var(--a);
+}
+
+.ranked-points {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 0.92rem;
+}
+
+.ranked-code {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.ranked-code.fresh {
+  background: color-mix(in srgb, #e0a500 16%, var(--surface));
+}
+
+.ranked-code h3,
+.ranked-code p {
+  margin: 0;
+}
+
+.ranked-code p {
+  font-size: 0.9rem;
+}
+
+.ranked-code-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.ranked-code-actions,
+.ranked-file {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ranked-code-actions .btn,
+.ranked-file .btn {
+  flex: 1 1 8em;
+}
+
+.ranked-code small {
+  font-size: 0.8rem;
+}
+
+.ranked-restore {
+  display: grid;
+  gap: 10px;
+}
+
+.ranked-code-input {
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.btn.danger {
+  color: var(--bad);
+  border-color: var(--bad);
+}
+
+.btn-primary.danger {
+  background: var(--bad);
+  color: var(--on-accent);
+}
+
+.ranked-ask {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--bad);
+}
+
+.ranked-ask p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ranked-legal {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
 /* «Tes cartes» (cards/DeckPicker.tsx): the cards drawn as the player picks, then colour, pattern, mark and effect. */
 .deck-picker {
   gap: 10px;

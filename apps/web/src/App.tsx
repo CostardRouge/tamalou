@@ -72,7 +72,7 @@ export function App() {
   // setup, "À plusieurs" opens the home screen on pass-and-play.
   const [shortcut] = useState(readShortcut);
   const [room, setRoom] = useState<{ code: string; name?: string; via?: 'qr' | 'link' } | null>(roomFromLink);
-  const [online, setOnline] = useState(false);
+  const [server, setServer] = useState<'online' | 'lan' | null>(null);
   // A language change draws everything again; games and rooms keep going.
   const [, setLang] = useState('');
   useEffect(() => onLangChange(setLang), []);
@@ -82,7 +82,7 @@ export function App() {
     serverMode().then((mode) => {
       // Usage statistics go to the online server only (ADR-0024): the LAN version counts nothing.
       setUsageAvailable(mode === 'online');
-      if (live) setOnline(mode !== null);
+      if (live) setServer(mode);
     });
     return () => {
       live = false;
@@ -173,7 +173,8 @@ export function App() {
           <HomeScreen
             onPlay={play}
             linked={linked}
-            online={online}
+            online={server !== null}
+            ranked={server === 'online'}
             onRoom={enterRoom}
             {...(shortcut === 'pass' ? { mode: 'pass' as const } : {})}
           />

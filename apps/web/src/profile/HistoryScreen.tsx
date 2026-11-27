@@ -2,6 +2,7 @@ import type { Avatar as AvatarValue } from '@tamalou/shared';
 import { useRef, useState } from 'react';
 import { focusOnMount } from '../game/Overlay.tsx';
 import { currentLang, type Key, ordinal, plural, t } from '../i18n/index.ts';
+import { rankedFromFile, rankedSecret, saveRankedSecret } from '../ranked/store.ts';
 import { Avatar } from './Avatar.tsx';
 import { historyFile, type PlayedGame, restoreHistory, summarize, useHistory } from './history.ts';
 
@@ -41,7 +42,7 @@ export function HistoryScreen({ avatar, onClose }: { avatar: AvatarValue; onClos
   const now = Date.now();
 
   const save = () => {
-    const blob = new Blob([historyFile(games)], { type: 'application/json' });
+    const blob = new Blob([historyFile(games, rankedSecret())], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -54,8 +55,17 @@ export function HistoryScreen({ avatar, onClose }: { avatar: AvatarValue; onClos
 
   const restore = async (picked: File | undefined) => {
     if (!picked) return;
-    const added = restoreHistory(await picked.text());
-    setNotice(added === null ? t('historyRestoreBad') : plural('historyRestored', added));
+    const text = await picked.text();
+    const added = restoreHistory(text);
+    // The ranked profile comes back with the games, unless this device already has one.
+    const ranked = added === null ? null : rankedFromFile(text);
+    const found = Boolean(ranked && !rankedSecret());
+    if (ranked && found) saveRankedSecret(ranked);
+    setNotice(
+      added === null
+        ? t('historyRestoreBad')
+        : `${plural('historyRestored', added)}${found ? ` ${t('historyRankedRestored')}` : ''}`,
+    );
     if (file.current) file.current.value = '';
   };
 
@@ -127,7 +137,7 @@ export function HistoryScreen({ avatar, onClose }: { avatar: AvatarValue; onClos
       </p>
 
       <div className="history-file">
-        <button type="button" className="btn btn-secondary" onClick={save} disabled={!games.length}>
+        <button type="button" className="btn btn-secondary" onClick={save} disabled={!games.length && !rankedSecret()}>
           {t('historySave')}
         </button>
         <button type="button" className="btn btn-secondary" onClick={() => file.current?.click()}>

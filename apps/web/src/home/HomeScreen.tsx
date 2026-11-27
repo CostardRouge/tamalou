@@ -16,6 +16,7 @@ import { refreshProfile, useProfile } from '../profile/avatar.ts';
 import { HistoryScreen } from '../profile/HistoryScreen.tsx';
 import { summarize, useHistory } from '../profile/history.ts';
 import { ProfileEditor } from '../profile/ProfileEditor.tsx';
+import { RankedScreen } from '../ranked/RankedScreen.tsx';
 import { countChanges, RulesEditor } from '../rules/RulesEditor.tsx';
 import { BUILD } from '../version.ts';
 import { fitsTable, MAX_SEATS, MODE_DEFAULTS, type Mode } from './modes.ts';
@@ -129,6 +130,8 @@ const MODE_ICON: Record<Mode, string> = {
   pass: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2',
   online: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18',
 };
+/** «Classé»: a podium. */
+const RANKED_ICON = 'M4 20h16M5 20v-6h5v6M10 20V9h4v11M14 20v-8h5v8M12 3v3M10.5 4.5h3';
 const LEVEL_CHIP: Record<BotLevel, Key> = {
   easy: 'levelChip_easy',
   medium: 'levelChip_medium',
@@ -144,13 +147,15 @@ interface Props {
   linked?: RulesChoice | null;
   /** This page's server hosts rooms (LAN server, online): the online mode is offered. */
   online?: boolean;
+  /** This page's server is the online Worker, which keeps the ranked ladder (ADR-0029): «Classé» is offered. */
+  ranked?: boolean;
   /** Enter a room (made or typed here) under this name. */
   onRoom?: (code: string, name: string, made?: boolean) => void;
   /** Open on this mode's panel rather than on the last game (the icon's shortcuts). */
   mode?: Mode;
 }
 
-export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Props) {
+export function HomeScreen({ onPlay, linked, online = false, ranked = false, onRoom, mode }: Props) {
   const withLink = (c: GameChoice) => (linked ? { ...c, preset: linked.preset, overrides: linked.overrides } : c);
   // The last game, as remembered: what "Rejouer" plays. The panel edits a copy, kept when it is played.
   const [saved, setSaved] = useState<GameChoice>(() => withLink(loadChoice()));
@@ -164,6 +169,7 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
   const [settings, setSettings] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [rankedOpen, setRankedOpen] = useState(false);
   const profile = useProfile();
   const played = summarize(useHistory());
   const set = (patch: Partial<GameChoice>) => setC((prev) => fit({ ...prev, ...patch }));
@@ -258,6 +264,22 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
             </svg>
           </button>
         ))}
+        {ranked ? (
+          <button type="button" className="mode-tile mode-ranked" onClick={() => setRankedOpen(true)}>
+            <span className="mode-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={RANKED_ICON} />
+              </svg>
+            </span>
+            <span className="mode-words">
+              <b>{t('homeModeRanked')}</b>
+              <small>{t('homeModeRankedText')}</small>
+            </span>
+            <svg className="mode-go" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+        ) : null}
       </div>
 
       <footer className="home-foot">
@@ -308,6 +330,14 @@ export function HomeScreen({ onPlay, linked, online = false, onRoom, mode }: Pro
         <Overlay labelledBy="history-title" onClose={() => setHistoryOpen(false)}>
           <div className="panel history-panel">
             <HistoryScreen avatar={profile.avatar ?? MY_FALLBACK} onClose={() => setHistoryOpen(false)} />
+          </div>
+        </Overlay>
+      ) : null}
+
+      {rankedOpen ? (
+        <Overlay labelledBy="ranked-title" onClose={() => setRankedOpen(false)}>
+          <div className="panel ranked-panel">
+            <RankedScreen avatar={profile.avatar ?? MY_FALLBACK} onClose={() => setRankedOpen(false)} />
           </div>
         </Overlay>
       ) : null}

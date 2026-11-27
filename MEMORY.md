@@ -108,7 +108,8 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 - 2026-11-24 — Owner to judge the top bar on his phone: «⋯» and its items (the sound and the vibrations switched in place), the journal beside it, the way out.
 - 2026-11-24 — Owner to judge the new rules screen on his phone and his computer: the tiles, a tile opening in place, card points and powers set on the cards, the cards seen at the start.
 - 2026-10-17 — Owner to try the home page's first round and quiz on his phone (the round must be winnable by a first-timer; the table is zoomed to 66 % there).
-- 2026-11-27 — **Ranked mode, next step R0** (`docs/plans/ranking.md` § 10, ADR-0029): the ranked identity, `LadderObject`, the `/admin/` export and the legal notice's section, in its own session; then R1 (ranked against bots, the first playable step), R2 (the leaderboard), R3 (the public queue, only once `/admin/` shows enough online games). When R0 ships, rewrite C18 in `CLAUDE.md` (it says so).
+- 2026-11-27 — **Ranked mode: R0 shipped, next step R1** (`docs/plans/ranking.md` § 10, ADR-0029, `ranking.md`): ranked games against bots on the Worker (`packages/ranking` gains OpenSkill and the bots' fixed ratings from `pnpm bots`), the level in cards, `last_game` set. Then R2 (the leaderboard), R3 (the public queue, only once `/admin/` shows enough online games).
+- 2026-11-27 — Owner to judge R0 once deployed: «Classé» on the launch screen, create a profile, note the code, open it on a second phone with the code, «Tirer un autre nom», «Mes données», delete; on `/admin/`, the «Classement» card, «Télécharger l'export» (then once a week; keep the files outside Cloudflare, 13 months at most, as the legal notice promises), and «Restaurer un export» once to see it say nothing changed.
 - 2026-11-27 — **Languages, next step L0** (`docs/plans/languages.md` § 6): the foundations, shipped with French and English only, in its own session; then L1 (the skill + Spanish), L2 (it, pt, de), L3 (ja, both Chinese).
 - 2026-10-17 — The backfilled releases v0.1.0 to v0.6.0 wait on `second-brain`'s "Backfill releases" workflow, run once by the owner with his token for every repository; v0.7.0–v0.9.0 are published — ADR-0019, `architecture.md`.
 
@@ -123,3 +124,4 @@ This file is the **always-loaded index**. The detail lives in `docs/memory/<topi
 | `docs/memory/bots.md` | touching a bot level, bot memory, the match driver, `pnpm bots` |
 | `docs/memory/site.md` | touching the home page, the site's pages and addresses, SEO, the service worker's scope |
 | `docs/memory/web.md` | touching `apps/web`: screens, connection, interaction, dictionaries, build |
+| `docs/memory/ranking.md` | touching the ranked mode: `packages/ranking`, `LadderObject`, «Classé», the ladder's backup |

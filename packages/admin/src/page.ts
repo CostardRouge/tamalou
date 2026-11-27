@@ -167,14 +167,52 @@ function whenCard(s: UsageSummary): string {
   }<div class="week">${week}</div></section>`;
 }
 
+/** The ranked ladder as the admin page shows it (ADR-0029): how many players, and when it was last exported. */
+export interface LadderSummary {
+  players: number;
+  lastExport: string | null;
+}
+
+/** The export the owner downloads every week: past this, the page asks for one. */
+export const EXPORT_EVERY_DAYS = 7;
+
+/** Whether the ladder holds players and has not been exported for a week (or ever). */
+export function exportDue(l: LadderSummary, now: number): boolean {
+  return l.players > 0 && (!l.lastExport || now - Date.parse(l.lastExport) > EXPORT_EVERY_DAYS * 86_400_000);
+}
+
+const exportTime = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Europe/Paris',
+});
+
+/** The ladder's card: its players, its last export, the download, and a way to read an export back. */
+function ladderCard(l: LadderSummary, now: number): string {
+  const last = l.lastExport ? `le ${exportTime.format(new Date(l.lastExport))}` : 'jamais';
+  const due = exportDue(l, now)
+    ? `<p class="alert">Export à faire&#160;: le dernier date de plus de ${EXPORT_EVERY_DAYS} jours (${esc(last)}).</p>`
+    : '';
+  return `<section class="card wide ladder"><h3>Classement</h3>
+<div class="kpis"><div class="kpi"><b>${l.players}</b><span>${l.players > 1 ? 'joueurs classés' : 'joueur classé'}</span></div><div class="kpi"><b>${esc(last)}</b><span>dernier export</span></div></div>
+${due}<p class="note">Le seul fichier à sauvegarder du projet&#160;: Cloudflare garde 30 jours de retour en arrière, cet export garde le reste. Une fois par semaine, télécharge-le et range-le hors de Cloudflare.</p>
+<p><a class="button" href="ladder.json">Télécharger l’export</a></p>
+<details><summary>Restaurer un export</summary><form method="post" action="ladder/import" enctype="multipart/form-data" class="import"><input type="file" name="file" accept="application/json,.json" required><button type="submit">Ajouter les joueurs absents</button></form><p class="note">Seuls les joueurs que le classement n’a plus sont ajoutés&#160;: personne n’est écrasé.</p></details></section>`;
+}
+
 export interface AdminPageInput {
   summary: UsageSummary;
   days: number;
   who: string;
   version: string;
+  /** The ranked ladder, when the Worker has one. */
+  ladder?: LadderSummary;
+  now?: number;
 }
 
-export function adminPage({ summary: s, days, who, version }: AdminPageInput): string {
+export function adminPage({ summary: s, days, who, version, ladder, now = Date.now() }: AdminPageInput): string {
   const kpi = (n: number | string, label: string) =>
     `<div class="kpi"><b>${esc(String(n))}</b><span>${esc(label)}</span></div>`;
   const periods = PERIODS.map((d) =>
@@ -201,6 +239,7 @@ ${kpi(s.devices.seen, 'appareils reconnus')}
 ${kpi(s.devices.returning, 'revenus un autre jour')}
 </div>
 <p class="note">Appareils&#160;: ceux qui envoient leur numéro tiré au hasard, depuis le 27 novembre 2026 (un joueur peut l’arrêter dans les réglages).</p>
+${ladder ? ladderCard(ladder, now) : ''}
 ${dayChart(s)}
 ${whenCard(s)}
 <section class="card wide"><h3>Dernières parties</h3>${gameList(s.games.slice(0, 8), true)}</section>
@@ -399,5 +438,11 @@ dd{margin:0;font-weight:600;text-align:right}
 .note,.empty{margin:0 0 8px;color:var(--muted);font-size:.85rem}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .message{max-width:420px;margin:15vh auto 0;text-align:center}
+.alert{margin:0 0 8px;padding:10px 12px;border-radius:12px;background:var(--b);color:#fff;font-weight:700}
+.ladder .kpis{margin-bottom:10px}
+.ladder .kpi{background:var(--bg)}
+details{margin-top:8px}
+summary{cursor:pointer;font-weight:700}
+.import{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
 footer{color:var(--muted);font-size:.8rem}
 `;

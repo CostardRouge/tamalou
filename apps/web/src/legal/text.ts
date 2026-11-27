@@ -13,7 +13,7 @@ const fr = {
     'Qui publie Tamalou, qui l’héberge, et ce que le jeu sait de toi : presque rien. Pas de compte, pas de cookie, une mesure d’audience anonyme.',
   intro:
     'Qui publie Tamalou, qui l’héberge, et ce que le jeu sait de toi&#160;: presque rien. Pas de compte, pas de cookie, pas de publicité.',
-  updated: 'Dernière mise à jour le 17 octobre 2026.',
+  updated: 'Dernière mise à jour le 27 novembre 2026.',
   tocAria: 'Sur cette page',
 
   pubTitle: 'Éditeur',
@@ -35,13 +35,19 @@ const fr = {
 
   deviceTitle: 'Sur ton appareil',
   device1:
-    'Une partie seul ou à plusieurs sur un seul appareil se joue entièrement dans ton navigateur&#160;: rien n’est envoyé. Le jeu garde dans le stockage local de ton navigateur, sur cet appareil seulement, la langue, les sons et vibrations, l’apparence de tes cartes, et ta dernière mise en place (mode, prénoms, nombre et niveau des bots, règles), pour la proposer la fois suivante, ainsi que ton prénom et ton avatar (une couleur et une icône), pour ne pas avoir à les choisir de nouveau&#160;; en rejoignant une salle, ton prénom et ton avatar sont montrés aux autres joueurs de cette salle&#160;; la liste de tes parties finies sur cet appareil (date, mode, prénoms des autres joueurs, ta place, tes points, tes Tamalou), pour «&#160;Mes parties&#160;», que tu peux sauvegarder dans un fichier et restaurer&#160;; si tu joues en ligne, un jeton par salle pendant un jour, pour reprendre ta place après une coupure&#160;; et le numéro tiré au hasard des statistiques de jeu (plus bas), tant que «&#160;Reconnaître cet appareil&#160;» est activé dans les réglages.',
+    'Une partie seul ou à plusieurs sur un seul appareil se joue entièrement dans ton navigateur&#160;: rien n’est envoyé. Le jeu garde dans le stockage local de ton navigateur, sur cet appareil seulement, la langue, les sons et vibrations, l’apparence de tes cartes, et ta dernière mise en place (mode, prénoms, nombre et niveau des bots, règles), pour la proposer la fois suivante, ainsi que ton prénom et ton avatar (une couleur et une icône), pour ne pas avoir à les choisir de nouveau&#160;; en rejoignant une salle, ton prénom et ton avatar sont montrés aux autres joueurs de cette salle&#160;; la liste de tes parties finies sur cet appareil (date, mode, prénoms des autres joueurs, ta place, tes points, tes Tamalou), pour «&#160;Mes parties&#160;», que tu peux sauvegarder dans un fichier et restaurer&#160;; si tu joues en ligne, un jeton par salle pendant un jour, pour reprendre ta place après une coupure&#160;; si tu crées un profil classé, son code secret (plus bas)&#160;; et le numéro tiré au hasard des statistiques de jeu (plus bas), tant que «&#160;Reconnaître cet appareil&#160;» est activé dans les réglages.',
   device2:
     'Ouvrir le jeu range aussi ses propres fichiers dans le cache du navigateur, pour qu’il marche hors ligne&#160;: des fichiers, jamais tes données. Pour tout effacer, efface les données de ce site dans les réglages de ton navigateur.',
 
   roomsTitle: 'Salles en ligne',
   rooms1:
     'Dans une salle en ligne, le prénom que tu tapes et tes coups passent par le serveur, qui les montre aux autres joueurs de la salle (chacun ne voit que ce que les règles lui permettent de voir). Rien n’est écrit sur disque&#160;: la salle vit en mémoire et disparaît après deux heures sans activité, ou quand une partie finie n’a plus personne. Toute personne qui a le code ou le lien d’une salle peut la rejoindre ou regarder&#160;: ne mets rien de personnel dans ton prénom.',
+
+  rankedTitle: 'Profil classé',
+  ranked1:
+    'Le mode classé, en ligne seulement, est le seul où le serveur de Tamalou garde quelque chose sur un joueur, et seulement si tu crées un profil classé. Ton appareil tire alors au hasard un code secret de 25 caractères, qu’il garde dans son stockage local (et dans le fichier «&#160;Sauvegarder&#160;» de Mes parties)&#160;; le serveur n’en garde qu’une empreinte, qui ne permet pas de le retrouver. Il garde aussi un nom tiré au sort (le seul que voient les joueurs que tu ne connais pas, jamais ton prénom), ton avatar, ton niveau, le nombre de tes parties classées et trois dates&#160;: la création du profil, ta dernière visite et ta dernière partie classée. Ni e-mail, ni mot de passe, ni adresse IP.',
+  ranked2:
+    'Ce profil sert au classement que tu demandes en le créant&#160;; il n’est relié ni aux statistiques de jeu ni à la mesure d’audience. Il est effacé 13 mois après ta dernière partie classée (ou après sa création si tu n’en as jamais joué), ou tout de suite quand tu touches «&#160;Supprimer mon profil&#160;» dans l’écran Classé, où «&#160;Mes données&#160;» télécharge aussi tout ce que le serveur garde sur toi. C’est la seule donnée de Tamalou qu’on ne veut pas perdre&#160;: l’éditeur en télécharge chaque semaine une copie de sauvegarde, gardée hors de Cloudflare 13 mois au plus. Qui a ton code a ton profil&#160;: ne le donne à personne.',
 
   countTitle: 'Mesure d’audience',
   count1:
@@ -67,11 +73,11 @@ const fr = {
 
   logsTitle: 'Hébergement et abus',
   logs1:
-    'Comme tout hébergeur, Cloudflare (et GitHub pour la copie) traite ton adresse IP pour délivrer les pages et protéger le site&#160;: voir la <a href="https://www.cloudflare.com/privacypolicy/">politique de confidentialité de Cloudflare</a>. Tamalou s’en sert pour limiter le nombre de salles qu’une même adresse peut créer par minute, sans la garder. Cloudflare conserve quelques jours des journaux techniques des appels au serveur, que l’éditeur consulte pour corriger les erreurs.',
+    'Comme tout hébergeur, Cloudflare (et GitHub pour la copie) traite ton adresse IP pour délivrer les pages et protéger le site&#160;: voir la <a href="https://www.cloudflare.com/privacypolicy/">politique de confidentialité de Cloudflare</a>. Tamalou s’en sert pour limiter le nombre de salles qu’une même adresse peut créer et d’appels qu’elle peut faire au profil classé par minute, sans la garder. Cloudflare conserve quelques jours des journaux techniques des appels au serveur, que l’éditeur consulte pour corriger les erreurs.',
 
   rightsTitle: 'Tes droits',
   rights1:
-    'Le RGPD te permet de demander l’accès aux données qui te concernent ou leur effacement. Tamalou n’en garde aucune qui te nomme&#160;: tes réglages sont sur ton appareil, une salle en ligne s’efface d’elle-même, et les statistiques de jeu sont anonymes. Pour toute question ou demande, écris à {email}&#160;; tu peux aussi adresser une réclamation à la <a href="https://www.cnil.fr">CNIL</a>.',
+    'Le RGPD te permet de demander l’accès aux données qui te concernent ou leur effacement. Tamalou n’en garde aucune qui te nomme&#160;: tes réglages sont sur ton appareil, une salle en ligne s’efface d’elle-même, les statistiques de jeu sont anonymes, et ton profil classé, si tu en crées un, ne porte ni ton prénom ni ton e-mail&#160;: tu le télécharges et l’effaces toi-même depuis l’écran Classé. Pour toute question ou demande, écris à {email}&#160;; tu peux aussi adresser une réclamation à la <a href="https://www.cnil.fr">CNIL</a>.',
 
   licenceTitle: 'Licence',
   licence1:
@@ -90,7 +96,7 @@ const en: LegalText = {
     'Who publishes Tamalou, who hosts it, and what the game knows about you: almost nothing. No account, no cookie, anonymous audience measurement.',
   intro:
     'Who publishes Tamalou, who hosts it, and what the game knows about you: almost nothing. No account, no cookie, no ads.',
-  updated: 'Last updated on 17 October 2026.',
+  updated: 'Last updated on 27 November 2026.',
   tocAria: 'On this page',
 
   pubTitle: 'Publisher',
@@ -111,13 +117,19 @@ const en: LegalText = {
 
   deviceTitle: 'On your device',
   device1:
-    'A game solo or around one device is played entirely in your browser: nothing is sent. The game keeps in your browser’s local storage, on this device only, the language, sounds and vibrations, how your cards look, and your last setup (mode, names, number and level of bots, rules), to offer it next time, as well as your name and your avatar (a colour and an icon), so you need not pick them again; when you join a room, your name and avatar are shown to the other players in it; the list of the games you finished on this device (date, mode, the other players’ names, your place, your points, your Tamalous), for “My games”, which you can save to a file and restore; if you play online, one token per room for a day, to take your seat back after a dropout; and the game statistics’ random number (below), as long as “Recognise this device” is on in the settings.',
+    'A game solo or around one device is played entirely in your browser: nothing is sent. The game keeps in your browser’s local storage, on this device only, the language, sounds and vibrations, how your cards look, and your last setup (mode, names, number and level of bots, rules), to offer it next time, as well as your name and your avatar (a colour and an icon), so you need not pick them again; when you join a room, your name and avatar are shown to the other players in it; the list of the games you finished on this device (date, mode, the other players’ names, your place, your points, your Tamalous), for “My games”, which you can save to a file and restore; if you play online, one token per room for a day, to take your seat back after a dropout; if you create a ranked profile, its secret code (below); and the game statistics’ random number (below), as long as “Recognise this device” is on in the settings.',
   device2:
     'Opening the game also stores its own files in the browser’s cache, so that it works offline: files, never your data. To erase everything, clear this site’s data in your browser’s settings.',
 
   roomsTitle: 'Online rooms',
   rooms1:
     'In an online room, the name you type and your moves go through the server, which shows them to the other players in the room (each one sees only what the rules let them see). Nothing is written to disk: the room lives in memory and disappears after two hours without activity, or once a finished game has nobody left. Anyone with a room’s code or link can join it or watch: keep your name impersonal.',
+
+  rankedTitle: 'Ranked profile',
+  ranked1:
+    'The ranked mode, online only, is the one place where Tamalou’s server keeps something about a player, and only if you create a ranked profile. Your device then draws a secret code of 25 characters at random and keeps it in its local storage (and in the file “Save” writes from My games); the server keeps only a fingerprint of it, which cannot give it back. It also keeps a name drawn at random (the only one players you do not know see, never your own name), your avatar, your level, the number of your ranked games and three dates: when the profile was created, your last visit and your last ranked game. No e-mail, no password, no IP address.',
+  ranked2:
+    'This profile serves the ranking you ask for by creating it; it is tied neither to the game statistics nor to audience measurement. It is erased 13 months after your last ranked game (or after it was created if you never played one), or at once when you touch “Delete my profile” on the Ranked screen, where “My data” also downloads everything the server keeps about you. It is the one piece of Tamalou’s data worth not losing: every week the publisher downloads a backup copy, kept outside Cloudflare for 13 months at most. Whoever has your code has your profile: give it to no one.',
 
   countTitle: 'Audience measurement',
   count1:
@@ -143,11 +155,11 @@ const en: LegalText = {
 
   logsTitle: 'Hosting and abuse',
   logs1:
-    'Like any host, Cloudflare (and GitHub for the copy) processes your IP address to deliver the pages and protect the site: see <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare’s privacy policy</a>. Tamalou uses it to limit how many rooms one address can create per minute, without keeping it. Cloudflare keeps technical logs of calls to the server for a few days, which the publisher reads to fix errors.',
+    'Like any host, Cloudflare (and GitHub for the copy) processes your IP address to deliver the pages and protect the site: see <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare’s privacy policy</a>. Tamalou uses it to limit how many rooms one address can create, and how many calls it can make to the ranked profile, per minute, without keeping it. Cloudflare keeps technical logs of calls to the server for a few days, which the publisher reads to fix errors.',
 
   rightsTitle: 'Your rights',
   rights1:
-    'The GDPR lets you ask for access to the data about you, or for its deletion. Tamalou keeps none that names you: your settings are on your device, an online room erases itself, and the game statistics are anonymous. For any question or request, write to {email}; you can also lodge a complaint with the <a href="https://www.cnil.fr">CNIL</a>.',
+    'The GDPR lets you ask for access to the data about you, or for its deletion. Tamalou keeps none that names you: your settings are on your device, an online room erases itself, the game statistics are anonymous, and your ranked profile, if you create one, carries neither your name nor your e-mail: you download it and erase it yourself from the Ranked screen. For any question or request, write to {email}; you can also lodge a complaint with the <a href="https://www.cnil.fr">CNIL</a>.',
 
   licenceTitle: 'Licence',
   licence1:

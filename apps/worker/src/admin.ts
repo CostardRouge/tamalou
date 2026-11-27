@@ -3,6 +3,7 @@ import {
   cookie,
   dayPage,
   gamePage,
+  type LadderSummary,
   messagePage,
   PERIODS,
   readSession,
@@ -31,6 +32,8 @@ import { version } from '../../../package.json';
 //   GET  /admin/           → the statistics, or off to sign in
 //   GET  /admin/?day=…     → one day and its games (a Paris day, YYYY-MM-DD)
 //   GET  /admin/?game=…    → one game
+//   GET  /admin/ladder.json → the ranked ladder's export, to keep out of Cloudflare (ADR-0029)
+//   POST /admin/ladder/import → an export read back: only the players the ladder lacks are added
 //   GET  /admin/login      → to Sésame
 //   GET  /admin/callback   → back from Sésame
 //   POST /admin/logout     → the cookie cleared
@@ -50,6 +53,18 @@ export interface AdminEnv {
 export interface UsageStore {
   rows(since: string): Promise<UsageRow[]>;
 }
+
+/** The ranked ladder (packages/ranking, the Worker's LadderObject). */
+export interface LadderStore {
+  summary(): Promise<LadderSummary>;
+  /** The export, as JSON text. */
+  exportFile(): Promise<string>;
+  /** An export's JSON text read back: the players added, or null when it is not one. */
+  importFile(text: string): Promise<number | null>;
+}
+
+/** The largest export read back: about 300 bytes a player. */
+const MAX_IMPORT = 20 * 1024 * 1024;
 
 const SESSION = '__Host-tamalou_admin';
 const LOGIN = '__Host-tamalou_login';
@@ -110,8 +125,13 @@ async function server(issuer: URL): Promise<oauth.AuthorizationServer> {
   return as;
 }
 
-/** Answers every /admin request; `store` reads the usage events. */
-export async function admin(request: Request, env: AdminEnv, store: UsageStore): Promise<Response> {
+/** Answers every /admin request; `store` reads the usage events, `ladder` holds the ranked players. */
+export async function admin(
+  request: Request,
+  env: AdminEnv,
+  store: UsageStore,
+  ladder: LadderStore,
+): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
   if (path === '/admin') return redirect('/admin/');
@@ -193,6 +213,44 @@ export async function admin(request: Request, env: AdminEnv, store: UsageStore):
         { 'set-cookie': setCookie(SESSION, '', 0) },
       );
     }
+    if (path === '/admin/ladder.json' || path === '/admin/ladder/import') {
+      const session = await readSession(cookie(request.headers.get('cookie'), SESSION) ?? '', cfg.secret, now);
+      if (!session) return redirect('/admin/login');
+      if (path === '/admin/ladder.json' && request.method === 'GET') {
+        const day = new Date(now).toISOString().slice(0, 10);
+        return new Response(await ladder.exportFile(), {
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'content-disposition': `attachment; filename="tamalou-classement-${day}.json"`,
+            'cache-control': 'no-store',
+            'x-content-type-options': 'nosniff',
+          },
+        });
+      }
+      if (path === '/admin/ladder/import' && request.method === 'POST') {
+        // A form of this page only: the cookie is SameSite=Lax already, the origin says so twice.
+        if (request.headers.get('origin') !== url.origin)
+          return html(403, messagePage('Refusé', 'Ce formulaire vient d’ailleurs.'));
+        const back = { href: '/admin/', label: 'Statistiques' };
+        const form = await request.formData();
+        const file = form.get('file');
+        let added: number | null = null;
+        if (file && typeof file !== 'string' && file.size <= MAX_IMPORT)
+          added = await ladder.importFile(await file.text());
+        return added === null
+          ? html(400, messagePage('Export illisible', 'Ce fichier n’est pas un export du classement de Tamalou.', back))
+          : html(
+              200,
+              messagePage(
+                'Export relu',
+                added === 0
+                  ? 'Le classement avait déjà tous ces joueurs : rien n’a changé.'
+                  : `${added} ${added > 1 ? 'joueurs ajoutés' : 'joueur ajouté'} au classement.`,
+                back,
+              ),
+            );
+      }
+    }
     if (path === '/admin/' && request.method === 'GET') {
       const session = await readSession(cookie(request.headers.get('cookie'), SESSION) ?? '', cfg.secret, now);
       if (!session) return redirect('/admin/login');
@@ -240,7 +298,17 @@ export async function admin(request: Request, env: AdminEnv, store: UsageStore):
       const asked = Number(url.searchParams.get('days'));
       const days = (PERIODS as readonly number[]).includes(asked) ? asked : 30;
       const rows = await store.rows(usageCutoff(today, days));
-      return html(200, adminPage({ summary: summarizeUsage(rows, today, days), days, who: session.name, version }));
+      return html(
+        200,
+        adminPage({
+          summary: summarizeUsage(rows, today, days),
+          days,
+          who: session.name,
+          version,
+          ladder: await ladder.summary(),
+          now,
+        }),
+      );
     }
     return html(
       404,

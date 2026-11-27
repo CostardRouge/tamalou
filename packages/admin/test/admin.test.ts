@@ -4,6 +4,7 @@ import {
   adminPage,
   cookie,
   dayPage,
+  exportDue,
   gamePage,
   gameTitle,
   messagePage,
@@ -172,5 +173,32 @@ describe('the admin page', () => {
         who: 'S',
       }),
     ).toContain('Perdue');
+  });
+});
+
+describe('the ladder on the admin page', () => {
+  const summary = summarizeUsage([], '2026-11-22', 7);
+  const page = (ladder: { players: number; lastExport: string | null }) =>
+    adminPage({ summary, days: 7, who: 'S', version: '1', ladder, now: NOW });
+
+  it('asks for an export when players exist and the last one is a week old, or none was made', () => {
+    expect(exportDue({ players: 0, lastExport: null }, NOW)).toBe(false);
+    expect(exportDue({ players: 3, lastExport: null }, NOW)).toBe(true);
+    expect(exportDue({ players: 3, lastExport: '2026-11-20T09:00:00.000Z' }, NOW)).toBe(false);
+    expect(exportDue({ players: 3, lastExport: '2026-11-14T09:00:00.000Z' }, NOW)).toBe(true);
+  });
+
+  it('shows the players, the last export, the download and the restore form', () => {
+    const html = page({ players: 2, lastExport: '2026-11-14T09:00:00.000Z' });
+    expect(html).toContain('<b>2</b><span>joueurs classés</span>');
+    expect(html).toContain('le 14 novembre à 10:00');
+    expect(html).toContain('Export à faire');
+    expect(html).toContain('href="ladder.json"');
+    expect(html).toContain('action="ladder/import"');
+    const fresh = page({ players: 1, lastExport: '2026-11-21T09:00:00.000Z' });
+    expect(fresh).toContain('joueur classé</span>');
+    expect(fresh).not.toContain('Export à faire');
+    expect(page({ players: 0, lastExport: null })).toContain('<b>jamais</b>');
+    expect(adminPage({ summary, days: 7, who: 'S', version: '1' })).not.toContain('Classement');
   });
 });

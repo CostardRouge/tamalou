@@ -106,7 +106,7 @@ Ordre de grandeur pour qu'une file se remplisse **sans** bots : pour réunir 4 i
 
 Chaque étape est sa propre session et sa propre pull request, jouable ou testable.
 
-- **R0 — L'identité** : créer son profil classé (pseudo généré, code de récupération), le retrouver sur un autre téléphone, télécharger ses données, le supprimer ; `LadderObject` ; l'export du classement dans `/admin/` ; la mention légale. *Test* : créer, restaurer sur un second téléphone, supprimer.
+- **R0 — L'identité** (livrée le 2026-11-27) : créer son profil classé (pseudo généré, code de récupération), le retrouver sur un autre téléphone, télécharger ses données, le supprimer ; `LadderObject` ; l'export du classement dans `/admin/` ; la mention légale. *Test* : créer, restaurer sur un second téléphone, supprimer.
 - **R1 — Classé contre les bots** : `packages/ranking` (OpenSkill, l'ordre final, les repères des bots mesurés par `pnpm bots`), le preset classé, une salle classée sur le Worker avec des bots, l'écran « Classé » (choix C), le niveau en cartes après la partie (choix A), « en calibrage ». *Test* : dix parties, voir son niveau bouger.
 - **R2 — Le classement** : autour de moi et les joueurs croisés (choix B), sous leurs pseudos générés. *Test* : se trouver, retrouver un adversaire.
 - **R3 — La file « Contre des joueurs »** : un Durable Object « file » qui assemble une table au hasard, la table qui se remplit (choix A), des bots annoncés après le compte à rebours, l'abandon compté. À lancer quand `/admin/` montre assez de parties en ligne. *Test* : deux téléphones qui se trouvent ; un seul, complété par des bots.
