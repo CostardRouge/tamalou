@@ -3,7 +3,7 @@ import { animate, type MotionValue, motion, useMotionValue } from 'motion/react'
 import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { CardView } from '../cards/CardView.tsx';
 import { cardName, t } from '../i18n/index.ts';
-import { type Bubble, bubblesOf, type Flight, flightsOf, type Place } from './flights.ts';
+import { type Bubble, bubblesOf, type Flight, flightsOf, type Place, straightInto } from './flights.ts';
 import { facing, frontOf } from './front.ts';
 import type { HandKind } from './pace.ts';
 
@@ -129,6 +129,8 @@ export interface FlightOptions {
   speed?: number;
   /** The bots' pace (game/pace.ts, PACE_FACTOR): how long a hand weighs a card up or rests on a target. */
   pace?: number;
+  /** The slot of mine a swap waits to be sent for, once my draw is through: my drawn card flies straight there. */
+  into?: () => Place | null;
 }
 
 export interface FlightLayer {
@@ -168,9 +170,11 @@ export function useFlights(
   events: readonly GameEvent[],
   me: PlayerId,
   motionOn: boolean,
-  { replayFrom, handOf, hands = null, speed = 1, pace = 1 }: FlightOptions = {},
+  { replayFrom, handOf, hands = null, speed = 1, pace = 1, into }: FlightOptions = {},
 ): FlightLayer {
   const seen = useRef(replayFrom ?? events.length);
+  /** The slot my last drawn card flew straight into (straightInto), until its swap has come. */
+  const via = useRef<Place | null>(null);
   const places = useRef(new Map<Place, Box>());
   const nextId = useRef(1);
   const lanes = useRef(new Map<PlayerId, Lane>());
@@ -217,7 +221,9 @@ export function useFlights(
       const find = (place: Place, first: Map<Place, Box>, then: Map<Place, Box>, by?: PlayerId) =>
         first.get(place) ?? then.get(place) ?? (place === 'drawn' ? stand(by) : null);
       const list: Active[] = [];
-      for (const flight of flightsOf(fresh, me, handOf)) {
+      const routed = straightInto(flightsOf(fresh, me, handOf), me, into?.() ?? null, via.current);
+      via.current = routed.via;
+      for (const flight of routed.flights) {
         const by = hands && flight.by && flight.by !== me ? flight.by : null;
         if (flight.tap && !by) continue;
         const from = takeDrop(flight.from) ?? find(flight.from, before, now, flight.by);
@@ -299,7 +305,12 @@ export function useFlights(
   // the table never shows their outcome for a frame first (the deal's first discard card flashed then faded).
   const coming =
     motionOn && events.length > seen.current
-      ? flightsOf(events.slice(seen.current), me, handOf).filter((f) => !f.tap)
+      ? straightInto(
+          flightsOf(events.slice(seen.current), me, handOf),
+          me,
+          into?.() ?? null,
+          via.current,
+        ).flights.filter((f) => !f.tap)
       : [];
   const landing = new Set([...flying.map((a) => a.flight.to), ...coming.map((f) => f.to)]);
   // The journal goes as far as the moves played: not past a gesture that has not picked its card up yet.
